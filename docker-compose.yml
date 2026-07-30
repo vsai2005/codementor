@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: codementor-db
+    environment:
+      POSTGRES_USER: codementor
+      POSTGRES_PASSWORD: codementor
+      POSTGRES_DB: codementor
+    ports:
+      - "5432:5432"
+    volumes:
+      - codementor_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codementor -d codementor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  codementor_pgdata:

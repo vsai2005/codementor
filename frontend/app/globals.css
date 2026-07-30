@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f6f1e7;
+  --surface: #ffffff;
+  --ink: #14213d;
+  --accent: #e4572e;
+  --accent-2: #17594a;
+  --muted: #5a5a52;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+@layer components {
+  /* Flat surface, 2px ink border, offset hard shadow. The whole system. */
+  .card {
+    @apply border-2 border-ink bg-surface shadow-hard;
+  }
+  .card-flat {
+    @apply border-2 border-ink bg-surface;
+  }
+  .btn {
+    @apply border-2 border-ink bg-surface px-4 py-2 font-body text-sm font-semibold
+           shadow-hard-sm transition-transform disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn:not(:disabled):hover {
+    @apply -translate-x-[1px] -translate-y-[1px] shadow-hard;
+  }
+  .btn:not(:disabled):active {
+    @apply translate-x-[2px] translate-y-[2px] shadow-none;
+  }
+  .btn-primary {
+    @apply bg-accent text-white;
+  }
+  .label {
+    @apply font-body text-xs font-semibold uppercase tracking-[0.14em] text-muted;
+  }
+}
+
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
