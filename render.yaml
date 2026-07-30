@@ -17,6 +17,7 @@ services:
   - type: web
     name: codementor-dev-backend
     runtime: python
+    plan: free
     buildCommand: "echo 'no dependencies to install — stdlib only'"
     startCommand: "python dev_backend/server.py"
     healthCheckPath: /health
