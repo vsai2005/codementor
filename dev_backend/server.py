@@ -1761,6 +1761,19 @@ def auth_register(username, password, email=None, name=None) -> tuple[int, dict]
     # Serialise the check-then-insert so two simultaneous signups can't both
     # claim the same username/email or clobber the shared accounts record.
     with _ACCOUNTS_LOCK:
+        if _USE_UPSTASH:
+            # ACCOUNTS is loaded once at process start and kept in memory; a
+            # long-lived server (or another instance/process) can drift from
+            # what's actually in Upstash. _save_accounts() writes the WHOLE
+            # dict, so a stale copy would resurrect anything deleted directly
+            # in the store. Re-sync right before mutating to close that window.
+            fresh = _load_accounts()
+            ACCOUNTS.clear()
+            ACCOUNTS.update(fresh)
+            EMAIL_INDEX.clear()
+            for _u, _a in ACCOUNTS.items():
+                if _a.get("email"):
+                    EMAIL_INDEX[_a["email"]] = _u
         if username in ACCOUNTS:
             return 409, {"detail": "That username is already taken."}
         if email and email in EMAIL_INDEX:
