@@ -1,34 +1,49 @@
-# Render blueprint — backend on Render, database on Neon (free, durable).
-#
-# Neon (not Render's managed Postgres) holds the data so it PERSISTS across
-# restarts/redeploys and doesn't expire. Neon supports pgvector, so the boot
-# migration's `CREATE EXTENSION vector` works.
+# Render blueprint for dev_backend/server.py — the actual app being shipped
+# (adaptive difficulty, spaced repetition, AI-generated problems, momentum/XP,
+# misconceptions, username/password auth). Zero Python deps (stdlib only), so
+# no Docker/requirements.txt needed — Render's native Python runtime runs it
+# directly. Data lives in Upstash (not on Render's disk), so the free plan's
+# ephemeral filesystem is fine — nothing durable is stored on the container.
 #
 # Before deploying, set these in the Render dashboard (Environment tab):
-#   DATABASE_URL  -> your Neon connection string, rewritten for psycopg + SSL:
-#                    postgresql+psycopg://USER:PASSWORD@HOST/DBNAME?sslmode=require
-#   CORS_ORIGINS  -> your frontend origin, e.g. https://your-app.vercel.app
-#   ANTHROPIC_API_KEY (and/or OPENAI_API_KEY) -> for tutor/review/embeddings
-#   GOOGLE_CLIENT_ID -> only if you use Google sign-in
+#   AUTH_SECRET               -> `python -c "import secrets; print(secrets.token_hex(32))"`
+#   ALLOWED_ORIGINS            -> your Vercel URL, e.g. https://your-app.vercel.app
+#   UPSTASH_REDIS_REST_URL     -> from your Upstash database's REST API section
+#   UPSTASH_REDIS_REST_TOKEN   -> from the same section
+#   NVIDIA_API_KEY / NVIDIA_MODEL           -> primary LLM provider
+#   GEMINI_API_KEY / GEMINI_API_KEYS / GEMINI_MODEL -> backup LLM provider
+#   XAI_API_KEY / XAI_MODEL                 -> optional extra fallback
 services:
   - type: web
-    name: codementor-api
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    name: codementor-dev-backend
+    runtime: python
+    buildCommand: "echo 'no dependencies to install — stdlib only'"
+    startCommand: "python dev_backend/server.py"
     healthCheckPath: /health
     envVars:
-      - key: DATABASE_URL
-        sync: false          # set to your Neon URL (postgresql+psycopg://…?sslmode=require)
-      - key: JWT_SECRET
-        generateValue: true
-      - key: GOOGLE_CLIENT_ID
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: ENVIRONMENT
+        value: production
+      - key: AUTH_SECRET
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: ALLOWED_ORIGINS
         sync: false
-      - key: OPENAI_API_KEY
+      - key: UPSTASH_REDIS_REST_URL
         sync: false
-      - key: CORS_ORIGINS
-        sync: false          # set to your frontend origin, never "*"
-      - key: LLM_PROVIDER
-        value: anthropic
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_MODEL
+        value: nvidia/nemotron-3-super-120b-a12b
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEYS
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest
+      - key: XAI_API_KEY
+        sync: false
+      - key: XAI_MODEL
+        value: grok-4-latest
