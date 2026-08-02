@@ -8,7 +8,7 @@ import { MasteryGrid } from "@/components/MasteryGrid";
 import { MisconceptionPanel } from "@/components/MisconceptionPanel";
 import { MomentumCard } from "@/components/MomentumCard";
 import { NextProblemCard } from "@/components/NextProblemCard";
-import { ReviewQueueCard } from "@/components/ReviewQueueCard";
+import { RecentlySolvedCard } from "@/components/RecentlySolvedCard";
 import { ScoreTrendChart } from "@/components/ScoreTrendChart";
 import { api } from "@/lib/api";
 
@@ -20,9 +20,9 @@ export default function DashboardPage() {
     queryFn: api.nextProblem,
     retry: false,
   });
-  const reviewQueue = useQuery({
-    queryKey: ["review-queue"],
-    queryFn: api.reviewQueue,
+  const recentSolved = useQuery({
+    queryKey: ["recent-solved"],
+    queryFn: api.recentSolved,
     retry: false,
   });
   const misconceptions = useQuery({
@@ -47,7 +47,7 @@ export default function DashboardPage() {
 
         <NextProblemCard problem={next.data ?? null} />
 
-        <ReviewQueueCard data={reviewQueue.data} />
+        <RecentlySolvedCard data={recentSolved.data} />
 
         <MisconceptionPanel data={misconceptions.data} />
 

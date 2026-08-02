@@ -9,6 +9,7 @@ import { AiCoach, type CoachSubmission } from "./AiCoach";
 import { CodeEditor } from "./CodeEditor";
 import { ConceptLesson } from "./ConceptLesson";
 import { MomentumBanner } from "./MomentumBanner";
+import { DiagnosisPanel } from "./DiagnosisPanel";
 import { PlanFirst } from "./PlanFirst";
 import { ProblemStatement } from "./ProblemStatement";
 import { ReferenceSolution } from "./ReferenceSolution";
@@ -211,6 +212,7 @@ export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
             </div>
 
             {tests && <TestResultsPanel tests={tests} />}
+            {tests?.diagnosis && <DiagnosisPanel diagnosis={tests.diagnosis} />}
 
             <TestSandbox problemId={problem.id} code={code} entryPoint={problem.entry_point} />
           </div>

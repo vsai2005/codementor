@@ -268,10 +268,15 @@ def _run_one(code: str, entry_point: str, args: list, expected, index: int) -> d
 
     returned = payload.get("returned")
     passed = returned == expected
-    return {"index": index, "passed": passed,
-            "status": "ok" if passed else "wrong_answer", "runtime_ms": ms,
-            "stdout": payload.get("stdout", ""),
-            "stderr": "" if passed else f"expected {expected!r}, got {returned!r}"}
+    result = {"index": index, "passed": passed,
+              "status": "ok" if passed else "wrong_answer", "runtime_ms": ms,
+              "stdout": payload.get("stdout", ""),
+              "stderr": "" if passed else f"expected {expected!r}, got {returned!r}"}
+    if not passed:
+        # Structured expected/got so the UI can show a clean diff, not just a string.
+        result["expected"] = repr(expected)
+        result["got"] = repr(returned)
+    return result
 
 
 def run_tests(problem: dict, code: str) -> dict:
@@ -281,14 +286,20 @@ def run_tests(problem: dict, code: str) -> dict:
         results = [{"index": i, "passed": False, "status": "error", "runtime_ms": 0,
                     "stdout": "", "stderr": f"Blocked for security: {reason}"}
                    for i in range(total)]
-        return {"passed": 0, "total": total, "all_passed": False, "results": results}
+        out = {"passed": 0, "total": total, "all_passed": False, "results": results}
+        out["diagnosis"] = diagnose(problem, out)
+        return out
     results = [_run_one(code, problem["entry_point"], c.get("args", []),
                         c.get("expected"), i)
                for i, c in enumerate(problem["test_cases"])]
     passed = sum(1 for r in results if r["passed"])
     total = len(results)
-    return {"passed": passed, "total": total,
-            "all_passed": total > 0 and passed == total, "results": results}
+    out = {"passed": passed, "total": total,
+           "all_passed": total > 0 and passed == total, "results": results}
+    # When something failed, attach a direct "what's wrong + how to fix/optimize"
+    # explanation so the learner sees it immediately on Run, without submitting.
+    out["diagnosis"] = diagnose(problem, out)
+    return out
 
 
 # --- heuristic review (stands in for the LLM) ------------------------------
@@ -980,6 +991,40 @@ def review_queue() -> dict:
             "due_count": len(due), "tracked_count": len(review_state)}
 
 
+def recent_solved(limit: int = 5) -> dict:
+    """The learner's most recently solved problems, newest first.
+
+    `stats["solved"]` is appended to in first-solve order, so the tail is the
+    most recent. Problems that no longer exist (e.g. a generated one lost on
+    restart) are skipped rather than shown as broken links."""
+    solved = _S()["stats"]["solved"]
+    items = []
+    for pid in reversed(solved):
+        problem = PROBLEMS.get(pid)
+        if not problem:
+            continue
+        items.append({"id": pid, "title": problem["title"],
+                      "topic": problem["topic"]})
+        if len(items) >= limit:
+            break
+    return {"items": items, "solved_count": len(solved)}
+
+
+def account_summary() -> dict:
+    """Headline numbers for the profile's Account box: how many problems this
+    learner has solved, how many exist in total, and their average score across
+    every submission."""
+    stats = _S()["stats"]
+    subs = _S()["submissions"]
+    scores = [s["overall_score"] for s in subs
+              if isinstance(s.get("overall_score"), (int, float))]
+    avg = round(sum(scores) / len(scores)) if scores else 0
+    return {"solved_count": len(stats["solved"]),
+            "total_problems": len(PROBLEMS),
+            "avg_score": avg,
+            "attempts": len(subs)}
+
+
 # --- misconception tracking ------------------------------------------------
 # A wrong submission is a signal, not just a zero. We classify *why* it failed
 # and accumulate the pattern so the learner can see their recurring blind spots.
@@ -1034,6 +1079,91 @@ def _classify_misconception(problem: dict, tests: dict) -> str | None:
             if _is_boundary(cases[idx].get("args", [])):
                 return "edge-cases"
     return "logic"
+
+
+# Per-topic hint for "how to optimize more" — surfaced on Run so the learner
+# gets a concrete direction, not just a pass/fail count.
+OPTIMIZE_HINTS = {
+    "arrays": "Try a single pass with a hash map / set or a running aggregate — "
+              "that usually replaces a nested loop and drops you a complexity tier.",
+    "two-pointers": "Two pointers (both ends, or fast/slow) often removes the "
+                    "inner loop and turns O(n^2) into O(n).",
+    "strings": "Count characters once with a dict / Counter instead of "
+               "re-scanning the string for each character.",
+    "stacks": "A stack lets you process each element exactly once (O(n)) instead "
+              "of repeatedly re-scanning what came before.",
+    "binary-search": "Halve the search space each step for O(log n) — look for a "
+                     "monotonic property you can binary-search on.",
+    "graphs": "Visit each node and edge once with BFS/DFS and a visited set — "
+              "O(V+E). Re-exploring visited nodes is the usual slowdown.",
+}
+
+
+def _format_call(problem: dict, args: list) -> str:
+    """Render a failing case as a readable call, e.g. two_sum(nums=[2,7], target=9)."""
+    names = _params(problem)
+    parts = []
+    for i, a in enumerate(args):
+        val = repr(a)
+        if len(val) > 80:
+            val = val[:77] + "..."
+        parts.append(f"{names[i]}={val}" if i < len(names) else val)
+    return f"{problem['entry_point']}({', '.join(parts)})"
+
+
+def diagnose(problem: dict, tests: dict) -> dict | None:
+    """Direct, learner-facing explanation of a failing Run: what's wrong, which
+    case, and how to fix / optimize. Returns None when everything passed."""
+    if tests.get("all_passed"):
+        return None
+    failed = [r for r in tests.get("results", []) if not r.get("passed")]
+    if not failed:
+        return None
+
+    category = _classify_misconception(problem, tests) or "logic"
+    info = MISCONCEPTION_INFO.get(category, MISCONCEPTION_INFO["logic"])
+    first = failed[0]
+    cases = problem["test_cases"]
+    idx = first.get("index")
+    case = cases[idx] if isinstance(idx, int) and 0 <= idx < len(cases) else None
+
+    # Build the "what's wrong" line, concrete to the first failing case.
+    first_failure = None
+    if case is not None:
+        call = _format_call(problem, case.get("args", []))
+        if first.get("status") == "wrong_answer":
+            summary = (f"Your code returned the wrong answer on case {idx + 1}. "
+                       f"For {call} it should return {first.get('expected')}, "
+                       f"but you returned {first.get('got')}.")
+            first_failure = {"case": idx + 1, "call": call,
+                             "expected": first.get("expected"),
+                             "got": first.get("got")}
+        elif first.get("status") == "timeout":
+            summary = (f"Case {idx + 1} ({call}) ran too long and was stopped — "
+                       "your solution is correct in spirit but too slow.")
+            first_failure = {"case": idx + 1, "call": call,
+                             "expected": None, "got": "Time Limit Exceeded"}
+        else:  # error / security
+            summary = (f"Your code crashed on case {idx + 1} ({call}): "
+                       f"{first.get('stderr', '').strip()[:200]}")
+            first_failure = {"case": idx + 1, "call": call,
+                             "expected": None, "got": first.get("stderr", "")[:200]}
+    else:
+        summary = f"{len(failed)} case(s) did not pass."
+
+    optimize = (f"Target complexity for this problem is time {problem['optimal_time']}, "
+                f"space {problem['optimal_space']}. "
+                + OPTIMIZE_HINTS.get(problem["topic_slug"], ""))
+
+    return {
+        "category": category,
+        "title": info["label"],
+        "summary": summary,
+        "first_failure": first_failure,
+        "failed_count": len(failed),
+        "fix": info["tip"],
+        "optimize": optimize.strip(),
+    }
 
 
 def record_misconception(problem: dict, tests: dict) -> dict | None:
@@ -1909,7 +2039,19 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(401, {"detail": "Not authenticated"})
             return self._json(200, user)
         if path == "/api/problems":
-            items = [_summary(PROBLEMS[pid]) for pid in PROBLEM_ORDER]
+            # Optional auth: if a valid token is present, mark which problems this
+            # learner has already solved so the list can show a ✓. No token → no
+            # 401, just every solved=False (the list stays public/browsable).
+            solved: set = set()
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+                solved = set(_S()["stats"]["solved"])
+            items = []
+            for pid in PROBLEM_ORDER:
+                summary = _summary(PROBLEMS[pid])
+                summary["solved"] = pid in solved
+                items.append(summary)
             return self._json(200, {"items": items, "page": 1,
                                     "page_size": len(items), "total": len(items)})
         if path == "/api/problems/next":
@@ -1943,6 +2085,14 @@ class Handler(BaseHTTPRequestHandler):
             if not self._require():
                 return
             return self._json(200, review_queue())
+        if path == "/api/recent-solved":
+            if not self._require():
+                return
+            return self._json(200, recent_solved())
+        if path == "/api/account/summary":
+            if not self._require():
+                return
+            return self._json(200, account_summary())
         if path == "/api/insights/misconceptions":
             if not self._require():
                 return

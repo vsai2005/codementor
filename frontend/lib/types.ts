@@ -24,6 +24,7 @@ export interface ProblemSummary {
   difficulty_tier: number;
   topic: Topic;
   generated?: boolean;
+  solved?: boolean;
 }
 
 export interface ConceptLesson {
@@ -64,6 +65,25 @@ export interface TestCaseResult {
   runtime_ms: number;
   stdout: string;
   stderr: string;
+  expected?: string;
+  got?: string;
+}
+
+export interface FailureDetail {
+  case: number;
+  call: string;
+  expected: string | null;
+  got: string | null;
+}
+
+export interface Diagnosis {
+  category: string;
+  title: string;
+  summary: string;
+  first_failure: FailureDetail | null;
+  failed_count: number;
+  fix: string;
+  optimize: string;
 }
 
 export interface TestsResponse {
@@ -71,6 +91,7 @@ export interface TestsResponse {
   total: number;
   all_passed: boolean;
   results: TestCaseResult[];
+  diagnosis?: Diagnosis | null;
 }
 
 export interface Scores {
@@ -207,6 +228,24 @@ export interface ReviewQueueResponse {
   upcoming: ReviewQueueItem[];
   due_count: number;
   tracked_count: number;
+}
+
+export interface RecentSolvedItem {
+  id: string;
+  title: string;
+  topic: Topic;
+}
+
+export interface RecentSolvedResponse {
+  items: RecentSolvedItem[];
+  solved_count: number;
+}
+
+export interface AccountSummary {
+  solved_count: number;
+  total_problems: number;
+  avg_score: number;
+  attempts: number;
 }
 
 export interface Misconception {

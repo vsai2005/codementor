@@ -8,6 +8,8 @@ import type {
   ProgressResponse,
   ReferenceSolution,
   Review,
+  AccountSummary,
+  RecentSolvedResponse,
   ReviewQueueResponse,
   SubmissionResponse,
   TestsResponse,
@@ -138,6 +140,10 @@ export const api = {
   trend: (n = 20) => request<TrendResponse>(`/api/progress/trend?n=${n}`),
 
   reviewQueue: () => request<ReviewQueueResponse>("/api/review/due"),
+
+  recentSolved: () => request<RecentSolvedResponse>("/api/recent-solved"),
+
+  accountSummary: () => request<AccountSummary>("/api/account/summary"),
 
   misconceptions: () => request<MisconceptionsResponse>("/api/insights/misconceptions"),
 
