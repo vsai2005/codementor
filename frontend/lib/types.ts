@@ -305,3 +305,42 @@ export const TIER_LABELS: Record<number, string> = {
   4: "Medium-Hard",
   5: "Hard",
 };
+
+export interface LearningTutorResponse {
+  reply: string;
+  quick_action?: string | null;
+  related_concepts?: Array<{ day: number; title: string; section: string }> | string[];
+  pedagogical_mode?: string;
+  visual?: any;
+}
+
+export interface LearningTutorChatPayload {
+  day_number: number;
+  step_number: number;
+  message: string;
+  history?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+  quick_action?: string;
+  user_code?: string;
+  step_context?: {
+    step_type?: string;
+    heading?: string;
+    takeaway?: string;
+    [key: string]: any;
+  };
+  hint_level?: number;
+}
+
+export interface LearningTutorQuickActionPayload {
+  day_number: number;
+  step_number: number;
+  action: string;
+  user_code?: string;
+  step_context?: {
+    step_type?: string;
+    heading?: string;
+    takeaway?: string;
+    [key: string]: any;
+  };
+  history?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+  hint_level?: number;
+}

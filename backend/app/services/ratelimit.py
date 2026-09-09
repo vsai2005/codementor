@@ -103,6 +103,7 @@ class RedisRateLimiter(BaseRateLimiter):
 
 
 _default: BaseRateLimiter | None = None
+_tutor_limiter: BaseRateLimiter | None = None
 
 
 def get_rate_limiter() -> BaseRateLimiter:
@@ -128,3 +129,21 @@ def get_rate_limiter() -> BaseRateLimiter:
             settings.submission_rate_limit, settings.submission_rate_window_s
         )
     return _default
+
+
+def get_tutor_rate_limiter() -> BaseRateLimiter:
+    global _tutor_limiter
+    if _tutor_limiter is None:
+        redis_url = os.getenv("REDIS_URL")
+        limit = int(os.getenv("TUTOR_RATE_LIMIT", "20"))
+        window = int(os.getenv("TUTOR_RATE_WINDOW_S", "300"))
+        if redis_url:
+            try:
+                import redis
+                client = redis.from_url(redis_url)
+                _tutor_limiter = RedisRateLimiter(client, limit, window)
+                return _tutor_limiter
+            except Exception:
+                pass
+        _tutor_limiter = InMemoryRateLimiter(limit, window)
+    return _tutor_limiter

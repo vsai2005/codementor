@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LessonStep } from "@/lib/lessons/types";
@@ -12,6 +12,7 @@ import { MemoryVisualizer } from "./MemoryVisualizer";
 import { DivisionModuloVisualizer } from "./DivisionModuloVisualizer";
 import { InteractiveCodeRunner } from "./InteractiveCodeRunner";
 import { LessonCompletion } from "./LessonCompletion";
+import { AiTeacherLauncher, AiTeacherDrawer } from "./ai";
 
 interface LessonShellProps {
   dayNumber: number;
@@ -48,6 +49,8 @@ export function LessonShell({
     steps,
     onCompleteDay: () => onMarkDayComplete(dayNumber),
   });
+
+  const [isAiTeacherOpen, setIsAiTeacherOpen] = useState(false);
 
   const router = useRouter();
 
@@ -116,6 +119,16 @@ export function LessonShell({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsAiTeacherOpen((prev) => !prev)}
+                className="hidden sm:inline-flex items-center gap-1.5 font-mono text-xs font-bold text-accent px-2.5 py-1 border border-accent/40 bg-accent/10 hover:bg-accent/20 rounded transition-colors shadow-sm"
+                title="Toggle AI Mentor (⌘K)"
+              >
+                <span>🧠</span>
+                <span>AI Mentor</span>
+                <kbd className="px-1 py-0.2 rounded bg-ink/10 text-[10px] font-mono">⌘K</kbd>
+              </button>
               <button
                 type="button"
                 onClick={handleRestart}
@@ -242,6 +255,23 @@ export function LessonShell({
           )}
         </div>
       </nav>
+
+      {/* AI Learning Teacher / Mentor Layer */}
+      <AiTeacherLauncher
+        isOpen={isAiTeacherOpen}
+        onToggle={() => setIsAiTeacherOpen((prev) => !prev)}
+      />
+
+      <AiTeacherDrawer
+        isOpen={isAiTeacherOpen}
+        onClose={() => setIsAiTeacherOpen(false)}
+        dayNumber={dayNumber}
+        stepNumber={currentStepIndex + 1}
+        stepHeading={activeStep?.heading || activeStep?.title || title}
+        stepType={activeStep?.type || "explanation"}
+        stepTakeaway={(activeStep as any)?.takeaway}
+        currentCode={progress.codeDraft}
+      />
     </div>
   );
 }

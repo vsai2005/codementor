@@ -17,6 +17,9 @@ import type {
   TutorResponse,
   User,
   LessonRunResponse,
+  LearningTutorResponse,
+  LearningTutorChatPayload,
+  LearningTutorQuickActionPayload,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
@@ -207,4 +210,10 @@ export const api = {
     tests: TestsResponse;
     plan?: string;
   }) => request<CoachResponse>("/api/coach/debrief", { method: "POST", body }),
+
+  learningTutorChat: (body: LearningTutorChatPayload, signal?: AbortSignal) =>
+    request<LearningTutorResponse>("/api/learning/tutor/chat", { method: "POST", body, signal }),
+
+  learningTutorQuickAction: (body: LearningTutorQuickActionPayload, signal?: AbortSignal) =>
+    request<LearningTutorResponse>("/api/learning/tutor/quick-action", { method: "POST", body, signal }),
 };

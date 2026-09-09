@@ -214,3 +214,30 @@ class LearningUnlockUpdate(BaseModel):
     unlocked_days: list[int]
     current_day: int
 
+
+class LearningTutorChatRequest(BaseModel):
+    day_number: int = Field(default=1, ge=1, le=160)
+    step_number: int = Field(default=0, ge=0)
+    message: str = Field(..., min_length=1, max_length=2000)
+    history: list[dict[str, Any]] = Field(default_factory=list)
+    quick_action: str | None = None
+    user_code: str | None = Field(default=None, max_length=20000)
+    step_context: dict[str, Any] | None = None
+
+
+class LearningTutorQuickActionRequest(BaseModel):
+    day_number: int = Field(default=1, ge=1, le=160)
+    step_number: int = Field(default=0, ge=0)
+    action: str = Field(..., min_length=1, max_length=50)
+    user_code: str | None = Field(default=None, max_length=20000)
+    step_context: dict[str, Any] | None = None
+    history: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class LearningTutorResponse(BaseModel):
+    reply: str
+    quick_action: str | None = None
+    related_concepts: list[dict[str, Any]] = Field(default_factory=list)
+    pedagogical_mode: str = "socratic"
+    visual: dict[str, Any] | None = None
+

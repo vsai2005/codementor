@@ -496,15 +496,34 @@ class QuotaError(LLMError):
 #   XAI_API_KEY=...              (Grok; paid — auto-skipped if out of credit)
 def _build_providers() -> list[dict]:
     provs: list[dict] = []
-    # NVIDIA NIM is the PRIMARY provider — its free tier is reliable, so it
-    # serves every AI feature in the platform (generation, coach, tutor, review,
-    # reference). Gemini is the backup; xAI is last (auto-skipped without credit).
+    nmodel = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-3-super-120b-a12b").strip() or "nvidia/nemotron-3-super-120b-a12b"
+    nbase = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1").strip() or "https://integrate.api.nvidia.com/v1"
+
+    # 1. NVIDIA Tutor keys (5 keys dedicated to learning/teacher)
+    tutor_keys = [k.strip() for k in os.getenv("NVIDIA_TUTOR_API_KEYS", "").split(",") if k.strip()]
+    for i, k in enumerate(tutor_keys, 1):
+        provs.append({"name": f"nvidia-tutor-{i}", "kind": "openai", "role": "tutor",
+                      "base": nbase, "key": k, "model": nmodel})
+
+    # 2. NVIDIA Practice keys (2 keys dedicated to practice review/coach)
+    practice_keys = [k.strip() for k in os.getenv("NVIDIA_PRACTICE_API_KEYS", "").split(",") if k.strip()]
+    for i, k in enumerate(practice_keys, 1):
+        provs.append({"name": f"nvidia-practice-{i}", "kind": "openai", "role": "practice",
+                      "base": nbase, "key": k, "model": nmodel})
+
+    # 3. General NVIDIA keys
+    gen_keys = [k.strip() for k in os.getenv("NVIDIA_API_KEYS", "").split(",") if k.strip()]
     if os.getenv("NVIDIA_API_KEY", "").strip():
-        provs.append({"name": "nvidia", "kind": "openai",
-                      "base": "https://integrate.api.nvidia.com/v1",
-                      "key": os.getenv("NVIDIA_API_KEY").strip(),
-                      "model": os.getenv("NVIDIA_MODEL", "nvidia/nemotron-3-super-120b-a12b").strip()
-                               or "nvidia/nemotron-3-super-120b-a12b"})
+        k = os.getenv("NVIDIA_API_KEY").strip()
+        if k not in gen_keys:
+            gen_keys.append(k)
+
+    for i, k in enumerate(gen_keys, 1):
+        if k not in tutor_keys and k not in practice_keys:
+            provs.append({"name": f"nvidia-{i}", "kind": "openai", "role": "general",
+                          "base": nbase, "key": k, "model": nmodel})
+
+    # Backup: Gemini
     gkeys: list[str] = []
     if os.getenv("GEMINI_API_KEY", "").strip():
         gkeys.append(os.getenv("GEMINI_API_KEY").strip())
@@ -513,9 +532,11 @@ def _build_providers() -> list[dict]:
             gkeys.append(k.strip())
     gmodel = os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip() or "gemini-flash-latest"
     for i, k in enumerate(gkeys):
-        provs.append({"name": f"gemini-{i + 1}", "kind": "gemini", "key": k, "model": gmodel})
+        provs.append({"name": f"gemini-{i + 1}", "kind": "gemini", "role": "backup", "key": k, "model": gmodel})
+
+    # Backup: xAI
     if os.getenv("XAI_API_KEY", "").strip():
-        provs.append({"name": "xai", "kind": "openai", "base": "https://api.x.ai/v1",
+        provs.append({"name": "xai", "kind": "openai", "role": "backup", "base": "https://api.x.ai/v1",
                       "key": os.getenv("XAI_API_KEY").strip(),
                       "model": os.getenv("XAI_MODEL", "grok-4-latest").strip() or "grok-4-latest"})
     return provs
@@ -531,7 +552,7 @@ LLM_ENABLED = bool(PROVIDERS)
 def _is_quota(code: int, detail: str) -> bool:
     d = detail.lower()
     return code == 429 or (code == 403 and ("quota" in d or "credit" in d
-                                            or "permission-denied" in d or "spending" in d))
+                                            or "permission-denied" in d or "spending" in d or "rate limit" in d))
 
 
 def _call_gemini(key: str, model: str, prompt: str, system: str, temperature: float,
@@ -540,17 +561,13 @@ def _call_gemini(key: str, model: str, prompt: str, system: str, temperature: fl
     gen: dict = {"temperature": temperature, "maxOutputTokens": max_tokens}
     if want_json:
         gen["responseMimeType"] = "application/json"
-    body: dict = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                  "generationConfig": gen}
+    contents = []
     if system:
-        body["systemInstruction"] = {"parts": [{"text": system}]}
-    headers = {"Content-Type": "application/json"}
-    # ya29. = OAuth2 access token (Bearer); AIza.../AQ... API keys use ?key=.
-    if key.startswith("ya29."):
-        headers["Authorization"] = f"Bearer {key}"
-    else:
-        url += f"?key={key}"
-    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers)
+        contents.append({"role": "user", "parts": [{"text": f"[System Instructions]\n{system}\n\n[Task]\nBegin."}]})
+    contents.append({"role": "user", "parts": [{"text": prompt}]})
+    body = {"contents": contents, "generationConfig": gen}
+    req = urllib.request.Request(f"{url}?key={key}", data=json.dumps(body).encode(),
+                                 headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read())
@@ -587,7 +604,8 @@ def _call_openai(base: str, key: str, model: str, prompt: str, system: str,
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise LLMError(str(exc)) from exc
     try:
-        content = data["choices"][0]["message"].get("content")
+        msg = data["choices"][0]["message"]
+        content = msg.get("content") or msg.get("reasoning_content")
     except (KeyError, IndexError):
         raise LLMError(f"unexpected response: {json.dumps(data)[:300]}")
     if not content:
@@ -606,19 +624,39 @@ def _dispatch(p: dict, prompt: str, system: str, temperature: float,
 
 def llm_complete(prompt: str, *, system: str = "", temperature: float = 0.2,
                  max_tokens: int = 1200, want_json: bool = False,
-                 timeout: float = 4.0) -> str:
-
-    """Try each provider in order, skipping any on cooldown, failing over on
-    quota/error. Cooled-down providers are still tried as a last resort so the
-    pool degrades gracefully rather than going dark."""
+                 timeout: float = 8.0, purpose: str = "general") -> str:
+    """Try each provider in order, prioritizing based on purpose (tutor vs practice),
+    skipping any on cooldown, and seamlessly failing over if rate-limited."""
+    global PROVIDERS
     if not PROVIDERS:
-        raise LLMError("no LLM provider configured (set GEMINI_API_KEY / NVIDIA_API_KEY)")
+        PROVIDERS = _build_providers()
+    if not PROVIDERS:
+        raise LLMError("no LLM provider configured (set NVIDIA_TUTOR_API_KEYS / NVIDIA_PRACTICE_API_KEYS)")
+
+    def _priority_score(p: dict) -> int:
+        role = p.get("role", "general")
+        if purpose == "tutor":
+            if role == "tutor": return 0
+            if role == "general": return 1
+            if role == "practice": return 2
+            return 3
+        elif purpose == "practice":
+            if role == "practice": return 0
+            if role == "general": return 1
+            if role == "tutor": return 2
+            return 3
+        else:
+            if role in ("practice", "tutor", "general"): return 0
+            return 1
+
+    ordered = sorted(PROVIDERS, key=_priority_score)
     now = time.time()
-    fresh = [p for p in PROVIDERS if _COOLDOWN.get(p["name"], 0) <= now]
+    fresh = [p for p in ordered if _COOLDOWN.get(p["name"], 0) <= now]
     if not fresh:
-        raise LLMError("all LLM providers currently on cooldown")
+        fresh = sorted(ordered, key=lambda p: _COOLDOWN.get(p["name"], 0))[:1]
+
     last_exc: Exception | None = None
-    for p in fresh:
+    for p in fresh[:3]:
         try:
             text = _dispatch(p, prompt, system, temperature, max_tokens, want_json, timeout)
             _COOLDOWN.pop(p["name"], None)
@@ -626,11 +664,15 @@ def llm_complete(prompt: str, *, system: str = "", temperature: float = 0.2,
         except QuotaError as exc:
             _COOLDOWN[p["name"]] = time.time() + QUOTA_COOLDOWN_S
             last_exc = exc
-            sys.stderr.write(f"  dev-backend: LLM {p['name']} quota-limited -> failing over\n")
+            sys.stderr.write(f"  dev-backend: LLM {p['name']} quota/rate-limited -> failing over to next key\n")
         except LLMError as exc:
             _COOLDOWN[p["name"]] = time.time() + ERROR_COOLDOWN_S
             last_exc = exc
-            sys.stderr.write(f"  dev-backend: LLM {p['name']} error ({str(exc)[:70]}) -> next\n")
+            sys.stderr.write(f"  dev-backend: LLM {p['name']} error ({str(exc)[:70]}) -> failing over to next key\n")
+        except Exception as exc:
+            _COOLDOWN[p["name"]] = time.time() + ERROR_COOLDOWN_S
+            last_exc = exc
+            sys.stderr.write(f"  dev-backend: LLM {p['name']} unexpected ({str(exc)[:70]}) -> failing over\n")
     raise last_exc or LLMError("all LLM providers failed")
 
 
@@ -672,9 +714,10 @@ def _review_prompt(problem: dict, code: str, tests: dict) -> str:
 
 
 def build_review_llm(problem: dict, code: str, tests: dict) -> dict:
-    """LLM review via Gemini. Correctness stays test-driven; wrong answer -> 0."""
+    """LLM review via NVIDIA Nemotron / Gemini. Correctness stays test-driven; wrong answer -> 0."""
     raw = gemini_complete(_review_prompt(problem, code, tests),
-                          system=REVIEW_SYSTEM, temperature=0.2, want_json=True)
+                          system=REVIEW_SYSTEM, temperature=0.2, want_json=True,
+                          timeout=20.0, purpose="practice")
     draft = _extract_json(raw)
 
     total = tests["total"] or 1
@@ -785,7 +828,7 @@ def tutor_reply(problem: dict | None, code: str, message: str) -> str:
     else:
         prompt = message
     return gemini_complete(prompt, system=TUTOR_SYSTEM,
-                           temperature=0.5, max_tokens=600).strip()
+                           temperature=0.5, max_tokens=600, timeout=15.0, purpose="practice").strip()
 
 
 def coach_debrief(problem: dict, code: str, review: dict, tests: dict,
@@ -807,7 +850,7 @@ def coach_debrief(problem: dict, code: str, review: dict, tests: dict,
         "logic can level up or where they can maximise the output.",
     ]
     return gemini_complete("\n".join(lines), system=COACH_SYSTEM,
-                           temperature=0.6, max_tokens=700).strip()
+                           temperature=0.6, max_tokens=700, timeout=15.0, purpose="practice").strip()
 
 
 def _coach_fallback(review: dict, tests: dict, plan: str = "") -> str:
@@ -838,6 +881,28 @@ def _coach_fallback(review: dict, tests: dict, plan: str = "") -> str:
             + " Focus on the failing case, especially empty or single-element input; "
             "fix that one thing and this clicks into place." + plan_note
             + " You're closer than it feels. 💪")
+
+
+class DevBackendLLMClient:
+    def complete(self, prompt: str, system: str = "", temperature: float = 0.35,
+                 max_tokens: int = 450, timeout: float = 8.0) -> str:
+        return gemini_complete(prompt, system=system, temperature=temperature,
+                               max_tokens=max_tokens, timeout=timeout, purpose="tutor")
+
+
+_dev_teacher_svc = None
+
+
+def get_dev_teacher_svc():
+    global _dev_teacher_svc
+    if _dev_teacher_svc is None:
+        try:
+            from app.services.teacher import AITeacherService
+            client = DevBackendLLMClient() if LLM_ENABLED else None
+            _dev_teacher_svc = AITeacherService(client=client)
+        except Exception as _e:
+            sys.stderr.write(f"  dev-backend: could not load AITeacherService: {_e}\n")
+    return _dev_teacher_svc
 
 
 # --- adaptive difficulty (simplified) --------------------------------------
@@ -2271,6 +2336,7 @@ RATE_LIMITS = {
     "/api/submissions/run-custom": 45, "/api/problems/generate": 6,
     "/api/tutor/chat": 20, "/api/coach/debrief": 20,
     "/api/learning/run": 60,
+    "/api/learning/tutor/chat": 20, "/api/learning/tutor/quick-action": 20,
 }
 
 
@@ -2549,6 +2615,95 @@ class Handler(BaseHTTPRequestHandler):
                 d_record["completed_at"] = now_iso
             _save_store(user["username"])
             return self._json(200, compute_learning_progress(_S()))
+
+        if path == "/api/learning/tutor/chat":
+            user = self._require()
+            if not user:
+                return
+            msg = (body.get("message") or "").strip()
+            user_code = body.get("user_code")
+            day_num = int(body.get("day_number", 1))
+            step_num = int(body.get("step_number", 1))
+            history = body.get("history") or []
+            step_ctx = body.get("step_context") or {}
+            quick_act = body.get("quick_action")
+            hint_lvl = int(body.get("hint_level", 1))
+
+            try:
+                from app.services.tutor_security import sanitize_tutor_input
+                val_res = sanitize_tutor_input(msg, user_code)
+                if not val_res.is_valid:
+                    return self._json(400, {"detail": val_res.error_message or "Invalid message"})
+                clean_msg = val_res.sanitized_message
+                clean_code = val_res.sanitized_code
+            except Exception:
+                clean_msg = msg[:2000]
+                clean_code = user_code[:20000] if user_code else None
+
+            svc = get_dev_teacher_svc()
+            if svc:
+                resp = svc.generate_response(
+                    day_number=day_num,
+                    step_number=step_num,
+                    query=clean_msg,
+                    history=history,
+                    user_code=clean_code,
+                    step_context=step_ctx,
+                    quick_action=quick_act,
+                    hint_level=hint_lvl,
+                )
+            else:
+                resp = {
+                    "reply": "I'm your CodeMentor AI Teacher. How can I help you with today's lesson?",
+                    "quick_action": quick_act,
+                    "related_concepts": [],
+                    "pedagogical_mode": "socratic",
+                    "visual": None,
+                }
+            return self._json(200, resp)
+
+        if path == "/api/learning/tutor/quick-action":
+            user = self._require()
+            if not user:
+                return
+            action = (body.get("action") or "").strip()
+            if not action:
+                return self._json(400, {"detail": "Action is required"})
+            user_code = body.get("user_code")
+            day_num = int(body.get("day_number", 1))
+            step_num = int(body.get("step_number", 1))
+            history = body.get("history") or []
+            step_ctx = body.get("step_context") or {}
+            hint_lvl = int(body.get("hint_level", 1))
+
+            try:
+                from app.services.tutor_security import sanitize_tutor_input
+                val_res = sanitize_tutor_input(f"Action: {action}", user_code)
+                clean_code = val_res.sanitized_code
+            except Exception:
+                clean_code = user_code[:20000] if user_code else None
+
+            svc = get_dev_teacher_svc()
+            if svc:
+                resp = svc.generate_response(
+                    day_number=day_num,
+                    step_number=step_num,
+                    query="",
+                    history=history,
+                    user_code=clean_code,
+                    step_context=step_ctx,
+                    quick_action=action,
+                    hint_level=hint_lvl,
+                )
+            else:
+                resp = {
+                    "reply": f"Performing quick action: {action}",
+                    "quick_action": action,
+                    "related_concepts": [],
+                    "pedagogical_mode": "socratic",
+                    "visual": None,
+                }
+            return self._json(200, resp)
 
         if path == "/api/submissions":
             user = self._require()
