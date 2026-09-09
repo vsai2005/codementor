@@ -23,11 +23,15 @@ class Settings(BaseSettings):
 
     google_client_id: str = ""
 
-    llm_provider: str = "anthropic"
-    llm_model: str = "claude-sonnet-4-6"
+    llm_provider: str = "nvidia"
+    llm_model: str = "nvidia/nemotron-3-ultra-550b-a55b"
+    nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
+    nvidia_tutor_api_keys: str = ""
+    nvidia_practice_api_keys: str = ""
+    nvidia_api_key: str = ""
     anthropic_api_key: str = ""
     openai_api_key: str = ""
-    llm_timeout_s: float = 6.0
+    llm_timeout_s: float = 8.0
     llm_retry_timeout_s: float = 4.0
 
     embedding_provider: str = "openai"
