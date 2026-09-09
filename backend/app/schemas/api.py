@@ -15,9 +15,22 @@ class GoogleLoginRequest(BaseModel):
     id_token: str
 
 
+class LoginRequest(BaseModel):
+    identifier: str
+    password: str
+
+
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    email: str | None = None
+    name: str | None = None
+
+
 class UserOut(BaseModel):
     id: uuid.UUID
-    email: str
+    email: str | None = None
+    username: str | None = None
     name: str
     avatar_url: str | None = None
 
@@ -159,3 +172,45 @@ class HealthResponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail: str
     retry_after_s: int | None = None
+
+
+class CompleteLessonRequest(BaseModel):
+    day_number: int = Field(..., ge=1, le=160, description="Curriculum day number to complete")
+
+
+class DayStateOut(BaseModel):
+    day_number: int
+    lesson_completed: bool
+    lesson_completed_at: datetime | None = None
+    practice_passed: bool
+    practice_passed_at: datetime | None = None
+    completed: bool
+    completed_at: datetime | None = None
+    unlocked: bool
+    status: Literal["completed", "current", "available", "locked"]
+    practice_problem_slug: str | None = None
+
+
+class LearningProgressResponse(BaseModel):
+    current_day: int
+    completed_days: list[int]
+    total_days: int = 160
+    day_states: dict[str, DayStateOut]
+    last_activity_timestamp: datetime | None = None
+
+
+class CompleteLessonResponse(BaseModel):
+    day_number: int
+    lesson_completed: bool
+    day_completed: bool
+    unlocked_next_day: bool
+    current_day: int
+    day_state: DayStateOut
+
+
+class LearningUnlockUpdate(BaseModel):
+    affected_days: list[int]
+    newly_completed_days: list[int]
+    unlocked_days: list[int]
+    current_day: int
+

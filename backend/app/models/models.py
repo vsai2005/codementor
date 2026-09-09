@@ -1,4 +1,4 @@
-"""SQLAlchemy 2.x models — PRD 5.2."""
+"""SQLAlchemy 2.x models (Phase 3)."""
 
 from __future__ import annotations
 
@@ -47,7 +47,10 @@ class User(Base):
 
     id: Mapped[uuid.UUID] = _uuid_pk()
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False, index=True)
+    username: Mapped[str | None] = mapped_column(String(80), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    pwd_hash: Mapped[str | None] = mapped_column(String(128))
+    salt: Mapped[str | None] = mapped_column(String(64))
     avatar_url: Mapped[str | None] = mapped_column(Text)
     google_sub: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -117,6 +120,7 @@ class Submission(Base):
 
     __table_args__ = (
         Index("ix_submissions_user_created", "user_id", "created_at"),
+        Index("ix_submissions_user_created_desc", "user_id", created_at.desc()),
         Index("ix_submissions_user_problem", "user_id", "problem_id"),
     )
 
@@ -138,10 +142,12 @@ class UserTopicState(Base):
     )
     last_practiced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    __table_args__ = (
+        Index("ix_user_topic_state_user_topic", "user_id", "topic_id"),
+    )
+
 
 class DifficultyEvent(Base):
-    """One row per submission — including no-change ones (PRD 3.2)."""
-
     __tablename__ = "difficulty_events"
 
     id: Mapped[uuid.UUID] = _uuid_pk()
@@ -177,18 +183,16 @@ class MemoryNoteRow(Base):
         nullable=False, index=True,
     )
     submission_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("submissions.id", ondelete="SET NULL")
+        UUID(as_uuid=True), ForeignKey("submissions.id", ondelete="CASCADE")
     )
     topic_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("topics.id", ondelete="SET NULL")
+        UUID(as_uuid=True), ForeignKey("topics.id", ondelete="CASCADE")
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBED_DIM), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
-        # ivfflat cosine index (PRD 5.2). Partial-scan structure, so the
-        # user_id filter still does the security work — the index is for speed.
         Index(
             "ix_memory_notes_embedding",
             "embedding",
@@ -198,3 +202,30 @@ class MemoryNoteRow(Base):
         ),
         Index("ix_memory_notes_user_created", "user_id", "created_at"),
     )
+
+
+class UserLearningDayState(Base):
+    __tablename__ = "user_learning_day_state"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    day_number: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    lesson_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    lesson_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    practice_passed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    practice_passed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "day_number", name="uq_user_learning_day"),
+        Index("ix_user_learning_user_day", "user_id", "day_number"),
+    )
+

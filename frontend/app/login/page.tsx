@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Mode = "login" | "register";
 
@@ -53,6 +54,7 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+      <ThemeToggle className="fixed right-4 top-4" />
       <div className="card p-6">
         <h1 className="font-display text-2xl font-bold">
           {mode === "login" ? "Welcome back" : "Create your account"}

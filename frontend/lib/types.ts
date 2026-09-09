@@ -284,6 +284,13 @@ export interface CustomRunResponse {
   runtime_ms: number;
 }
 
+export interface LessonRunResponse {
+  status: "ok" | "error" | "timeout" | "memory";
+  stdout: string;
+  stderr: string;
+  runtime_ms: number;
+}
+
 export interface ReferenceSolution {
   available: boolean;
   language: string;

@@ -46,6 +46,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SEED_PATH = os.path.join(HERE, "..", "backend", "app", "seed.py")
 CHILD_RUNNER = os.path.join(HERE, "child_runner.py")
 
+sys.path.insert(0, os.path.join(HERE, "..", "backend"))
+try:
+    from app.core.curriculum_map import CURRICULUM_DAY_PRACTICE, PRACTICE_SLUG_TO_DAYS
+except Exception:
+    CURRICULUM_DAY_PRACTICE = {}
+    PRACTICE_SLUG_TO_DAYS = {}
+
+
 
 def _load_env() -> None:
     """Minimal .env loader (stdlib only) — reads dev_backend/.env if present."""
@@ -118,8 +126,22 @@ for spec in PROBLEMS_RAW:
         "entry_point": spec["entry_point"],
         "starter_code": spec["starter_code"],
         "test_cases": spec["test_cases"],
+        "reference_solution": spec.get("reference_solution", ""),
     }
     PROBLEM_ORDER.append(pid)
+
+
+def _find_problem(pid_or_slug: str | None) -> dict | None:
+    if not pid_or_slug:
+        return None
+    if pid_or_slug in PROBLEMS:
+        return PROBLEMS[pid_or_slug]
+    for p in PROBLEMS.values():
+        if p.get("slug") == pid_or_slug:
+            return p
+    return None
+
+
 
 DEMO_USER = {
     "id": str(uuid.uuid5(NS, "user:demo")),
@@ -584,7 +606,8 @@ def _dispatch(p: dict, prompt: str, system: str, temperature: float,
 
 def llm_complete(prompt: str, *, system: str = "", temperature: float = 0.2,
                  max_tokens: int = 1200, want_json: bool = False,
-                 timeout: float = 15.0) -> str:
+                 timeout: float = 4.0) -> str:
+
     """Try each provider in order, skipping any on cooldown, failing over on
     quota/error. Cooled-down providers are still tried as a last resort so the
     pool degrades gracefully rather than going dark."""
@@ -592,9 +615,10 @@ def llm_complete(prompt: str, *, system: str = "", temperature: float = 0.2,
         raise LLMError("no LLM provider configured (set GEMINI_API_KEY / NVIDIA_API_KEY)")
     now = time.time()
     fresh = [p for p in PROVIDERS if _COOLDOWN.get(p["name"], 0) <= now]
-    cooled = [p for p in PROVIDERS if _COOLDOWN.get(p["name"], 0) > now]
+    if not fresh:
+        raise LLMError("all LLM providers currently on cooldown")
     last_exc: Exception | None = None
-    for p in fresh + cooled:  # prefer available providers; cooled ones last
+    for p in fresh:
         try:
             text = _dispatch(p, prompt, system, temperature, max_tokens, want_json, timeout)
             _COOLDOWN.pop(p["name"], None)
@@ -1096,6 +1120,16 @@ OPTIMIZE_HINTS = {
                      "monotonic property you can binary-search on.",
     "graphs": "Visit each node and edge once with BFS/DFS and a visited set — "
               "O(V+E). Re-exploring visited nodes is the usual slowdown.",
+    "python-basics": "Use built-in functions, list comprehensions, and idiomatic Python features to keep logic concise and fast.",
+    "linked-lists": "Use a dummy head node to simplify edge cases and avoid special-casing empty lists or head modifications.",
+    "trees": "Recurse on subtrees with base cases for None nodes, or use level-order BFS with a deque for layered traversal.",
+    "heaps": "Use heapq to maintain only the top K elements in O(N log K) instead of sorting the whole collection in O(N log N).",
+    "searching-sorting": "Look for sorted order or binary search opportunities; sort once upfront if multiple queries are needed.",
+    "hashing": "Track seen values or cumulative prefix sums in a hash map for O(1) instant lookups.",
+    "greedy": "Sort by key criteria (like intervals by finish time) and make the best local choice without looking back.",
+    "dynamic-programming": "Identify overlapping subproblems and state transitions; compress 2D DP arrays to 1D if only the previous row is needed.",
+    "bit-manipulation": "Use bitwise XOR to cancel pairs, or n & (n - 1) to clear the lowest set bit in O(number of set bits).",
+    "advanced-dsa": "Choose the optimal specialized data structure (Trie for prefixes, DSU for connectivity, Segment Tree for range queries).",
 }
 
 
@@ -1254,6 +1288,96 @@ CONCEPT_LESSONS = {
         "worked_example": "Number of Islands: scan the grid; each unvisited land cell "
                           "starts a DFS/BFS that floods its whole island, marking cells "
                           "visited. Count how many floods you launch. O(rows × cols).",
+    },
+    "python-basics": {
+        "pattern": "Idiomatic Python Foundations",
+        "summary": "Leverage Python's expressive syntax, data structures, and built-ins to write "
+                   "clean, maintainable, and bug-free code.",
+        "when_to_use": "Basic algorithmic challenges, formatting, string manipulation, condition "
+                       "branching, loops, and math operations.",
+        "worked_example": "Celsius to Fahrenheit: apply formula celsius * 9 / 5 + 32 directly, "
+                          "leveraging Python's arbitrary-precision integers and floating-point math.",
+    },
+    "linked-lists": {
+        "pattern": "Pointer Manipulation & Sentinel Nodes",
+        "summary": "Maintain pointers (head, prev, curr, next) to traverse and restructure node "
+                   "connections in O(1) auxiliary space.",
+        "when_to_use": "Reversing lists, merging sorted chains, cycle detection with fast/slow "
+                       "pointers, or reordering nodes.",
+        "worked_example": "Reverse Linked List: initialize prev = None, then iterate updating "
+                          "next_node = curr.next, curr.next = prev, prev = curr, curr = next_node.",
+    },
+    "trees": {
+        "pattern": "Tree Traversal & Divide-and-Conquer",
+        "summary": "Break tree problems down into recursive subproblems on the left and right "
+                   "subtrees, or traverse level-by-level with a queue.",
+        "when_to_use": "Hierarchical relationships, binary search trees, finding max depth, "
+                       "validating BST invariants, or computing paths.",
+        "worked_example": "Maximum Depth of Binary Tree: compute 1 + max(max_depth(root.left), "
+                          "max_depth(root.right)) with base case 0 when root is None.",
+    },
+    "heaps": {
+        "pattern": "Priority Queue / Min-Heap & Max-Heap",
+        "summary": "Keep track of the minimum or maximum element dynamically in O(log k) time "
+                   "using a binary heap (heapq in Python).",
+        "when_to_use": "Finding the Top K elements, merging K sorted streams, continuous median "
+                       "tracking, or task scheduling.",
+        "worked_example": "Kth Largest Element: maintain a min-heap of size K containing the "
+                          "largest elements seen so far; the heap top is the Kth largest in O(N log K).",
+    },
+    "searching-sorting": {
+        "pattern": "Divide & Conquer, Invariants & Sorting",
+        "summary": "Order elements systematically (O(N log N) with merge sort, quicksort, or Timsort) "
+                   "to unlock binary search and two-pointer efficiencies.",
+        "when_to_use": "Ranking elements, interval intersections, grouping equal values, or "
+                       "searching in rotated/sorted arrays.",
+        "worked_example": "Merge Intervals: sort intervals by start time, then merge overlapping "
+                          "adjacent pairs linearly in O(N log N) total time.",
+    },
+    "hashing": {
+        "pattern": "Frequency Maps & Hash Tables",
+        "summary": "Use hash maps (dict, Counter) and hash sets for O(1) average lookup, insertion, "
+                   "and deletion.",
+        "when_to_use": "Frequency counting, anagram grouping, subarray sum equals K (prefix sum + "
+                       "hash map), and distinct element tracking.",
+        "worked_example": "Subarray Sum Equals K: store prefix sum frequencies in a hash map; for "
+                          "current sum s, add count of s - k to the total in O(N).",
+    },
+    "greedy": {
+        "pattern": "Locally Optimal Choice",
+        "summary": "Make the locally optimal decision at each step that leads to a globally optimal "
+                   "outcome, often relying on sorted input.",
+        "when_to_use": "Interval scheduling, activity selection, coin change (canonical denominations), "
+                       "and fractional knapsack.",
+        "worked_example": "Non-overlapping Intervals: sort intervals by end time and greedily keep "
+                          "the interval that finishes earliest, maximizing remaining room.",
+    },
+    "dynamic-programming": {
+        "pattern": "Optimal Substructure & Overlapping Subproblems",
+        "summary": "Break complex decisions into simpler sub-decisions, memoizing intermediate states "
+                   "(memoization or tabulation) to prevent redundant work.",
+        "when_to_use": "Counting paths, min/max cost optimizations, knapsack variations, longest common "
+                       "subsequence, and game theory.",
+        "worked_example": "Coin Change: define dp[i] as min coins needed for amount i. Compute "
+                          "dp[i] = min(dp[i - c] + 1) across all coins c.",
+    },
+    "bit-manipulation": {
+        "pattern": "Bitwise Logic & Bitmasks",
+        "summary": "Operate directly on binary bits using AND, OR, XOR, NOT, and bit shifts for "
+                   "ultra-compact state and constant-time operations.",
+        "when_to_use": "Single number identification, subset enumeration, power-of-two tests "
+                       "(x & (x - 1) == 0), and compact set representation.",
+        "worked_example": "Single Number: XOR every number in the array. Equal numbers cancel out "
+                          "(x ^ x = 0), leaving only the unique element in O(N) time and O(1) space.",
+    },
+    "advanced-dsa": {
+        "pattern": "Advanced Data Structures & Algorithms",
+        "summary": "Combine sophisticated algorithmic paradigms (Segment Trees, Trie, Disjoint Set Union, "
+                   "Topological Sort, Bridges) for complex scale.",
+        "when_to_use": "Range query updates, prefix searching, dynamic connectivity, network flow, and "
+                       "dependency resolution.",
+        "worked_example": "Course Schedule: build an adjacency list and in-degree array, then process nodes "
+                          "with in-degree 0 using BFS (Kahn's algorithm).",
     },
 }
 
@@ -1438,6 +1562,41 @@ def run_custom(problem: dict, code: str, args: list) -> dict:
             "stdout": payload.get("stdout", ""), "stderr": "", "runtime_ms": ms}
 
 
+def run_learning_snippet(code: str) -> dict:
+    """Execute student code for interactive learning lessons in dev_backend."""
+    reason = _code_security_error(code)
+    if reason:
+        return {"status": "error", "stdout": "",
+                "stderr": f"Blocked for security: {reason}", "runtime_ms": 0}
+    started = time.perf_counter()
+    job = json.dumps({"code": code, "entry_point": None, "args": []})
+    try:
+        proc = subprocess.run([sys.executable, CHILD_RUNNER], input=job,
+                              capture_output=True, text=True, timeout=6,
+                              env=_SCRUBBED_ENV)
+    except subprocess.TimeoutExpired:
+        ms = int((time.perf_counter() - started) * 1000)
+        return {"status": "timeout", "stdout": "",
+                "stderr": "Time Limit Exceeded (Execution timed out)", "runtime_ms": ms}
+    ms = int((time.perf_counter() - started) * 1000)
+    try:
+        payload = json.loads(proc.stdout)
+    except (ValueError, TypeError):
+        return {"status": "error", "stdout": "",
+                "stderr": (proc.stderr or "no parseable output")[:2000], "runtime_ms": ms}
+    if payload.get("status") == "error":
+        return {"status": "error", "stdout": payload.get("stdout", ""),
+                "stderr": f"{payload.get('error_type')}: {payload.get('stderr', '')}"[:2000],
+                "runtime_ms": ms}
+    return {
+        "status": payload.get("status", "ok"),
+        "stdout": payload.get("stdout", "")[:65536],
+        "stderr": payload.get("stderr", "")[:65536],
+        "runtime_ms": ms,
+    }
+
+
+
 REFERENCE_CACHE: dict[str, dict] = {}
 REFERENCE_SYSTEM = """You are a staff engineer writing a model answer for a \
 student who has ALREADY solved this problem. Give them the cleanest idiomatic \
@@ -1454,6 +1613,22 @@ def reference_solution(problem: dict) -> dict:
     pid = problem["id"]
     if pid in REFERENCE_CACHE:
         return REFERENCE_CACHE[pid]
+    ref = problem.get("reference_solution", "")
+    if ref:
+        opt_t = problem.get("optimal_time", "O(N)")
+        opt_s = problem.get("optimal_space", "O(1)")
+        commentary = (
+            f"Optimal reference solution with {opt_t} time complexity and "
+            f"{opt_s} space complexity."
+        )
+        result = {
+            "available": True,
+            "language": "python",
+            "code": ref.strip(),
+            "commentary": commentary,
+        }
+        REFERENCE_CACHE[pid] = result
+        return result
     if not LLM_ENABLED:
         return {"available": False, "language": "python", "code": "",
                 "commentary": "Reference solutions need the AI model, which isn't "
@@ -1770,6 +1945,7 @@ _CTX = threading.local()   # holds the current request's store, set per request
 def _new_store() -> dict:
     return {"submissions": [], "topic_state": {}, "last_submitted": {"pid": None},
             "review_state": {}, "misconceptions": {},
+            "learning": {},
             "stats": {"xp": 0, "solved": [], "optimal": [], "perfect": 0,
                       "practice_days": [], "solve_days_count": {},
                       "topics_solved": [], "badges": {}}}
@@ -1797,16 +1973,25 @@ def _load_store(username: str) -> dict | None:
         return None
     base = _new_store()                                    # keep forward-compat keys
     base.update(data)
+    base["learning"] = {**_new_store()["learning"], **data.get("learning", {})}
     base["stats"] = {**_new_store()["stats"], **data.get("stats", {})}
     return base
 
 
 USER_DATA: dict[str, dict] = {}    # username -> store (lazy-loaded / cached)
+_STORE_MTIMES: dict[str, float] = {}
 
 
 def _store_for(username: str) -> dict:
-    if username not in USER_DATA:
-        USER_DATA[username] = _load_store(username) or _new_store()
+    spath = _store_path(username)
+    mtime = os.path.getmtime(spath) if os.path.exists(spath) else 0
+    if username not in USER_DATA or mtime > _STORE_MTIMES.get(username, 0):
+        loaded = _load_store(username)
+        if loaded is not None:
+            USER_DATA[username] = loaded
+            _STORE_MTIMES[username] = mtime
+        elif username not in USER_DATA:
+            USER_DATA[username] = _new_store()
     return USER_DATA[username]
 
 
@@ -1818,6 +2003,9 @@ def _save_store(username: str) -> None:
             _kv_set(_kv_user_key(username), USER_DATA[username])
         else:
             _atomic_write_json(_store_path(username), USER_DATA[username])
+            spath = _store_path(username)
+            if os.path.exists(spath):
+                _STORE_MTIMES[username] = os.path.getmtime(spath)
     except Exception as exc:  # noqa: BLE001
         sys.stderr.write(f"  dev-backend: could not save userdata ({exc})\n")
 
@@ -1825,6 +2013,142 @@ def _save_store(username: str) -> None:
 def _S() -> dict:
     """The current request's per-user store (set by the request handler)."""
     return _CTX.store
+
+
+def compute_learning_progress(store: dict) -> dict:
+    learning_days = store.setdefault("learning", {})
+    completed_days = []
+    day_states = {}
+    found_current = False
+    current_day = 1
+
+    for day in range(1, 161):
+        s_day = str(day)
+        d_state = learning_days.get(s_day, {})
+        lesson_done = bool(d_state.get("lesson_completed", False))
+        practice_done = bool(d_state.get("practice_passed", False))
+        is_completed = lesson_done and practice_done
+
+        completed_at = d_state.get("completed_at")
+        if is_completed and not completed_at:
+            completed_at = datetime.now(timezone.utc).isoformat()
+            d_state["completed_at"] = completed_at
+
+        if is_completed:
+            completed_days.append(day)
+
+        is_unlocked = (day == 1) or ((day - 1) in completed_days)
+
+        if is_completed:
+            st = "completed"
+        elif is_unlocked:
+            if not found_current:
+                st = "current"
+                current_day = day
+                found_current = True
+            else:
+                st = "available"
+        else:
+            st = "locked"
+
+        day_states[s_day] = {
+            "day_number": day,
+            "lesson_completed": lesson_done,
+            "lesson_completed_at": d_state.get("lesson_completed_at"),
+            "practice_passed": practice_done,
+            "practice_passed_at": d_state.get("practice_passed_at"),
+            "completed": is_completed,
+            "completed_at": completed_at,
+            "unlocked": is_unlocked,
+            "status": st,
+            "practice_problem_slug": CURRICULUM_DAY_PRACTICE.get(day),
+        }
+
+    if not found_current and len(completed_days) == 160:
+        current_day = 160
+
+    return {
+        "current_day": current_day,
+        "completed_days": completed_days,
+        "total_days": 160,
+        "day_states": day_states,
+    }
+
+
+def complete_lesson(day_number: int) -> tuple[int, dict]:
+    if not isinstance(day_number, int) or day_number < 1 or day_number > 160:
+        return 400, {"detail": "Invalid day_number. Must be between 1 and 160."}
+
+    progress = compute_learning_progress(_S())
+    day_state = progress["day_states"].get(str(day_number))
+
+    if not day_state or not day_state["unlocked"]:
+        return 403, {"detail": f"Day {day_number} is locked. Complete Day {day_number - 1} first."}
+
+    learning_days = _S().setdefault("learning", {})
+    d_record = learning_days.setdefault(str(day_number), {
+        "lesson_completed": False,
+        "lesson_completed_at": None,
+        "practice_passed": False,
+        "practice_passed_at": None,
+        "completed_at": None,
+    })
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    d_record["lesson_completed"] = True
+    if not d_record.get("lesson_completed_at"):
+        d_record["lesson_completed_at"] = now_iso
+
+    if d_record.get("practice_passed") and not d_record.get("completed_at"):
+        d_record["completed_at"] = now_iso
+
+    updated_progress = compute_learning_progress(_S())
+    return 200, {
+        "day_number": day_number,
+        "lesson_completed": True,
+        "day_completed": d_record.get("practice_passed", False),
+        "unlocked_next_day": d_record.get("practice_passed", False) and day_number < 160,
+        "current_day": updated_progress["current_day"],
+        "day_state": updated_progress["day_states"][str(day_number)],
+    }
+
+
+def record_learning_practice_passed(problem_slug: str) -> dict | None:
+    days = PRACTICE_SLUG_TO_DAYS.get(problem_slug, [])
+    if not days:
+        return None
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    learning_days = _S().setdefault("learning", {})
+    affected = []
+    newly_completed = []
+
+    for day in days:
+        d_record = learning_days.setdefault(str(day), {
+            "lesson_completed": False,
+            "lesson_completed_at": None,
+            "practice_passed": False,
+            "practice_passed_at": None,
+            "completed_at": None,
+        })
+        d_record["practice_passed"] = True
+        if not d_record.get("practice_passed_at"):
+            d_record["practice_passed_at"] = now_iso
+
+        if d_record.get("lesson_completed") and not d_record.get("completed_at"):
+            d_record["completed_at"] = now_iso
+            newly_completed.append(day)
+
+        affected.append(day)
+
+    updated = compute_learning_progress(_S())
+    return {
+        "affected_days": affected,
+        "newly_completed_days": newly_completed,
+        "unlocked_days": [d + 1 for d in newly_completed if d < 160],
+        "current_day": updated["current_day"],
+    }
+
 
 
 # --- accounts & stateless tokens -------------------------------------------
@@ -1946,6 +2270,7 @@ RATE_LIMITS = {
     "/api/submissions": 30, "/api/submissions/run": 45,
     "/api/submissions/run-custom": 45, "/api/problems/generate": 6,
     "/api/tutor/chat": 20, "/api/coach/debrief": 20,
+    "/api/learning/run": 60,
 }
 
 
@@ -1975,10 +2300,12 @@ class Handler(BaseHTTPRequestHandler):
         if ALLOWED_ORIGINS:
             allow = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
         else:
-            allow = origin or "*"        # dev: reflect (no ALLOWED_ORIGINS set)
+            allow = origin if origin else "http://localhost:3000"
         self.send_header("Access-Control-Allow-Origin", allow)
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Origin, X-Requested-With")
+        self.send_header("Access-Control-Allow-Credentials", "true")
+        self.send_header("Access-Control-Max-Age", "86400")
         self.send_header("Vary", "Origin")
 
     def _json(self, status: int, obj) -> None:
@@ -2060,17 +2387,22 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, _detail(next_problem()))
         if path.startswith("/api/problems/") and path.endswith("/reference"):
             pid = path[len("/api/problems/"):-len("/reference")]
-            problem = PROBLEMS.get(pid)
+            problem = _find_problem(pid)
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
             return self._json(200, reference_solution(problem))
         if path.startswith("/api/problems/"):
             pid = path.rsplit("/", 1)[-1]
-            problem = PROBLEMS.get(pid)
+            problem = _find_problem(pid)
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
             return self._json(200, _detail(problem))
+        if path == "/api/learning/progress":
+            if not self._require():
+                return
+            return self._json(200, compute_learning_progress(_S()))
         if path == "/api/progress/topics":
+
             if not self._require():
                 return
             return self._json(200, progress_topics())
@@ -2135,14 +2467,52 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(502, {"detail": "The model returned an unusable problem. "
                                                    "Please try again."})
 
+        if path.startswith("/api/problems/") and path.endswith("/run"):
+            pid = path[len("/api/problems/"):-len("/run")]
+            problem = _find_problem(pid)
+            if not problem:
+                return self._json(404, {"detail": "Problem not found"})
+            return self._json(200, run_tests(problem, body.get("code", "")))
+
+        if path.startswith("/api/problems/") and path.endswith("/submit"):
+            user = self._require()
+            if not user:
+                return
+            pid = path[len("/api/problems/"):-len("/submit")]
+            problem = _find_problem(pid)
+            if not problem:
+                return self._json(404, {"detail": "Problem not found"})
+            code = body.get("code", "")
+            tests = run_tests(problem, code)
+            review = review_submission(problem, code, tests)
+            difficulty = apply_difficulty(problem["topic_slug"], review["overall_score"])
+            _S()["last_submitted"]["pid"] = problem["id"]
+            schedule = schedule_review(problem, review, tests["all_passed"])
+            misconception = record_misconception(problem, tests)
+            momentum = record_momentum(problem, review, tests)
+            learning_update = None
+            if tests.get("all_passed"):
+                learning_update = record_learning_practice_passed(problem["slug"])
+            sid = str(uuid.uuid4())
+            _S()["submissions"].append({"submission_id": sid,
+                                        "overall_score": review["overall_score"],
+                                        "created_at": datetime.now(timezone.utc).isoformat()})
+            _save_store(user["username"])
+            return self._json(200, {"submission_id": sid, "tests": tests,
+                                    "review": review, "difficulty": difficulty,
+                                    "review_schedule": schedule,
+                                    "misconception": misconception,
+                                    "momentum": momentum,
+                                    "learning_update": learning_update})
+
         if path == "/api/submissions/run":
-            problem = PROBLEMS.get(body.get("problem_id"))
+            problem = _find_problem(body.get("problem_id"))
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
             return self._json(200, run_tests(problem, body.get("code", "")))
 
         if path == "/api/submissions/run-custom":
-            problem = PROBLEMS.get(body.get("problem_id"))
+            problem = _find_problem(body.get("problem_id"))
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
             args = body.get("args")
@@ -2150,11 +2520,41 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(400, {"detail": "args must be a JSON array of arguments"})
             return self._json(200, run_custom(problem, body.get("code", ""), args))
 
+        if path == "/api/learning/run":
+            code = body.get("code", "")
+            return self._json(200, run_learning_snippet(code))
+
+        if path == "/api/learning/complete-lesson":
+            user = self._require()
+            if not user:
+                return
+            day_num = body.get("day_number")
+            status_code, resp = complete_lesson(day_num)
+            _save_store(user["username"])
+            return self._json(status_code, resp)
+
+        if path == "/api/learning/dev-set-progress":
+            user = self._require()
+            if not user:
+                return
+            completed_up_to = int(body.get("completed_up_to", 0))
+            now_iso = datetime.now(timezone.utc).isoformat()
+            learning_days = _S().setdefault("learning", {})
+            for d in range(1, completed_up_to + 1):
+                d_record = learning_days.setdefault(str(d), {})
+                d_record["lesson_completed"] = True
+                d_record["lesson_completed_at"] = now_iso
+                d_record["practice_passed"] = True
+                d_record["practice_passed_at"] = now_iso
+                d_record["completed_at"] = now_iso
+            _save_store(user["username"])
+            return self._json(200, compute_learning_progress(_S()))
+
         if path == "/api/submissions":
             user = self._require()
             if not user:
                 return
-            problem = PROBLEMS.get(body.get("problem_id"))
+            problem = _find_problem(body.get("problem_id"))
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
             code = body.get("code", "")
@@ -2166,6 +2566,9 @@ class Handler(BaseHTTPRequestHandler):
             schedule = schedule_review(problem, review, tests["all_passed"])
             misconception = record_misconception(problem, tests)
             momentum = record_momentum(problem, review, tests)
+            learning_update = None
+            if tests.get("all_passed"):
+                learning_update = record_learning_practice_passed(problem["slug"])
             sid = str(uuid.uuid4())
             _S()["submissions"].append({"submission_id": sid,
                                         "overall_score": review["overall_score"],
@@ -2175,7 +2578,9 @@ class Handler(BaseHTTPRequestHandler):
                                     "review": review, "difficulty": difficulty,
                                     "review_schedule": schedule,
                                     "misconception": misconception,
-                                    "momentum": momentum})
+                                    "momentum": momentum,
+                                    "learning_update": learning_update})
+
 
         if path == "/api/tutor/chat":
             if not self._require():

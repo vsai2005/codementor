@@ -5,9 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAuth } from "@/lib/auth";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/learning", label: "Learning" },
   { href: "/practice", label: "Practice" },
   { href: "/tutor", label: "Tutor" },
   { href: "/profile", label: "Profile" },
@@ -48,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={`border-2 px-2 py-1 font-body text-xs font-semibold ${
-                    active ? "border-ink bg-ink text-white" : "border-transparent text-muted"
+                    active ? "border-ink bg-ink text-bg" : "border-transparent text-muted"
                   }`}
                 >
                   {item.label}
@@ -57,7 +59,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <button type="button" onClick={signOut} className="btn ml-auto px-2 py-1 text-xs">
+          <ThemeToggle className="ml-auto" />
+          <button type="button" onClick={signOut} className="btn px-2 py-1 text-xs">
             Sign out
           </button>
         </div>

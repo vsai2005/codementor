@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
 
+import { useTheme } from "@/lib/useTheme";
+
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -20,6 +22,7 @@ export function CodeEditor({
   blockPaste = true,
 }: CodeEditorProps) {
   const [pasteBlocked, setPasteBlocked] = useState(false);
+  const { theme } = useTheme();
 
   const handleMount: OnMount = (editor, monaco) => {
     if (!blockPaste) return;
@@ -51,6 +54,7 @@ export function CodeEditor({
         defaultLanguage={language}
         language={language}
         value={value}
+        theme={theme === "dark" ? "vs-dark" : "light"}
         onChange={(next) => onChange(next ?? "")}
         onMount={handleMount}
         loading={

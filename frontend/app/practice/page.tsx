@@ -19,7 +19,7 @@ export default function PracticeListPage() {
   // complete and lets topic + tier filters combine instantly.
   const problems = useQuery({
     queryKey: ["problems"],
-    queryFn: () => api.listProblems(),
+    queryFn: () => api.listProblems({ page_size: 250 }),
   });
 
   const allItems = problems.data?.items ?? [];

@@ -1,10 +1,10 @@
-"""Shared FastAPI dependencies."""
+"""Shared FastAPI dependencies (Phase 2)."""
 
 from __future__ import annotations
 
 import uuid
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.security import AuthError, decode_access_token
@@ -19,14 +19,25 @@ _UNAUTHORIZED = HTTPException(
 
 
 def get_current_user(
+    request: Request,
     authorization: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ) -> User:
-    if not authorization or not authorization.lower().startswith("bearer "):
+    token: str | None = None
+
+    # 1. Dual-Strategy: Inspect HttpOnly cookie first
+    cookie_token = request.cookies.get("access_token")
+    if cookie_token:
+        token = cookie_token.strip()
+    # 2. Fall back to Authorization: Bearer <token> header
+    elif authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+
+    if not token:
         raise _UNAUTHORIZED
 
     try:
-        claims = decode_access_token(authorization.split(" ", 1)[1].strip())
+        claims = decode_access_token(token)
     except AuthError:
         raise _UNAUTHORIZED from None
 

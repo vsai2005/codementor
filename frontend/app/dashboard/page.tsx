@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { AppShell } from "@/components/AppShell";
 import { GenerateProblemButton } from "@/components/GenerateProblemButton";
+import { LearningRoadmapCard } from "@/components/LearningRoadmapCard";
 import { MasteryGrid } from "@/components/MasteryGrid";
 import { MisconceptionPanel } from "@/components/MisconceptionPanel";
 import { MomentumCard } from "@/components/MomentumCard";
@@ -42,6 +43,8 @@ export default function DashboardPage() {
         <h1 className="font-display text-3xl font-bold">Dashboard</h1>
 
         <MomentumCard data={momentum.data} />
+
+        <LearningRoadmapCard />
 
         <GenerateProblemButton />
 

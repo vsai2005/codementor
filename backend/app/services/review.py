@@ -22,7 +22,7 @@ from app.schemas.review import (
     Scores,
     compute_overall_score,
 )
-from app.services.llm import LLMClient, LLMError, extract_json
+from app.services.llm import LLMClient, LLMError, LLMJsonParseError, extract_json, parse_llm_json
 from app.services.sandbox import ExecutionReport
 
 log = logging.getLogger(__name__)
@@ -57,15 +57,17 @@ guess it and do not override it."""
 def build_prompt(problem_title: str, statement_md: str, optimal_time: str,
                  optimal_space: str, language: str, code: str,
                  report: ExecutionReport) -> str:
+    # Context window protection: truncate code and stderr to 2,500 characters max
+    truncated_code = code.strip()[:2500]
     lines = [
         f"# Problem: {problem_title}",
-        statement_md.strip(),
+        statement_md.strip()[:2500],
         "",
         f"Optimal complexity: time {optimal_time}, space {optimal_space}",
         "",
         f"# Candidate submission ({language})",
         "```",
-        code.strip(),
+        truncated_code,
         "```",
         "",
         "# Test results (authoritative -- these are real executions, not guesses)",
@@ -73,7 +75,7 @@ def build_prompt(problem_title: str, statement_md: str, optimal_time: str,
     ]
     for r in report.results:
         verdict = "PASS" if r.passed else f"FAIL ({r.status})"
-        detail = f" -- {r.stderr[:200]}" if r.stderr else ""
+        detail = f" -- {r.stderr[:2500]}" if r.stderr else ""
         lines.append(f"  case {r.index}: {verdict} in {r.runtime_ms}ms{detail}")
 
     pct = int(100 * report.passed_count / report.total) if report.total else 0
@@ -169,7 +171,7 @@ class ReviewService:
         try:
             raw = self._client.complete(prompt, system=SYSTEM_PROMPT,
                                         temperature=0.2, timeout=timeout)
-            return LLMReviewDraft.model_validate(extract_json(raw))
-        except (LLMError, ValidationError, ValueError, KeyError, TypeError) as exc:
+            return parse_llm_json(raw, LLMReviewDraft)
+        except (LLMError, LLMJsonParseError, ValidationError, ValueError, KeyError, TypeError) as exc:
             log.info("LLM attempt failed: %s: %s", type(exc).__name__, exc)
             return None

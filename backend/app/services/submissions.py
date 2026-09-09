@@ -21,7 +21,7 @@ from app.models.models import (
 )
 from app.schemas.review import Review
 from app.services.difficulty import TierDecision, compute_next_tier, topic_priority
-from app.services.sandbox import ExecutionReport, run_test_cases
+from app.services.sandbox import ExecutionReport, run_test_cases, run_test_cases_async
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +30,10 @@ RECENT_SOLVED_WINDOW_DAYS = 30
 
 def execute(problem: Problem, code: str) -> ExecutionReport:
     return run_test_cases(code, problem.entry_point, problem.test_cases)
+
+
+async def execute_async(problem: Problem, code: str) -> ExecutionReport:
+    return await run_test_cases_async(code, problem.entry_point, problem.test_cases)
 
 
 def _recent_scores(db: Session, user_id: uuid.UUID, topic_id: uuid.UUID,

@@ -1,7 +1,21 @@
+# Python and virtual environments
 __pycache__/
 *.py[cod]
+*.pyc
 .venv/
-.env
 .pytest_cache/
+
+# Environment files and secrets
+.env*
+!.env.example
+!.env.local.example
+
+# Development database and state files
+dev_backend/accounts.json
+dev_backend/userdata/
+
+# Frontend builds and dependencies
 node_modules/
 .next/
+dist/
+build/

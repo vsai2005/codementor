@@ -20,7 +20,7 @@ def list_problems(
     topic: str | None = None,
     tier: int | None = Query(default=None, ge=1, le=5),
     page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
+    page_size: int = Query(default=250, ge=1, le=500),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> ProblemPage:
@@ -59,11 +59,18 @@ def recommended(
 
 @router.get("/{problem_id}", response_model=ProblemDetail)
 def get_problem(
-    problem_id: uuid.UUID,
+    problem_id: str,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> ProblemDetail:
-    problem = db.get(Problem, problem_id)
+    problem = None
+    try:
+        uid = uuid.UUID(problem_id)
+        problem = db.get(Problem, uid)
+    except (ValueError, TypeError):
+        problem = db.execute(select(Problem).where(Problem.slug == problem_id)).scalar_one_or_none()
+
     if problem is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Problem not found")
     return ProblemDetail.model_validate(problem)
+

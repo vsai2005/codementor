@@ -1,0 +1,5319 @@
+{
+  "total_problems": 70,
+  "topics": [
+    [
+      "arrays",
+      "Arrays & Hashing"
+    ],
+    [
+      "two-pointers",
+      "Two Pointers"
+    ],
+    [
+      "strings",
+      "Strings"
+    ],
+    [
+      "stacks",
+      "Stacks & Queues"
+    ],
+    [
+      "binary-search",
+      "Binary Search"
+    ],
+    [
+      "graphs",
+      "Graphs & Trees"
+    ]
+  ],
+  "problems": [
+    {
+      "slug": "contains-duplicate",
+      "title": "Contains Duplicate",
+      "topic": "arrays",
+      "difficulty_tier": 1,
+      "entry_point": "contains_duplicate",
+      "statement_md": "Given an integer array `nums`, return `true` if any value appears at least twice.",
+      "constraints_md": "- `0 <= len(nums) <= 10^5`\n- `-10^9 <= nums[i] <= 10^9`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def contains_duplicate(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              1
+            ]
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            [
+              7
+            ]
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            [
+              -1,
+              -1,
+              5
+            ]
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "two-sum",
+      "title": "Two Sum",
+      "topic": "arrays",
+      "difficulty_tier": 2,
+      "entry_point": "two_sum",
+      "statement_md": "Given `nums` and `target`, return indices of the two numbers summing to `target`. Return `[]` if none exist.",
+      "constraints_md": "- Exactly one valid answer when one exists\n- `0 <= len(nums) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def two_sum(nums, target):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              2,
+              7,
+              11,
+              15
+            ],
+            9
+          ],
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              3,
+              2,
+              4
+            ],
+            6
+          ],
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              3,
+              3
+            ],
+            6
+          ],
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "args": [
+            [],
+            0
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            1
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              -3,
+              4,
+              3,
+              90
+            ],
+            0
+          ],
+          "expected": [
+            0,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "product-except-self",
+      "title": "Product of Array Except Self",
+      "topic": "arrays",
+      "difficulty_tier": 4,
+      "entry_point": "product_except_self",
+      "statement_md": "Return an array where `out[i]` is the product of all elements except `nums[i]`. Do it without division.",
+      "constraints_md": "- `1 <= len(nums) <= 10^5`\n- Products fit in 32 bits",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def product_except_self(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "expected": [
+            24,
+            12,
+            8,
+            6
+          ]
+        },
+        {
+          "args": [
+            [
+              -1,
+              1,
+              0,
+              -3,
+              3
+            ]
+          ],
+          "expected": [
+            0,
+            0,
+            9,
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              1
+            ]
+          ],
+          "expected": [
+            1,
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              5
+            ]
+          ],
+          "expected": [
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "expected": [
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              2,
+              3,
+              4,
+              5
+            ]
+          ],
+          "expected": [
+            60,
+            40,
+            30,
+            24
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "reverse-list",
+      "title": "Reverse a List",
+      "topic": "two-pointers",
+      "difficulty_tier": 1,
+      "entry_point": "reverse_list",
+      "statement_md": "Reverse a list in place and return it.",
+      "constraints_md": "- `0 <= len(items) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def reverse_list(items):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": [
+            3,
+            2,
+            1
+          ]
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": [
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2
+            ]
+          ],
+          "expected": [
+            2,
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              5,
+              5,
+              5
+            ]
+          ],
+          "expected": [
+            5,
+            5,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "valid-palindrome",
+      "title": "Valid Palindrome",
+      "topic": "two-pointers",
+      "difficulty_tier": 2,
+      "entry_point": "is_palindrome",
+      "statement_md": "Return `true` if `s` is a palindrome, considering only alphanumeric characters and ignoring case.",
+      "constraints_md": "- `0 <= len(s) <= 2 * 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def is_palindrome(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "A man, a plan, a canal: Panama"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "race a car"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            " "
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "ab_a"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "0P"
+          ],
+          "expected": false
+        }
+      ]
+    },
+    {
+      "slug": "container-most-water",
+      "title": "Container With Most Water",
+      "topic": "two-pointers",
+      "difficulty_tier": 4,
+      "entry_point": "max_area",
+      "statement_md": "Given heights, find two lines forming a container holding the most water.",
+      "constraints_md": "- `2 <= len(height) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def max_area(height):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              8,
+              6,
+              2,
+              5,
+              4,
+              8,
+              3,
+              7
+            ]
+          ],
+          "expected": 49
+        },
+        {
+          "args": [
+            [
+              1,
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              4,
+              3,
+              2,
+              1,
+              4
+            ]
+          ],
+          "expected": 16
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              1
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              2,
+              3,
+              4,
+              5,
+              18,
+              17,
+              6
+            ]
+          ],
+          "expected": 17
+        }
+      ]
+    },
+    {
+      "slug": "count-vowels",
+      "title": "Count Vowels",
+      "topic": "strings",
+      "difficulty_tier": 1,
+      "entry_point": "count_vowels",
+      "statement_md": "Return the number of vowels (a, e, i, o, u, case-insensitive) in `s`.",
+      "constraints_md": "- `0 <= len(s) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def count_vowels(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "hello"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "xyz"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "AEIOU"
+          ],
+          "expected": 5
+        },
+        {
+          "args": [
+            "aAeE"
+          ],
+          "expected": 4
+        }
+      ]
+    },
+    {
+      "slug": "valid-anagram",
+      "title": "Valid Anagram",
+      "topic": "strings",
+      "difficulty_tier": 2,
+      "entry_point": "is_anagram",
+      "statement_md": "Return `true` if `t` is an anagram of `s`.",
+      "constraints_md": "- `0 <= len(s), len(t) <= 5 * 10^4`\n- Lowercase English letters",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def is_anagram(s, t):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "anagram",
+            "nagaram"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "rat",
+            "car"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "",
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a",
+            "ab"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "aacc",
+            "ccac"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "ab",
+            "ba"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "longest-substring",
+      "title": "Longest Substring Without Repeating Characters",
+      "topic": "strings",
+      "difficulty_tier": 4,
+      "entry_point": "length_of_longest_substring",
+      "statement_md": "Return the length of the longest substring without repeating characters.",
+      "constraints_md": "- `0 <= len(s) <= 5 * 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(min(n, m))",
+      "starter_code": {
+        "python": "def length_of_longest_substring(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "abcabcbb"
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            "bbbbb"
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            "pwwkew"
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            " "
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            "dvdf"
+          ],
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "slug": "valid-parentheses",
+      "title": "Valid Parentheses",
+      "topic": "stacks",
+      "difficulty_tier": 2,
+      "entry_point": "is_valid",
+      "statement_md": "Given a string of brackets, determine if the input is valid.",
+      "constraints_md": "- `0 <= len(s) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def is_valid(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "()"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "()[]{}"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "(]"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "("
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "]"
+          ],
+          "expected": false
+        }
+      ]
+    },
+    {
+      "slug": "min-stack-ops",
+      "title": "Minimum After Operations",
+      "topic": "stacks",
+      "difficulty_tier": 3,
+      "entry_point": "min_after_ops",
+      "statement_md": "Process a list of ops: an integer pushes, `'C'` cancels the last, `'D'` pushes double the last, `'+'` pushes the sum of the last two. Return the final total.",
+      "constraints_md": "- `1 <= len(ops) <= 1000`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def min_after_ops(ops):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              5,
+              2,
+              "C",
+              "D",
+              "+"
+            ]
+          ],
+          "expected": 30
+        },
+        {
+          "args": [
+            [
+              5,
+              -2,
+              4,
+              "C",
+              "D",
+              9,
+              "+",
+              "+"
+            ]
+          ],
+          "expected": 27
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              1,
+              "C"
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              3,
+              "D"
+            ]
+          ],
+          "expected": 9
+        }
+      ]
+    },
+    {
+      "slug": "daily-temperatures",
+      "title": "Daily Temperatures",
+      "topic": "stacks",
+      "difficulty_tier": 4,
+      "entry_point": "daily_temperatures",
+      "statement_md": "For each day, how many days until a warmer temperature? 0 if none.",
+      "constraints_md": "- `1 <= len(temps) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def daily_temperatures(temps):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              73,
+              74,
+              75,
+              71,
+              69,
+              72,
+              76,
+              73
+            ]
+          ],
+          "expected": [
+            1,
+            1,
+            4,
+            2,
+            1,
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              30,
+              40,
+              50,
+              60
+            ]
+          ],
+          "expected": [
+            1,
+            1,
+            1,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              30,
+              60,
+              90
+            ]
+          ],
+          "expected": [
+            1,
+            1,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              50
+            ]
+          ],
+          "expected": [
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              50,
+              50,
+              50
+            ]
+          ],
+          "expected": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "binary-search",
+      "title": "Binary Search",
+      "topic": "binary-search",
+      "difficulty_tier": 1,
+      "entry_point": "search",
+      "statement_md": "Return the index of `target` in a sorted array, or -1.",
+      "constraints_md": "- `0 <= len(nums) <= 10^4`\n- `nums` is sorted ascending",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def search(nums, target):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              -1,
+              0,
+              3,
+              5,
+              9,
+              12
+            ],
+            9
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              -1,
+              0,
+              3,
+              5,
+              9,
+              12
+            ],
+            2
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [],
+            1
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              5
+            ],
+            5
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              5
+            ],
+            1
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              1,
+              2
+            ],
+            2
+          ],
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "slug": "search-rotated",
+      "title": "Search in Rotated Sorted Array",
+      "topic": "binary-search",
+      "difficulty_tier": 4,
+      "entry_point": "search_rotated",
+      "statement_md": "Search `target` in a rotated sorted array in O(log n). Return index or -1.",
+      "constraints_md": "- `1 <= len(nums) <= 5000`\n- All values distinct",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def search_rotated(nums, target):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              4,
+              5,
+              6,
+              7,
+              0,
+              1,
+              2
+            ],
+            0
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              4,
+              5,
+              6,
+              7,
+              0,
+              1,
+              2
+            ],
+            3
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            0
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            1
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              3,
+              1
+            ],
+            1
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              5,
+              1,
+              3
+            ],
+            3
+          ],
+          "expected": 2
+        }
+      ]
+    },
+    {
+      "slug": "median-two-arrays",
+      "title": "Median of Two Sorted Arrays",
+      "topic": "binary-search",
+      "difficulty_tier": 5,
+      "entry_point": "find_median",
+      "statement_md": "Return the median of two sorted arrays in O(log(m+n)).",
+      "constraints_md": "- `0 <= m + n <= 2000`\n- Not concatenate-and-sort",
+      "optimal_time": "O(log(m+n))",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def find_median(a, b):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              3
+            ],
+            [
+              2
+            ]
+          ],
+          "expected": 2.0
+        },
+        {
+          "args": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "expected": 2.5
+        },
+        {
+          "args": [
+            [],
+            [
+              1
+            ]
+          ],
+          "expected": 1.0
+        },
+        {
+          "args": [
+            [
+              2
+            ],
+            []
+          ],
+          "expected": 2.0
+        },
+        {
+          "args": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "expected": 0.0
+        },
+        {
+          "args": [
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              2
+            ]
+          ],
+          "expected": 1.5
+        }
+      ]
+    },
+    {
+      "slug": "max-depth",
+      "title": "Maximum Depth of Nested List",
+      "topic": "graphs",
+      "difficulty_tier": 2,
+      "entry_point": "max_depth",
+      "statement_md": "Given a nested list, return its maximum nesting depth. `[]` has depth 1.",
+      "constraints_md": "- Nesting depth `<= 100`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(d)",
+      "starter_code": {
+        "python": "def max_depth(items):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              1,
+              [
+                2,
+                [
+                  3
+                ]
+              ]
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              [],
+              []
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              [
+                [
+                  [
+                    1
+                  ]
+                ]
+              ]
+            ]
+          ],
+          "expected": 4
+        }
+      ]
+    },
+    {
+      "slug": "number-of-islands",
+      "title": "Number of Islands",
+      "topic": "graphs",
+      "difficulty_tier": 4,
+      "entry_point": "num_islands",
+      "statement_md": "Count islands in a grid of `'1'` (land) and `'0'` (water). Islands connect 4-directionally.",
+      "constraints_md": "- `0 <= rows, cols <= 300`",
+      "optimal_time": "O(m*n)",
+      "optimal_space": "O(m*n)",
+      "starter_code": {
+        "python": "def num_islands(grid):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                "1",
+                "1",
+                "0"
+              ],
+              [
+                "1",
+                "0",
+                "0"
+              ],
+              [
+                "0",
+                "0",
+                "1"
+              ]
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              [
+                "1",
+                "1"
+              ],
+              [
+                "1",
+                "1"
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              [
+                "0"
+              ]
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              [
+                "1"
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              [
+                "1",
+                "0",
+                "1"
+              ],
+              [
+                "0",
+                "0",
+                "0"
+              ],
+              [
+                "1",
+                "0",
+                "1"
+              ]
+            ]
+          ],
+          "expected": 4
+        }
+      ]
+    },
+    {
+      "slug": "course-schedule",
+      "title": "Course Schedule",
+      "topic": "graphs",
+      "difficulty_tier": 5,
+      "entry_point": "can_finish",
+      "statement_md": "Given `n` courses and prerequisite pairs `[a, b]` (take `b` before `a`), return whether all courses can be finished.",
+      "constraints_md": "- `1 <= n <= 2000`\n- Detect cycles",
+      "optimal_time": "O(V+E)",
+      "optimal_space": "O(V+E)",
+      "starter_code": {
+        "python": "def can_finish(n, prerequisites):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            2,
+            [
+              [
+                1,
+                0
+              ]
+            ]
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            2,
+            [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                1
+              ]
+            ]
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            1,
+            []
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            3,
+            [
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                1
+              ]
+            ]
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            3,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                2,
+                0
+              ]
+            ]
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            4,
+            [
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                1
+              ],
+              [
+                3,
+                2
+              ]
+            ]
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "running-sum",
+      "title": "Running Sum of 1d Array",
+      "topic": "arrays",
+      "difficulty_tier": 1,
+      "entry_point": "running_sum",
+      "statement_md": "Return the running sum where `out[i] = nums[0] + ... + nums[i]`.",
+      "constraints_md": "- `1 <= len(nums) <= 1000`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def running_sum(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "expected": [
+            1,
+            3,
+            6,
+            10
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              1,
+              1,
+              1
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              3,
+              1,
+              2,
+              10,
+              1
+            ]
+          ],
+          "expected": [
+            3,
+            4,
+            6,
+            16,
+            17
+          ]
+        },
+        {
+          "args": [
+            [
+              5
+            ]
+          ],
+          "expected": [
+            5
+          ]
+        },
+        {
+          "args": [
+            [
+              -1,
+              2,
+              -3
+            ]
+          ],
+          "expected": [
+            -1,
+            1,
+            -2
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "max-consecutive-ones",
+      "title": "Max Consecutive Ones",
+      "topic": "arrays",
+      "difficulty_tier": 1,
+      "entry_point": "find_max_consecutive_ones",
+      "statement_md": "Given a binary array `nums`, return the maximum number of consecutive 1s.",
+      "constraints_md": "- `1 <= len(nums) <= 10^5`\n- `nums[i]` is 0 or 1",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def find_max_consecutive_ones(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              1,
+              0,
+              1,
+              1,
+              1
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              1,
+              0,
+              1,
+              1,
+              0,
+              1
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              0
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "expected": 0
+        }
+      ]
+    },
+    {
+      "slug": "single-number",
+      "title": "Single Number",
+      "topic": "arrays",
+      "difficulty_tier": 2,
+      "entry_point": "single_number",
+      "statement_md": "Every element appears twice except one. Find the one that appears once.",
+      "constraints_md": "- `1 <= len(nums) <= 3*10^4`\n- Each element appears twice but one",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def single_number(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              2,
+              2,
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              4,
+              1,
+              2,
+              1,
+              2
+            ]
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              7,
+              3,
+              3
+            ]
+          ],
+          "expected": 7
+        },
+        {
+          "args": [
+            [
+              0,
+              5,
+              0
+            ]
+          ],
+          "expected": 5
+        }
+      ]
+    },
+    {
+      "slug": "move-zeroes",
+      "title": "Move Zeroes",
+      "topic": "arrays",
+      "difficulty_tier": 2,
+      "entry_point": "move_zeroes",
+      "statement_md": "Move all 0s to the end while keeping the relative order of non-zero elements. Return the resulting list.",
+      "constraints_md": "- `1 <= len(nums) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def move_zeroes(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              0,
+              1,
+              0,
+              3,
+              12
+            ]
+          ],
+          "expected": [
+            1,
+            3,
+            12,
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              0
+            ]
+          ],
+          "expected": [
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "args": [
+            [
+              0,
+              0,
+              1
+            ]
+          ],
+          "expected": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              0,
+              2,
+              0,
+              3
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "majority-element",
+      "title": "Majority Element",
+      "topic": "arrays",
+      "difficulty_tier": 3,
+      "entry_point": "majority_element",
+      "statement_md": "Return the element that appears more than `len(nums)//2` times. You may assume it always exists.",
+      "constraints_md": "- `1 <= len(nums) <= 5*10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def majority_element(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              3,
+              2,
+              3
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              2,
+              2,
+              1,
+              1,
+              1,
+              2,
+              2
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              5,
+              5,
+              5,
+              1,
+              2
+            ]
+          ],
+          "expected": 5
+        },
+        {
+          "args": [
+            [
+              6,
+              6,
+              6,
+              6
+            ]
+          ],
+          "expected": 6
+        }
+      ]
+    },
+    {
+      "slug": "max-subarray",
+      "title": "Maximum Subarray",
+      "topic": "arrays",
+      "difficulty_tier": 3,
+      "entry_point": "max_sub_array",
+      "statement_md": "Return the largest sum of any contiguous subarray (at least one element).",
+      "constraints_md": "- `1 <= len(nums) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def max_sub_array(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              -2,
+              1,
+              -3,
+              4,
+              -1,
+              2,
+              1,
+              -5,
+              4
+            ]
+          ],
+          "expected": 6
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              5,
+              4,
+              -1,
+              7,
+              8
+            ]
+          ],
+          "expected": 23
+        },
+        {
+          "args": [
+            [
+              -1,
+              -2,
+              -3
+            ]
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              -5
+            ]
+          ],
+          "expected": -5
+        }
+      ]
+    },
+    {
+      "slug": "find-disappeared",
+      "title": "Find All Numbers Disappeared in an Array",
+      "topic": "arrays",
+      "difficulty_tier": 3,
+      "entry_point": "find_disappeared_numbers",
+      "statement_md": "`nums` holds values in `[1, n]` where `n = len(nums)`. Return, in ascending order, all values in `[1, n]` that do not appear.",
+      "constraints_md": "- `1 <= len(nums) <= 10^5`\n- `1 <= nums[i] <= n`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def find_disappeared_numbers(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              4,
+              3,
+              2,
+              7,
+              8,
+              2,
+              3,
+              1
+            ]
+          ],
+          "expected": [
+            5,
+            6
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              1
+            ]
+          ],
+          "expected": [
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              2,
+              2
+            ]
+          ],
+          "expected": [
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "expected": []
+        }
+      ]
+    },
+    {
+      "slug": "rotate-array",
+      "title": "Rotate Array",
+      "topic": "arrays",
+      "difficulty_tier": 3,
+      "entry_point": "rotate",
+      "statement_md": "Rotate the list to the right by `k` steps and return it.",
+      "constraints_md": "- `1 <= len(nums) <= 10^5`\n- `0 <= k <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def rotate(nums, k):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            3
+          ],
+          "expected": [
+            5,
+            6,
+            7,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              -1,
+              -100,
+              3,
+              99
+            ],
+            2
+          ],
+          "expected": [
+            3,
+            99,
+            -1,
+            -100
+          ]
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            0
+          ],
+          "expected": [
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2
+            ],
+            3
+          ],
+          "expected": [
+            2,
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ],
+            0
+          ],
+          "expected": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "subarray-sum-k",
+      "title": "Subarray Sum Equals K",
+      "topic": "arrays",
+      "difficulty_tier": 4,
+      "entry_point": "subarray_sum",
+      "statement_md": "Return the number of contiguous subarrays whose sum equals `k`.",
+      "constraints_md": "- `1 <= len(nums) <= 2*10^4`\n- `-1000 <= nums[i] <= 1000`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def subarray_sum(nums, k):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              1,
+              1
+            ],
+            2
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ],
+            3
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            0
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              -1,
+              -1,
+              1
+            ],
+            0
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              3,
+              4,
+              7,
+              2,
+              -3,
+              1,
+              4,
+              2
+            ],
+            7
+          ],
+          "expected": 4
+        }
+      ]
+    },
+    {
+      "slug": "is-subsequence",
+      "title": "Is Subsequence",
+      "topic": "two-pointers",
+      "difficulty_tier": 1,
+      "entry_point": "is_subsequence",
+      "statement_md": "Return `true` if `s` is a subsequence of `t`.",
+      "constraints_md": "- `0 <= len(s) <= 100`\n- `0 <= len(t) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def is_subsequence(s, t):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "abc",
+            "ahbgdc"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "axc",
+            "ahbgdc"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "",
+            "abc"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc",
+            ""
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "ace",
+            "abcde"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "sorted-squares",
+      "title": "Squares of a Sorted Array",
+      "topic": "two-pointers",
+      "difficulty_tier": 2,
+      "entry_point": "sorted_squares",
+      "statement_md": "Given a sorted array, return the squares of each number sorted ascending.",
+      "constraints_md": "- `1 <= len(nums) <= 10^4`\n- `nums` sorted ascending",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def sorted_squares(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              -4,
+              -1,
+              0,
+              3,
+              10
+            ]
+          ],
+          "expected": [
+            0,
+            1,
+            9,
+            16,
+            100
+          ]
+        },
+        {
+          "args": [
+            [
+              -7,
+              -3,
+              2,
+              3,
+              11
+            ]
+          ],
+          "expected": [
+            4,
+            9,
+            9,
+            49,
+            121
+          ]
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": [
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              -2
+            ]
+          ],
+          "expected": [
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              -5,
+              -3,
+              -1
+            ]
+          ],
+          "expected": [
+            1,
+            9,
+            25
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "two-sum-sorted",
+      "title": "Two Sum II - Input Array Is Sorted",
+      "topic": "two-pointers",
+      "difficulty_tier": 2,
+      "entry_point": "two_sum_sorted",
+      "statement_md": "Given a 1-indexed sorted array, return the 1-based indices of the two numbers adding to `target`. Exactly one solution exists.",
+      "constraints_md": "- `2 <= len(nums) <= 3*10^4`\n- `nums` sorted ascending",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def two_sum_sorted(nums, target):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              2,
+              7,
+              11,
+              15
+            ],
+            9
+          ],
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              2,
+              3,
+              4
+            ],
+            6
+          ],
+          "expected": [
+            1,
+            3
+          ]
+        },
+        {
+          "args": [
+            [
+              -1,
+              0
+            ],
+            -1
+          ],
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            7
+          ],
+          "expected": [
+            3,
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              5,
+              25,
+              75
+            ],
+            100
+          ],
+          "expected": [
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "sort-by-parity",
+      "title": "Sort Array By Parity",
+      "topic": "two-pointers",
+      "difficulty_tier": 2,
+      "entry_point": "sort_array_by_parity",
+      "statement_md": "Return an array with all even elements first (any order among evens is fine, but keep evens in their original relative order), then the odds in original relative order.",
+      "constraints_md": "- `1 <= len(nums) <= 5000`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def sort_array_by_parity(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              3,
+              1,
+              2,
+              4
+            ]
+          ],
+          "expected": [
+            2,
+            4,
+            3,
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              0
+            ]
+          ],
+          "expected": [
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              3,
+              5
+            ]
+          ],
+          "expected": [
+            1,
+            3,
+            5
+          ]
+        },
+        {
+          "args": [
+            [
+              2,
+              4,
+              6
+            ]
+          ],
+          "expected": [
+            2,
+            4,
+            6
+          ]
+        },
+        {
+          "args": [
+            [
+              7,
+              2,
+              5,
+              8
+            ]
+          ],
+          "expected": [
+            2,
+            8,
+            7,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "dedupe-sorted",
+      "title": "Remove Duplicates from Sorted Array",
+      "topic": "two-pointers",
+      "difficulty_tier": 2,
+      "entry_point": "dedupe_sorted",
+      "statement_md": "Given a sorted array, return the list of unique values in ascending order.",
+      "constraints_md": "- `0 <= len(nums) <= 3*10^4`\n- `nums` sorted ascending",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def dedupe_sorted(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              1,
+              2
+            ]
+          ],
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              0,
+              0,
+              1,
+              1,
+              1,
+              2,
+              2,
+              3,
+              3,
+              4
+            ]
+          ],
+          "expected": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              5
+            ]
+          ],
+          "expected": [
+            5
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "merge-sorted-lists",
+      "title": "Merge Two Sorted Lists",
+      "topic": "two-pointers",
+      "difficulty_tier": 2,
+      "entry_point": "merge_sorted",
+      "statement_md": "Merge two ascending-sorted lists into one ascending-sorted list.",
+      "constraints_md": "- `0 <= len(a), len(b) <= 10^4`",
+      "optimal_time": "O(n+m)",
+      "optimal_space": "O(n+m)",
+      "starter_code": {
+        "python": "def merge_sorted(a, b):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              4
+            ],
+            [
+              1,
+              3,
+              4
+            ]
+          ],
+          "expected": [
+            1,
+            1,
+            2,
+            3,
+            4,
+            4
+          ]
+        },
+        {
+          "args": [
+            [],
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [],
+            [
+              0
+            ]
+          ],
+          "expected": [
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            [
+              2
+            ]
+          ],
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              5,
+              9
+            ],
+            [
+              2,
+              3,
+              10
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            5,
+            9,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "three-sum",
+      "title": "3Sum",
+      "topic": "two-pointers",
+      "difficulty_tier": 4,
+      "entry_point": "three_sum",
+      "statement_md": "Return all unique triplets `[a, b, c]` that sum to 0, each triplet sorted ascending, and the list of triplets sorted ascending.",
+      "constraints_md": "- `3 <= len(nums) <= 3000`",
+      "optimal_time": "O(n^2)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def three_sum(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              -1,
+              0,
+              1,
+              2,
+              -1,
+              -4
+            ]
+          ],
+          "expected": [
+            [
+              -1,
+              -1,
+              2
+            ],
+            [
+              -1,
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              0,
+              1,
+              1
+            ]
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "expected": [
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              -2,
+              0,
+              1,
+              1,
+              2
+            ]
+          ],
+          "expected": [
+            [
+              -2,
+              0,
+              2
+            ],
+            [
+              -2,
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              -3
+            ]
+          ],
+          "expected": [
+            [
+              -3,
+              1,
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "trapping-rain-water",
+      "title": "Trapping Rain Water",
+      "topic": "two-pointers",
+      "difficulty_tier": 5,
+      "entry_point": "trap",
+      "statement_md": "Given bar heights, compute how much rain water can be trapped.",
+      "constraints_md": "- `1 <= len(height) <= 2*10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def trap(height):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              0,
+              1,
+              0,
+              2,
+              1,
+              0,
+              1,
+              3,
+              2,
+              1,
+              2,
+              1
+            ]
+          ],
+          "expected": 6
+        },
+        {
+          "args": [
+            [
+              4,
+              2,
+              0,
+              3,
+              2,
+              5
+            ]
+          ],
+          "expected": 9
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              3,
+              2,
+              1
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              5
+            ]
+          ],
+          "expected": 0
+        }
+      ]
+    },
+    {
+      "slug": "reverse-string",
+      "title": "Reverse String",
+      "topic": "strings",
+      "difficulty_tier": 1,
+      "entry_point": "reverse_string",
+      "statement_md": "Return the string reversed.",
+      "constraints_md": "- `0 <= len(s) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def reverse_string(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "hello"
+          ],
+          "expected": "olleh"
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "expected": "a"
+        },
+        {
+          "args": [
+            "ab"
+          ],
+          "expected": "ba"
+        },
+        {
+          "args": [
+            "racecar"
+          ],
+          "expected": "racecar"
+        }
+      ]
+    },
+    {
+      "slug": "fizzbuzz",
+      "title": "Fizz Buzz",
+      "topic": "strings",
+      "difficulty_tier": 1,
+      "entry_point": "fizz_buzz",
+      "statement_md": "Return a list of length `n` (1-indexed): `'FizzBuzz'` if divisible by 15, `'Fizz'` by 3, `'Buzz'` by 5, else the number as a string.",
+      "constraints_md": "- `1 <= n <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def fizz_buzz(n):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            3
+          ],
+          "expected": [
+            "1",
+            "2",
+            "Fizz"
+          ]
+        },
+        {
+          "args": [
+            5
+          ],
+          "expected": [
+            "1",
+            "2",
+            "Fizz",
+            "4",
+            "Buzz"
+          ]
+        },
+        {
+          "args": [
+            15
+          ],
+          "expected": [
+            "1",
+            "2",
+            "Fizz",
+            "4",
+            "Buzz",
+            "Fizz",
+            "7",
+            "8",
+            "Fizz",
+            "Buzz",
+            "11",
+            "Fizz",
+            "13",
+            "14",
+            "FizzBuzz"
+          ]
+        },
+        {
+          "args": [
+            1
+          ],
+          "expected": [
+            "1"
+          ]
+        },
+        {
+          "args": [
+            16
+          ],
+          "expected": [
+            "1",
+            "2",
+            "Fizz",
+            "4",
+            "Buzz",
+            "Fizz",
+            "7",
+            "8",
+            "Fizz",
+            "Buzz",
+            "11",
+            "Fizz",
+            "13",
+            "14",
+            "FizzBuzz",
+            "16"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "first-unique-char",
+      "title": "First Unique Character in a String",
+      "topic": "strings",
+      "difficulty_tier": 2,
+      "entry_point": "first_uniq_char",
+      "statement_md": "Return the index of the first non-repeating character, or -1 if none.",
+      "constraints_md": "- `1 <= len(s) <= 10^5`\n- lowercase English letters",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def first_uniq_char(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "leetcode"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "loveleetcode"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "aabb"
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            "z"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "abcabd"
+          ],
+          "expected": 2
+        }
+      ]
+    },
+    {
+      "slug": "longest-common-prefix",
+      "title": "Longest Common Prefix",
+      "topic": "strings",
+      "difficulty_tier": 2,
+      "entry_point": "longest_common_prefix",
+      "statement_md": "Return the longest common prefix among a list of strings, or `''`.",
+      "constraints_md": "- `1 <= len(strs) <= 200`",
+      "optimal_time": "O(n*m)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def longest_common_prefix(strs):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              "flower",
+              "flow",
+              "flight"
+            ]
+          ],
+          "expected": "fl"
+        },
+        {
+          "args": [
+            [
+              "dog",
+              "racecar",
+              "car"
+            ]
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            [
+              "interspecies",
+              "interstellar",
+              "interstate"
+            ]
+          ],
+          "expected": "inters"
+        },
+        {
+          "args": [
+            [
+              "a"
+            ]
+          ],
+          "expected": "a"
+        },
+        {
+          "args": [
+            [
+              "abc",
+              "abc",
+              "abc"
+            ]
+          ],
+          "expected": "abc"
+        }
+      ]
+    },
+    {
+      "slug": "reverse-words",
+      "title": "Reverse Words in a String",
+      "topic": "strings",
+      "difficulty_tier": 2,
+      "entry_point": "reverse_words",
+      "statement_md": "Return the words of `s` in reverse order, single-spaced, with leading, trailing and repeated spaces removed.",
+      "constraints_md": "- `1 <= len(s) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def reverse_words(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "the sky is blue"
+          ],
+          "expected": "blue is sky the"
+        },
+        {
+          "args": [
+            "  hello world  "
+          ],
+          "expected": "world hello"
+        },
+        {
+          "args": [
+            "a good   example"
+          ],
+          "expected": "example good a"
+        },
+        {
+          "args": [
+            "single"
+          ],
+          "expected": "single"
+        },
+        {
+          "args": [
+            "  leading"
+          ],
+          "expected": "leading"
+        }
+      ]
+    },
+    {
+      "slug": "longest-palindrome",
+      "title": "Longest Palindrome",
+      "topic": "strings",
+      "difficulty_tier": 2,
+      "entry_point": "longest_palindrome",
+      "statement_md": "Given a string of letters, return the length of the longest palindrome that can be built using those letters (case-sensitive).",
+      "constraints_md": "- `1 <= len(s) <= 2000`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def longest_palindrome(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "abccccdd"
+          ],
+          "expected": 7
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            "bb"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "abc"
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            "Aa"
+          ],
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "slug": "roman-to-int",
+      "title": "Roman to Integer",
+      "topic": "strings",
+      "difficulty_tier": 3,
+      "entry_point": "roman_to_int",
+      "statement_md": "Convert a Roman numeral string to an integer.",
+      "constraints_md": "- `1 <= len(s) <= 15`\n- valid Roman numeral in `[1, 3999]`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def roman_to_int(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "III"
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            "LVIII"
+          ],
+          "expected": 58
+        },
+        {
+          "args": [
+            "MCMXCIV"
+          ],
+          "expected": 1994
+        },
+        {
+          "args": [
+            "IV"
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            "IX"
+          ],
+          "expected": 9
+        }
+      ]
+    },
+    {
+      "slug": "valid-palindrome-ii",
+      "title": "Valid Palindrome II",
+      "topic": "strings",
+      "difficulty_tier": 3,
+      "entry_point": "valid_palindrome_ii",
+      "statement_md": "Return `true` if `s` can be a palindrome after deleting at most one character.",
+      "constraints_md": "- `1 <= len(s) <= 10^5`\n- lowercase English letters",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def valid_palindrome_ii(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "aba"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abca"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "deeee"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "add-binary",
+      "title": "Add Binary",
+      "topic": "strings",
+      "difficulty_tier": 2,
+      "entry_point": "add_binary",
+      "statement_md": "Given two binary strings `a` and `b`, return their sum as a binary string.",
+      "constraints_md": "- `1 <= len(a), len(b) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def add_binary(a, b):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "11",
+            "1"
+          ],
+          "expected": "100"
+        },
+        {
+          "args": [
+            "1010",
+            "1011"
+          ],
+          "expected": "10101"
+        },
+        {
+          "args": [
+            "0",
+            "0"
+          ],
+          "expected": "0"
+        },
+        {
+          "args": [
+            "1",
+            "111"
+          ],
+          "expected": "1000"
+        },
+        {
+          "args": [
+            "100",
+            "110010"
+          ],
+          "expected": "110110"
+        }
+      ]
+    },
+    {
+      "slug": "backspace-compare",
+      "title": "Backspace String Compare",
+      "topic": "stacks",
+      "difficulty_tier": 2,
+      "entry_point": "backspace_compare",
+      "statement_md": "Two strings contain letters and `'#'` (backspace). Return `true` if they are equal after applying backspaces.",
+      "constraints_md": "- `1 <= len(s), len(t) <= 200`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def backspace_compare(s, t):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "ab#c",
+            "ad#c"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "ab##",
+            "c#d#"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a#c",
+            "b"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "xywrrmp",
+            "xywrrmu#p"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "bxj##tw",
+            "bxo#j##tw"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "remove-adjacent-dupes",
+      "title": "Remove All Adjacent Duplicates In String",
+      "topic": "stacks",
+      "difficulty_tier": 2,
+      "entry_point": "remove_adjacent_duplicates",
+      "statement_md": "Repeatedly remove two adjacent equal letters until none remain. Return the final string.",
+      "constraints_md": "- `1 <= len(s) <= 10^5`\n- lowercase English letters",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def remove_adjacent_duplicates(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "abbaca"
+          ],
+          "expected": "ca"
+        },
+        {
+          "args": [
+            "azxxzy"
+          ],
+          "expected": "ay"
+        },
+        {
+          "args": [
+            "aaaa"
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "abc"
+          ],
+          "expected": "abc"
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "expected": "a"
+        }
+      ]
+    },
+    {
+      "slug": "make-good",
+      "title": "Make The String Great",
+      "topic": "stacks",
+      "difficulty_tier": 2,
+      "entry_point": "make_good",
+      "statement_md": "Remove adjacent pairs of the same letter in different cases (e.g. `'aA'` or `'Aa'`) repeatedly. Return the resulting string.",
+      "constraints_md": "- `1 <= len(s) <= 100`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def make_good(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "leEeetcode"
+          ],
+          "expected": "leetcode"
+        },
+        {
+          "args": [
+            "abBAcC"
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "s"
+          ],
+          "expected": "s"
+        },
+        {
+          "args": [
+            "Pp"
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "mC"
+          ],
+          "expected": "mC"
+        }
+      ]
+    },
+    {
+      "slug": "eval-rpn",
+      "title": "Evaluate Reverse Polish Notation",
+      "topic": "stacks",
+      "difficulty_tier": 3,
+      "entry_point": "eval_rpn",
+      "statement_md": "Evaluate an arithmetic expression in Reverse Polish Notation. Operators are `+ - * /`; division truncates toward zero. Tokens are a list of strings.",
+      "constraints_md": "- `1 <= len(tokens) <= 10^4`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def eval_rpn(tokens):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              "2",
+              "1",
+              "+",
+              "3",
+              "*"
+            ]
+          ],
+          "expected": 9
+        },
+        {
+          "args": [
+            [
+              "4",
+              "13",
+              "5",
+              "/",
+              "+"
+            ]
+          ],
+          "expected": 6
+        },
+        {
+          "args": [
+            [
+              "10",
+              "6",
+              "9",
+              "3",
+              "+",
+              "-11",
+              "*",
+              "/",
+              "*",
+              "17",
+              "+",
+              "5",
+              "+"
+            ]
+          ],
+          "expected": 22
+        },
+        {
+          "args": [
+            [
+              "3",
+              "4",
+              "-"
+            ]
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              "5"
+            ]
+          ],
+          "expected": 5
+        }
+      ]
+    },
+    {
+      "slug": "simplify-path",
+      "title": "Simplify Path",
+      "topic": "stacks",
+      "difficulty_tier": 3,
+      "entry_point": "simplify_path",
+      "statement_md": "Given a Unix-style absolute path, return its canonical form.",
+      "constraints_md": "- `1 <= len(path) <= 3000`\n- path starts with `/`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def simplify_path(path):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "/home/"
+          ],
+          "expected": "/home"
+        },
+        {
+          "args": [
+            "/../"
+          ],
+          "expected": "/"
+        },
+        {
+          "args": [
+            "/home//foo/"
+          ],
+          "expected": "/home/foo"
+        },
+        {
+          "args": [
+            "/a/./b/../../c/"
+          ],
+          "expected": "/c"
+        },
+        {
+          "args": [
+            "/"
+          ],
+          "expected": "/"
+        }
+      ]
+    },
+    {
+      "slug": "decode-string",
+      "title": "Decode String",
+      "topic": "stacks",
+      "difficulty_tier": 4,
+      "entry_point": "decode_string",
+      "statement_md": "Decode a string encoded as `k[encoded]`, meaning `encoded` repeated `k` times. Encodings may nest.",
+      "constraints_md": "- `1 <= len(s) <= 30`\n- well-formed input",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def decode_string(s):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            "3[a]2[bc]"
+          ],
+          "expected": "aaabcbc"
+        },
+        {
+          "args": [
+            "3[a2[c]]"
+          ],
+          "expected": "accaccacc"
+        },
+        {
+          "args": [
+            "2[abc]3[cd]ef"
+          ],
+          "expected": "abcabccdcdcdef"
+        },
+        {
+          "args": [
+            "1[x]"
+          ],
+          "expected": "x"
+        },
+        {
+          "args": [
+            "abc"
+          ],
+          "expected": "abc"
+        }
+      ]
+    },
+    {
+      "slug": "asteroid-collision",
+      "title": "Asteroid Collision",
+      "topic": "stacks",
+      "difficulty_tier": 4,
+      "entry_point": "asteroid_collision",
+      "statement_md": "Each asteroid moves right (positive) or left (negative) at the same speed. When two collide the smaller explodes; equal sizes both explode. Return the surviving asteroids.",
+      "constraints_md": "- `1 <= len(asteroids) <= 10^4`\n- `asteroids[i] != 0`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def asteroid_collision(asteroids):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              5,
+              10,
+              -5
+            ]
+          ],
+          "expected": [
+            5,
+            10
+          ]
+        },
+        {
+          "args": [
+            [
+              8,
+              -8
+            ]
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              10,
+              2,
+              -5
+            ]
+          ],
+          "expected": [
+            10
+          ]
+        },
+        {
+          "args": [
+            [
+              -2,
+              -1,
+              1,
+              2
+            ]
+          ],
+          "expected": [
+            -2,
+            -1,
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "largest-rectangle",
+      "title": "Largest Rectangle in Histogram",
+      "topic": "stacks",
+      "difficulty_tier": 5,
+      "entry_point": "largest_rectangle_area",
+      "statement_md": "Given bar heights of width 1, return the area of the largest rectangle.",
+      "constraints_md": "- `1 <= len(heights) <= 10^5`",
+      "optimal_time": "O(n)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def largest_rectangle_area(heights):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              2,
+              1,
+              5,
+              6,
+              2,
+              3
+            ]
+          ],
+          "expected": 10
+        },
+        {
+          "args": [
+            [
+              2,
+              4
+            ]
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              5,
+              5,
+              5
+            ]
+          ],
+          "expected": 15
+        },
+        {
+          "args": [
+            [
+              6,
+              2,
+              5,
+              4,
+              5,
+              1,
+              6
+            ]
+          ],
+          "expected": 12
+        }
+      ]
+    },
+    {
+      "slug": "search-insert",
+      "title": "Search Insert Position",
+      "topic": "binary-search",
+      "difficulty_tier": 2,
+      "entry_point": "search_insert",
+      "statement_md": "Return the index where `target` is, or where it would be inserted to keep the sorted array sorted.",
+      "constraints_md": "- `1 <= len(nums) <= 10^4`\n- `nums` sorted, distinct",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def search_insert(nums, target):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              3,
+              5,
+              6
+            ],
+            5
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              1,
+              3,
+              5,
+              6
+            ],
+            2
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              1,
+              3,
+              5,
+              6
+            ],
+            7
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              1,
+              3,
+              5,
+              6
+            ],
+            0
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            0
+          ],
+          "expected": 0
+        }
+      ]
+    },
+    {
+      "slug": "my-sqrt",
+      "title": "Sqrt(x)",
+      "topic": "binary-search",
+      "difficulty_tier": 2,
+      "entry_point": "my_sqrt",
+      "statement_md": "Return the integer square root of `x` (floor of the true square root).",
+      "constraints_md": "- `0 <= x <= 2^31 - 1`",
+      "optimal_time": "O(log x)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def my_sqrt(x):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            4
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            8
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            0
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            1
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            2147395600
+          ],
+          "expected": 46340
+        }
+      ]
+    },
+    {
+      "slug": "arrange-coins",
+      "title": "Arranging Coins",
+      "topic": "binary-search",
+      "difficulty_tier": 2,
+      "entry_point": "arrange_coins",
+      "statement_md": "You build a staircase where row `i` needs `i` coins. Given `n` coins, return the number of complete rows.",
+      "constraints_md": "- `1 <= n <= 2^31 - 1`",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def arrange_coins(n):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            5
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            8
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            1
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            3
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            1804289383
+          ],
+          "expected": 60070
+        }
+      ]
+    },
+    {
+      "slug": "count-negatives",
+      "title": "Count Negative Numbers in a Sorted Matrix",
+      "topic": "binary-search",
+      "difficulty_tier": 2,
+      "entry_point": "count_negatives",
+      "statement_md": "Given a matrix sorted non-increasing row-wise and column-wise, return the count of negative numbers.",
+      "constraints_md": "- `1 <= rows, cols <= 100`",
+      "optimal_time": "O(m+n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def count_negatives(grid):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                4,
+                3,
+                2,
+                -1
+              ],
+              [
+                3,
+                2,
+                1,
+                -1
+              ],
+              [
+                1,
+                1,
+                -1,
+                -2
+              ],
+              [
+                -1,
+                -1,
+                -2,
+                -3
+              ]
+            ]
+          ],
+          "expected": 8
+        },
+        {
+          "args": [
+            [
+              [
+                3,
+                2
+              ],
+              [
+                1,
+                0
+              ]
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              [
+                -1
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                -1
+              ],
+              [
+                -1,
+                -1
+              ]
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              [
+                5,
+                1,
+                0
+              ]
+            ]
+          ],
+          "expected": 0
+        }
+      ]
+    },
+    {
+      "slug": "find-min-rotated",
+      "title": "Find Minimum in Rotated Sorted Array",
+      "topic": "binary-search",
+      "difficulty_tier": 3,
+      "entry_point": "find_min",
+      "statement_md": "Return the minimum of a rotated ascending sorted array of distinct values.",
+      "constraints_md": "- `1 <= len(nums) <= 5000`\n- distinct values",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def find_min(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              3,
+              4,
+              5,
+              1,
+              2
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              4,
+              5,
+              6,
+              7,
+              0,
+              1,
+              2
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              11,
+              13,
+              15,
+              17
+            ]
+          ],
+          "expected": 11
+        },
+        {
+          "args": [
+            [
+              2,
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "slug": "find-peak",
+      "title": "Find Peak Element",
+      "topic": "binary-search",
+      "difficulty_tier": 3,
+      "entry_point": "find_peak_element",
+      "statement_md": "A peak is strictly greater than its neighbors (out-of-bounds counts as -inf). Return the index of any peak.",
+      "constraints_md": "- `1 <= len(nums) <= 1000`\n- `nums[i] != nums[i+1]`",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def find_peak_element(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              1
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              1,
+              3,
+              5,
+              6,
+              4,
+              2,
+              0
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              1,
+              2
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              2,
+              1
+            ]
+          ],
+          "expected": 0
+        }
+      ]
+    },
+    {
+      "slug": "search-range",
+      "title": "Find First and Last Position",
+      "topic": "binary-search",
+      "difficulty_tier": 4,
+      "entry_point": "search_range",
+      "statement_md": "Return `[first, last]` indices of `target` in a sorted array, or `[-1, -1]`.",
+      "constraints_md": "- `0 <= len(nums) <= 10^5`\n- `nums` sorted ascending",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def search_range(nums, target):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              5,
+              7,
+              7,
+              8,
+              8,
+              10
+            ],
+            8
+          ],
+          "expected": [
+            3,
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              5,
+              7,
+              7,
+              8,
+              8,
+              10
+            ],
+            6
+          ],
+          "expected": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "args": [
+            [],
+            0
+          ],
+          "expected": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            1
+          ],
+          "expected": [
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              2,
+              2,
+              2
+            ],
+            2
+          ],
+          "expected": [
+            0,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "single-non-duplicate",
+      "title": "Single Element in a Sorted Array",
+      "topic": "binary-search",
+      "difficulty_tier": 4,
+      "entry_point": "single_non_duplicate",
+      "statement_md": "Every element appears exactly twice except one that appears once, in a sorted array. Return that single element.",
+      "constraints_md": "- `1 <= len(nums) <= 10^5`",
+      "optimal_time": "O(log n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def single_non_duplicate(nums):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              1,
+              1,
+              2,
+              3,
+              3,
+              4,
+              4,
+              8,
+              8
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              3,
+              3,
+              7,
+              7,
+              10,
+              11,
+              11
+            ]
+          ],
+          "expected": 10
+        },
+        {
+          "args": [
+            [
+              1
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              1,
+              1,
+              2
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              0,
+              0,
+              1,
+              1,
+              2,
+              2,
+              3
+            ]
+          ],
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "slug": "koko-bananas",
+      "title": "Koko Eating Bananas",
+      "topic": "binary-search",
+      "difficulty_tier": 4,
+      "entry_point": "min_eating_speed",
+      "statement_md": "Piles of bananas and `h` hours. Each hour Koko eats up to `k` bananas from one pile. Return the minimum integer `k` to finish all piles within `h` hours.",
+      "constraints_md": "- `1 <= len(piles) <= 10^4`\n- `len(piles) <= h <= 10^9`",
+      "optimal_time": "O(n log m)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def min_eating_speed(piles, h):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              3,
+              6,
+              7,
+              11
+            ],
+            8
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              30,
+              11,
+              23,
+              4,
+              20
+            ],
+            5
+          ],
+          "expected": 30
+        },
+        {
+          "args": [
+            [
+              30,
+              11,
+              23,
+              4,
+              20
+            ],
+            6
+          ],
+          "expected": 23
+        },
+        {
+          "args": [
+            [
+              1
+            ],
+            1
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              1000000000
+            ],
+            2
+          ],
+          "expected": 500000000
+        }
+      ]
+    },
+    {
+      "slug": "find-center",
+      "title": "Find Center of Star Graph",
+      "topic": "graphs",
+      "difficulty_tier": 1,
+      "entry_point": "find_center",
+      "statement_md": "In a star graph of `n` nodes given as edges, return the center node.",
+      "constraints_md": "- `3 <= n`\n- input is a valid star graph",
+      "optimal_time": "O(1)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def find_center(edges):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                2
+              ]
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                5,
+                1
+              ],
+              [
+                1,
+                3
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              [
+                2,
+                1
+              ],
+              [
+                3,
+                1
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                3
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              [
+                4,
+                1
+              ],
+              [
+                4,
+                2
+              ]
+            ]
+          ],
+          "expected": 4
+        }
+      ]
+    },
+    {
+      "slug": "find-judge",
+      "title": "Find the Town Judge",
+      "topic": "graphs",
+      "difficulty_tier": 2,
+      "entry_point": "find_judge",
+      "statement_md": "Among `n` people (1..n), the judge trusts nobody and is trusted by everyone else. `trust[i] = [a, b]` means a trusts b. Return the judge's label or -1.",
+      "constraints_md": "- `1 <= n <= 1000`",
+      "optimal_time": "O(n+e)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def find_judge(n, trust):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            2,
+            [
+              [
+                1,
+                2
+              ]
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            3,
+            [
+              [
+                1,
+                3
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            3,
+            [
+              [
+                1,
+                3
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                3,
+                1
+              ]
+            ]
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            1,
+            []
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            4,
+            [
+              [
+                1,
+                3
+              ],
+              [
+                1,
+                4
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                2,
+                4
+              ],
+              [
+                4,
+                3
+              ]
+            ]
+          ],
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "slug": "island-perimeter",
+      "title": "Island Perimeter",
+      "topic": "graphs",
+      "difficulty_tier": 2,
+      "entry_point": "island_perimeter",
+      "statement_md": "Given a grid of 0 (water) and 1 (land) with exactly one island, return its perimeter.",
+      "constraints_md": "- `1 <= rows, cols <= 100`",
+      "optimal_time": "O(m*n)",
+      "optimal_space": "O(1)",
+      "starter_code": {
+        "python": "def island_perimeter(grid):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                0,
+                1,
+                0,
+                0
+              ],
+              [
+                1,
+                1,
+                1,
+                0
+              ],
+              [
+                0,
+                1,
+                0,
+                0
+              ],
+              [
+                1,
+                1,
+                0,
+                0
+              ]
+            ]
+          ],
+          "expected": 16
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ]
+            ]
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": 6
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                0
+              ]
+            ]
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                1
+              ],
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": 8
+        }
+      ]
+    },
+    {
+      "slug": "flood-fill",
+      "title": "Flood Fill",
+      "topic": "graphs",
+      "difficulty_tier": 3,
+      "entry_point": "flood_fill",
+      "statement_md": "Starting at pixel `(sr, sc)`, change its color and all 4-directionally connected pixels of the same original color to `color`. Return the grid.",
+      "constraints_md": "- `1 <= rows, cols <= 50`",
+      "optimal_time": "O(m*n)",
+      "optimal_space": "O(m*n)",
+      "starter_code": {
+        "python": "def flood_fill(image, sr, sc, color):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                1,
+                1,
+                1
+              ],
+              [
+                1,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                1
+              ]
+            ],
+            1,
+            1,
+            2
+          ],
+          "expected": [
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              0
+            ],
+            [
+              2,
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            0,
+            0,
+            0
+          ],
+          "expected": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ]
+            ],
+            0,
+            0,
+            2
+          ],
+          "expected": [
+            [
+              2
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                1,
+                1
+              ]
+            ],
+            1,
+            1,
+            1
+          ],
+          "expected": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            0,
+            0,
+            5
+          ],
+          "expected": [
+            [
+              5,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "keys-and-rooms",
+      "title": "Keys and Rooms",
+      "topic": "graphs",
+      "difficulty_tier": 3,
+      "entry_point": "can_visit_all_rooms",
+      "statement_md": "`rooms[i]` is a list of keys (room numbers) found in room `i`. Starting in room 0, return `true` if you can visit every room.",
+      "constraints_md": "- `1 <= len(rooms) <= 1000`",
+      "optimal_time": "O(n+e)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def can_visit_all_rooms(rooms):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                1
+              ],
+              [
+                2
+              ],
+              [
+                3
+              ],
+              []
+            ]
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                3
+              ],
+              [
+                3,
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                0
+              ]
+            ]
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            [
+              []
+            ]
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ],
+              [],
+              [
+                3
+              ],
+              []
+            ]
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            [
+              [
+                2,
+                3
+              ],
+              [],
+              [
+                1
+              ],
+              []
+            ]
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "valid-path",
+      "title": "Find if Path Exists in Graph",
+      "topic": "graphs",
+      "difficulty_tier": 3,
+      "entry_point": "valid_path",
+      "statement_md": "Given `n` nodes (0..n-1) and undirected `edges`, return `true` if there is a path between `source` and `destination`.",
+      "constraints_md": "- `1 <= n <= 2*10^5`",
+      "optimal_time": "O(n+e)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def valid_path(n, edges, source, destination):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            3,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                2,
+                0
+              ]
+            ],
+            0,
+            2
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            6,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                3,
+                5
+              ],
+              [
+                5,
+                4
+              ],
+              [
+                4,
+                3
+              ]
+            ],
+            0,
+            5
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            1,
+            [],
+            0,
+            0
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            4,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            0,
+            3
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            5,
+            [
+              [
+                0,
+                4
+              ]
+            ],
+            0,
+            4
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "slug": "count-components",
+      "title": "Number of Connected Components",
+      "topic": "graphs",
+      "difficulty_tier": 4,
+      "entry_point": "count_components",
+      "statement_md": "Given `n` nodes (0..n-1) and undirected `edges`, return the number of connected components.",
+      "constraints_md": "- `1 <= n <= 2000`",
+      "optimal_time": "O(n+e)",
+      "optimal_space": "O(n)",
+      "starter_code": {
+        "python": "def count_components(n, edges):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            5,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            5,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            4,
+            []
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            1,
+            []
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            6,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "slug": "max-area-island",
+      "title": "Max Area of Island",
+      "topic": "graphs",
+      "difficulty_tier": 4,
+      "entry_point": "max_area_of_island",
+      "statement_md": "Return the area of the largest 4-directionally connected island of 1s in a grid of 0s and 1s. 0 if none.",
+      "constraints_md": "- `1 <= rows, cols <= 50`",
+      "optimal_time": "O(m*n)",
+      "optimal_space": "O(m*n)",
+      "starter_code": {
+        "python": "def max_area_of_island(grid):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                1,
+                1,
+                0,
+                0
+              ],
+              [
+                0,
+                1,
+                0,
+                0,
+                0
+              ]
+            ]
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ]
+            ]
+          ],
+          "expected": 1
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                1
+              ],
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                1,
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "slug": "rotting-oranges",
+      "title": "Rotting Oranges",
+      "topic": "graphs",
+      "difficulty_tier": 4,
+      "entry_point": "oranges_rotting",
+      "statement_md": "Grid cells: 0 empty, 1 fresh, 2 rotten. Each minute a rotten orange rots its 4-directional fresh neighbors. Return minutes until none are fresh, or -1 if impossible.",
+      "constraints_md": "- `1 <= rows, cols <= 10`",
+      "optimal_time": "O(m*n)",
+      "optimal_space": "O(m*n)",
+      "starter_code": {
+        "python": "def oranges_rotting(grid):\n    pass\n"
+      },
+      "test_cases": [
+        {
+          "args": [
+            [
+              [
+                2,
+                1,
+                1
+              ],
+              [
+                1,
+                1,
+                0
+              ],
+              [
+                0,
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            [
+              [
+                2,
+                1,
+                1
+              ],
+              [
+                0,
+                1,
+                1
+              ],
+              [
+                1,
+                0,
+                1
+              ]
+            ]
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              [
+                0,
+                2
+              ]
+            ]
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ]
+            ]
+          ],
+          "expected": -1
+        },
+        {
+          "args": [
+            [
+              [
+                2,
+                2
+              ],
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": 1
+        }
+      ]
+    }
+  ]
+}

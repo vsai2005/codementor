@@ -1,16 +1,36 @@
-"""JWT issuing/verification and Google ID-token validation (PRD 5.3)."""
+"""JWT issuing/verification, password hashing, and Google ID-token validation (Phase 2)."""
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
 
 from app.config import get_settings
 
+PBKDF2_ROUNDS = 100_000
+
 
 class AuthError(Exception):
     pass
+
+
+def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
+    """Generate or use salt and compute PBKDF2-HMAC-SHA256 password hash."""
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), bytes.fromhex(salt), PBKDF2_ROUNDS
+    ).hex()
+    return salt, digest
+
+
+def verify_password(password: str, salt: str, expected_hash: str) -> bool:
+    """Constant-time password hash verification."""
+    _, digest = hash_password(password, salt)
+    return secrets.compare_digest(digest, expected_hash)
 
 
 def create_access_token(subject: str, extra: dict | None = None) -> str:

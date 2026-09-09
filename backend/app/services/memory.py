@@ -93,10 +93,11 @@ class MemoryService:
     def retrieve(self, user_id: str, query: str, k: int = DEFAULT_K) -> list[MemoryNote]:
         if not user_id:
             raise ValueError("user_id is required for every memory query")
-        if not query.strip():
+        cleaned_query = query.strip()[:2500]
+        if not cleaned_query:
             return []
         try:
-            vector = self._embedder.embed(query)
+            vector = self._embedder.embed(cleaned_query)
         except Exception:
             log.exception("embedding failed during retrieval; returning no memory")
             return []
@@ -171,6 +172,6 @@ Return the note text only, no quotes, no preamble."""
 def build_note_prompt(problem: str, score: int, summary: str,
                       weak_topics: list[str]) -> str:
     return NOTE_PROMPT.format(
-        limit=MAX_NOTE_CHARS, problem=problem, score=score,
-        summary=summary, weak_topics=", ".join(weak_topics) or "none",
+        limit=MAX_NOTE_CHARS, problem=str(problem)[:2500], score=score,
+        summary=str(summary)[:2500], weak_topics=", ".join(weak_topics) or "none",
     )

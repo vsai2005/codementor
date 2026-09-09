@@ -54,18 +54,19 @@ def _load_problem(db: Session, problem_id: uuid.UUID) -> Problem:
 
 
 @router.post("/run", response_model=TestsResponse)
-def run_only(
+async def run_only(
     payload: RunRequest,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> TestsResponse:
     """Tests only, no LLM. Target < 2s p95."""
     problem = _load_problem(db, payload.problem_id)
-    return _tests_payload(svc.execute(problem, payload.code))
+    report = await svc.execute_async(problem, payload.code)
+    return _tests_payload(report)
 
 
 @router.post("", response_model=SubmissionResponse)
-def submit(
+async def submit(
     payload: RunRequest,
     background: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -81,7 +82,7 @@ def submit(
         )
 
     problem = _load_problem(db, payload.problem_id)
-    report = svc.execute(problem, payload.code)
+    report = await svc.execute_async(problem, payload.code)
 
     try:
         reviewer = ReviewService(get_llm_client())
@@ -108,6 +109,13 @@ def submit(
         db, user_id=user.id, topic_id=problem.topic_id,
         submission_id=submission.id, new_score=review.overall_score,
     )
+
+    if report.all_passed:
+        try:
+            from app.services.learning import record_practice_passed
+            record_practice_passed(db, user.id, problem.slug)
+        except Exception:
+            log.exception("failed to record curriculum practice pass")
 
     # PRD 5.7 — embedding runs after the response; it must never block or fail
     # the submission.

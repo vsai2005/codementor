@@ -98,7 +98,7 @@ function ScoreBadge({ score, degraded }: { score: number; degraded: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <div
-        className={`flex h-16 w-16 shrink-0 items-center justify-center border-2 border-ink ${tone} text-white shadow-hard`}
+        className={`flex h-16 w-16 shrink-0 items-center justify-center border-2 border-ink ${tone} text-bg shadow-hard`}
       >
         <span className="font-display text-2xl font-bold tabular-nums">{score}</span>
       </div>

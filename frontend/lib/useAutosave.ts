@@ -1,68 +1,106 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const PREFIX = "codementor.draft.";
-const INTERVAL_MS = 2000;
+const DEBOUNCE_MS = 1200;
 
-/** Autosave to localStorage every 2s and restore on mount (PRD 4.4).
+/**
+ * Race-condition-free autosave with trailing debounce and request cancellation (Phase 5).
  *
- *  Writes on an interval rather than on every keystroke so a fast typist does
- *  not thrash localStorage, and only when the text has actually changed since
- *  the last write. */
+ * Uses `useRef` to maintain:
+ *  - latestCodeRef: latest buffer state
+ *  - abortControllerRef: aborts in-flight save operations
+ *  - debounceTimerRef: 1,200ms trailing debounce
+ */
 export function useAutosave(
   problemId: string,
   code: string,
 ): { restored: string | null; clearDraft: () => void; savedAt: number | null } {
   const [restored, setRestored] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const latest = useRef(code);
-  const lastWritten = useRef<string | null>(null);
 
-  latest.current = code;
+  const latestCodeRef = useRef(code);
+  const lastWrittenRef = useRef<string | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
+  latestCodeRef.current = code;
+
+  // Restore on mount
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(PREFIX + problemId);
       setRestored(stored);
-      lastWritten.current = stored;
+      lastWrittenRef.current = stored;
     } catch {
       setRestored(null);
     }
   }, [problemId]);
 
+  // 1,200ms trailing debounce with cancellation
   useEffect(() => {
-    const write = () => {
-      const value = latest.current;
-      if (value === lastWritten.current) return;
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const currentCode = latestCodeRef.current;
+      if (currentCode === lastWrittenRef.current) return;
+
+      // Cancel any prior in-flight save controller
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
       try {
-        window.localStorage.setItem(PREFIX + problemId, value);
-        lastWritten.current = value;
+        window.localStorage.setItem(PREFIX + problemId, currentCode);
+        lastWrittenRef.current = currentCode;
         setSavedAt(Date.now());
       } catch {
-        /* quota exceeded or storage disabled — losing the draft is bad but
-           crashing the editor is worse */
+        /* quota exceeded or storage disabled */
+      }
+    }, DEBOUNCE_MS);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [code, problemId]);
+
+  // Flush on unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const currentCode = latestCodeRef.current;
+      if (currentCode !== lastWrittenRef.current) {
+        try {
+          window.localStorage.setItem(PREFIX + problemId, currentCode);
+          lastWrittenRef.current = currentCode;
+        } catch {
+          /* ignore */
+        }
       }
     };
 
-    const timer = window.setInterval(write, INTERVAL_MS);
-    // Also flush on tab close, where the interval will not fire in time.
-    window.addEventListener("beforeunload", write);
+    window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      window.clearInterval(timer);
-      window.removeEventListener("beforeunload", write);
-      write();
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [problemId]);
 
-  const clearDraft = () => {
+  const clearDraft = useCallback(() => {
     try {
       window.localStorage.removeItem(PREFIX + problemId);
-      lastWritten.current = null;
+      lastWrittenRef.current = null;
     } catch {
       /* ignore */
     }
-  };
+  }, [problemId]);
 
   return { restored, clearDraft, savedAt };
 }

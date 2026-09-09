@@ -1,0 +1,178 @@
+add-binary | strings | Add Binary
+arrange-coins | binary-search | Arranging Coins
+asteroid-collision | stacks | Asteroid Collision
+backspace-compare | stacks | Backspace String Compare
+balanced-binary-tree | trees | Balanced Binary Tree (AVL Check)
+basic-calculator-ii | stacks | Basic Calculator II (Operator Precedence)
+binary-search | binary-search | Binary Search
+binary-tree-inorder-traversal | trees | Binary Tree Inorder Traversal
+binary-tree-level-order-traversal | trees | Binary Tree Level Order Traversal (BFS)
+candy | greedy | Candy Distribution (Two-Pass Greedy)
+capacity-to-ship-packages | searching-sorting | Capacity to Ship Packages Within D Days
+celsius-to-fahrenheit | python-basics | Celsius to Fahrenheit Converter
+cheapest-flights-within-k-stops | graphs | Cheapest Flights Within K Stops (Bellman-Ford)
+climbing-stairs | dynamic-programming | Climbing Stairs (1D DP State Compression)
+coin-change | dynamic-programming | Coin Change (Fewest Coins)
+coin-change-ii | dynamic-programming | Coin Change II (Total Combinations)
+common-keys-intersection | python-basics | Common Dictionary Key Matching
+container-most-water | two-pointers | Container With Most Water
+contains-duplicate | arrays | Contains Duplicate
+count-components | graphs | Number of Connected Components
+count-loop-operations | python-basics | Count Nested Loop Operations
+count-negatives | binary-search | Count Negative Numbers in a Sorted Matrix
+count-vowels | strings | Count Vowels
+counting-bits | bit-manipulation | Counting Bits (Bitwise DP)
+course-schedule | graphs | Course Schedule
+course-schedule-ii | graphs | Course Schedule II (Topological Sort)
+critical-connections-in-a-network | graphs | Critical Connections (Tarjan's Bridges)
+daily-temperatures | stacks | Daily Temperatures
+decode-string | stacks | Decode String
+dedupe-sorted | two-pointers | Remove Duplicates from Sorted Array
+delete-node-linked-list | linked-lists | Delete Node in a Linked List
+design-add-and-search-words | trees | Design Add and Search Words (Wildcard Trie)
+design-circular-queue | stacks | Design Circular Queue (Ring Buffer)
+design-hashmap | hashing | Design HashMap Chaining
+edit-distance | dynamic-programming | Edit Distance (Levenshtein Distance)
+eval-rpn | stacks | Evaluate Reverse Polish Notation
+find-center | graphs | Find Center of Star Graph
+find-disappeared | arrays | Find All Numbers Disappeared in an Array
+find-judge | graphs | Find the Town Judge
+find-k-pairs-with-smallest-sums | heaps | Find K Pairs with Smallest Sums
+find-median-from-data-stream | heaps | Find Median from Data Stream (Dual-Heap)
+find-min-rotated | binary-search | Find Minimum in Rotated Sorted Array
+find-peak | binary-search | Find Peak Element
+find-the-difference | python-basics | Find the Difference
+first-unique-char | strings | First Unique Character in a String
+fizzbuzz | strings | Fizz Buzz
+flatten-2d-matrix | python-basics | Flatten 2D Matrix Comprehension
+flood-fill | graphs | Flood Fill
+gas-station | greedy | Gas Station (Circular Circuit)
+generate-parentheses | python-basics | Generate Balanced Parentheses
+group-anagrams | hashing | Group Anagrams
+group-by-parity | python-basics | Group by Parity Buckets
+house-robber | dynamic-programming | House Robber (Non-Adjacent Recurrence)
+house-robber-ii | dynamic-programming | House Robber II (Circular Street)
+implement-queue-using-stacks | stacks | Implement Queue Using Two Stacks
+implement-trie-prefix-tree | trees | Implement Trie (Prefix Tree)
+insert-delete-getrandom-o1 | hashing | Insert Delete GetRandom O(1)
+insertion-sort-list-array | searching-sorting | Insertion Sort Simulation
+invert-binary-tree | trees | Invert Binary Tree
+is-graph-bipartite | graphs | Is Graph Bipartite? (2-Coloring)
+is-subsequence | two-pointers | Is Subsequence
+island-perimeter | graphs | Island Perimeter
+jump-game | greedy | Jump Game (Reachability Frontier)
+jump-game-ii | greedy | Jump Game II (Minimum Jumps)
+k-closest-points-to-origin | heaps | K Closest Points to Origin (Heap)
+keys-and-rooms | graphs | Keys and Rooms
+koko-bananas | binary-search | Koko Eating Bananas
+kth-largest-element-in-a-stream | heaps | Kth Largest Element in a Stream (Min-Heap)
+kth-largest-element-in-an-array | searching-sorting | Kth Largest Element in an Array (Quickselect)
+kth-smallest-element-in-a-bst | trees | Kth Smallest Element in a BST
+largest-rectangle | stacks | Largest Rectangle in Histogram
+last-stone-weight | heaps | Last Stone Weight (Max-Heap)
+leap-year-checker | python-basics | Leap Year Boolean Invariant
+lfu-cache | advanced-dsa | LFU Cache Simulation (Least Frequently Used)
+linked-list-cycle | linked-lists | Linked List Cycle Detection (Floyd's)
+linked-list-cycle-ii | linked-lists | Linked List Cycle Entry Point
+longest-common-prefix | strings | Longest Common Prefix
+longest-common-subsequence | dynamic-programming | Longest Common Subsequence
+longest-consecutive-sequence | hashing | Longest Consecutive Sequence (Hash Set)
+longest-increasing-subsequence | dynamic-programming | Longest Increasing Subsequence (Patience Sorting)
+longest-palindrome | strings | Longest Palindrome
+longest-substring | strings | Longest Substring Without Repeating Characters
+lowest-common-ancestor-of-a-binary-tree | trees | Lowest Common Ancestor of a Binary Tree
+lowest-common-ancestor-of-a-bst | trees | Lowest Common Ancestor of a BST
+lru-cache | hashing | LRU Cache Simulation (DLL + Hash Map)
+majority-element | arrays | Majority Element
+make-good | stacks | Make The String Great
+max-area-island | graphs | Max Area of Island
+max-consecutive-ones | arrays | Max Consecutive Ones
+max-depth | graphs | Maximum Depth of Nested List
+max-subarray | arrays | Maximum Subarray
+maximum-average-subarray-i | arrays | Maximum Average Subarray (Fixed Window)
+maximum-depth-of-binary-tree | trees | Maximum Depth of Binary Tree
+maximum-units-on-a-truck | greedy | Maximum Units on a Truck (Fractional Greedy)
+median-two-arrays | binary-search | Median of Two Sorted Arrays
+merge-intervals | arrays | Merge Overlapping Intervals
+merge-k-sorted-lists | heaps | Merge k Sorted Lists (Min-Heap Priority Queue)
+merge-sorted-array | python-basics | Merge Sorted Array (In-Place)
+merge-sorted-lists | two-pointers | Merge Two Sorted Lists
+merge-two-sorted-linked-lists | linked-lists | Merge Two Sorted Lists (Pointer Splicing)
+middle-of-the-linked-list | linked-lists | Middle of the Linked List (Fast & Slow)
+min-cost-to-connect-all-points | graphs | Min Cost to Connect All Points (Kruskal's MST)
+min-stack-ops | stacks | Minimum After Operations
+minimum-deletions-to-make-character-frequencies-unique | greedy | Minimum Deletions for Unique Frequencies
+minimum-path-sum | dynamic-programming | Minimum Path Sum (2D Grid DP)
+minimum-size-subarray-sum | arrays | Minimum Size Subarray Sum (Dynamic Window)
+move-zeroes | arrays | Move Zeroes
+my-sqrt | binary-search | Sqrt(x)
+n-queens | advanced-dsa | N-Queens (Bitmask Backtracking)
+network-delay-time | graphs | Network Delay Time (Dijkstra's Algorithm)
+non-overlapping-intervals | greedy | Non-overlapping Intervals (Interval Scheduling)
+number-of-1-bits | bit-manipulation | Number of 1 Bits (Brian Kernighan's)
+number-of-islands | graphs | Number of Islands
+palindrome-number | python-basics | Palindrome Number (Arithmetic)
+partition-equal-subset-sum | dynamic-programming | Partition Equal Subset Sum (0/1 Knapsack)
+partition-labels | greedy | Partition Labels (Last Occurrence Sweep)
+power-of-three | python-basics | Power of Three (Recursion)
+powx-n | python-basics | Pow(x, n) Logarithmic Divide & Conquer
+product-except-self | arrays | Product of Array Except Self
+range-sum-query-2d-immutable | arrays | 2D Matrix Range Sum (Inclusion-Exclusion)
+range-sum-query-immutable | arrays | Range Sum Query (1D Prefix Sums)
+range-sum-query-mutable | advanced-dsa | Range Sum Query - Mutable (Segment Tree)
+recursive-sum-digits | python-basics | Recursive Digit Sum
+redundant-connection | graphs | Redundant Connection (DSU Union-Find)
+relative-sort-array | searching-sorting | Relative Sort Array (Counting Sort)
+remove-adjacent-dupes | stacks | Remove All Adjacent Duplicates In String
+remove-element | python-basics | Remove Element (In-Place)
+remove-linked-list-elements | linked-lists | Remove Linked List Elements (Dummy Sentinel)
+remove-nth-node-from-end | linked-lists | Remove Nth Node From End of List
+repeated-dna-sequences | hashing | Repeated DNA Sequences (Rolling Hash)
+reverse-linked-list | linked-lists | Reverse Linked List (Iterative 3-Pointer)
+reverse-list | two-pointers | Reverse a List
+reverse-nodes-in-k-group | linked-lists | Reverse Nodes in k-Group
+reverse-string | strings | Reverse String
+reverse-words | strings | Reverse Words in a String
+roman-to-int | strings | Roman to Integer
+rotate-array | arrays | Rotate Array
+rotting-oranges | graphs | Rotting Oranges
+running-sum | arrays | Running Sum of 1d Array
+same-tree | trees | Same Tree (Structural Equivalence)
+search-insert | binary-search | Search Insert Position
+search-insert-position | binary-search | Search Insert Position (Bisect Left)
+search-range | binary-search | Find First and Last Position
+search-rotated | binary-search | Search in Rotated Sorted Array
+serialize-and-deserialize-binary-tree | trees | Serialize and Deserialize Binary Tree
+simplify-path | stacks | Simplify Path
+single-non-duplicate | binary-search | Single Element in a Sorted Array
+single-number | arrays | Single Number
+slice-url-domain | python-basics | Extract Domain from URL
+sliding-window-deque | python-basics | Moving Average Stream
+sliding-window-maximum | stacks | Sliding Window Maximum (Monotonic Deque)
+sort-an-array | searching-sorting | Sort an Array (Merge Sort Canonical)
+sort-by-parity | two-pointers | Sort Array By Parity
+sort-colors | python-basics | Sort Colors (Dutch National Flag)
+sort-list | linked-lists | Sort Linked List (O(N log N) Merge Sort)
+sorted-squares | two-pointers | Squares of a Sorted Array
+string-to-integer-atoi | python-basics | String to Integer (atoi)
+subarray-sum-k | arrays | Subarray Sum Equals K
+subsets | bit-manipulation | Subsets via Bitmask Enumeration
+subsets-recursive | python-basics | Subsets (Power Set Tree)
+sum-multiples-loop | python-basics | Sum of Multiples in Range
+symmetric-tree | trees | Symmetric Tree (Mirror Reflection)
+task-scheduler | heaps | Task Scheduler (Max-Heap Cooldown)
+three-sum | two-pointers | 3Sum
+time-converter-seconds | python-basics | Seconds to Digital Time
+top-k-frequent-elements | heaps | Top K Frequent Elements (Heap / Bucket)
+trapping-rain-water | two-pointers | Trapping Rain Water
+two-sum | arrays | Two Sum
+two-sum-sorted | two-pointers | Two Sum II - Input Array Is Sorted
+unique-paths | dynamic-programming | Unique Paths (2D Grid Combinatorics)
+valid-anagram | strings | Valid Anagram
+valid-palindrome | two-pointers | Valid Palindrome
+valid-palindrome-ii | strings | Valid Palindrome II
+valid-parentheses | stacks | Valid Parentheses
+valid-path | graphs | Find if Path Exists in Graph
+validate-binary-search-tree | trees | Validate Binary Search Tree
+vector2d-operations | python-basics | 2D Vector Protocol Engine
+word-search-ii | advanced-dsa | Word Search II (Prefix Trie + 2D Backtracking)

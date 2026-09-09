@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -31,14 +33,33 @@ class Settings(BaseSettings):
     embedding_provider: str = "openai"
     embedding_model: str = "text-embedding-3-small"
 
+    # CORS configuration: ALLOWED_ORIGINS takes precedence if set
+    allowed_origins: str | None = None
     cors_origins: str = "http://localhost:3000"
+
+    # HttpOnly Cookie parameters
+    cookie_samesite: Literal["lax", "strict", "none"] = "lax"
+    cookie_secure: bool | None = None
+    cookie_domain: str | None = None
+    cookie_max_age: int = 86400  # 24 hours
 
     submission_rate_limit: int = 10
     submission_rate_window_s: int = 300
 
     @property
+    def is_production(self) -> bool:
+        return self.environment.lower() in ("production", "prod")
+
+    @property
+    def secure_cookies(self) -> bool:
+        if self.cookie_secure is not None:
+            return self.cookie_secure
+        return self.is_production
+
+    @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        raw = os.getenv("ALLOWED_ORIGINS") or self.allowed_origins or self.cors_origins
+        return [o.strip() for o in raw.split(",") if o.strip()]
 
 
 @lru_cache

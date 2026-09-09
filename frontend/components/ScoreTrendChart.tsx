@@ -11,8 +11,19 @@ import {
 } from "recharts";
 
 import type { TrendPoint } from "@/lib/types";
+import { useTheme } from "@/lib/useTheme";
+
+// Recharts can't read Tailwind classes, so it gets the palette explicitly per
+// theme. Kept in sync with the CSS variables in globals.css.
+const PALETTE = {
+  light: { ink: "#14213D", surface: "#FFFFFF", accent: "#E4572E" },
+  dark: { ink: "#F2EDE3", surface: "#26231F", accent: "#F0764E" },
+};
 
 export function ScoreTrendChart({ points }: { points: TrendPoint[] }) {
+  const { theme } = useTheme();
+  const c = PALETTE[theme];
+
   if (points.length === 0) {
     return (
       <div className="card-flat p-4">
@@ -32,23 +43,24 @@ export function ScoreTrendChart({ points }: { points: TrendPoint[] }) {
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: -18 }}>
-            <CartesianGrid stroke="#14213D" strokeOpacity={0.12} vertical={false} />
-            <XAxis dataKey="n" stroke="#14213D" tick={{ fontSize: 11 }} />
-            <YAxis domain={[0, 100]} stroke="#14213D" tick={{ fontSize: 11 }} />
+            <CartesianGrid stroke={c.ink} strokeOpacity={0.12} vertical={false} />
+            <XAxis dataKey="n" stroke={c.ink} tick={{ fontSize: 11, fill: c.ink }} />
+            <YAxis domain={[0, 100]} stroke={c.ink} tick={{ fontSize: 11, fill: c.ink }} />
             <Tooltip
               contentStyle={{
-                border: "2px solid #14213D",
+                border: `2px solid ${c.ink}`,
                 borderRadius: 0,
-                background: "#FFFFFF",
+                background: c.surface,
+                color: c.ink,
                 fontSize: 12,
               }}
             />
             <Line
               type="monotone"
               dataKey="score"
-              stroke="#E4572E"
+              stroke={c.accent}
               strokeWidth={2}
-              dot={{ r: 3, fill: "#14213D" }}
+              dot={{ r: 3, fill: c.ink }}
               isAnimationActive={false}
             />
           </LineChart>

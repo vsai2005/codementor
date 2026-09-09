@@ -84,8 +84,13 @@ def upgrade() -> None:
     op.create_index("ix_submissions_user_created", "submissions", ["user_id", "created_at"])
     op.create_index("ix_submissions_user_problem", "submissions", ["user_id", "problem_id"])
 
-    mastery = postgresql.ENUM("weak", "learning", "strong", name="mastery_enum")
-    mastery.create(op.get_bind(), checkfirst=True)
+    op.execute(
+        "DO $$ BEGIN "
+        "CREATE TYPE mastery_enum AS ENUM ('weak', 'learning', 'strong'); "
+        "EXCEPTION WHEN duplicate_object THEN NULL; "
+        "END $$;"
+    )
+    mastery = postgresql.ENUM("weak", "learning", "strong", name="mastery_enum", create_type=False)
 
     op.create_table(
         "user_topic_state",

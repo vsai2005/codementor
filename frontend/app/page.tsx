@@ -1,6 +1,22 @@
-import Link from "next/link";
+"use client";
 
-import { Hero3D } from "@/components/Hero3D";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const Hero3D = dynamic(
+  () => import("@/components/Hero3D").then((mod) => mod.Hero3D),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="flex h-64 w-full items-center justify-center border-2 border-dashed border-ink/20 bg-surface/50 sm:h-80"
+        aria-label="Loading interactive 3D visualization"
+      >
+        <span className="font-mono text-xs text-muted">Loading visualization…</span>
+      </div>
+    ),
+  },
+);
 
 const PILLARS = [
   {
@@ -33,12 +49,17 @@ export default function LandingPage() {
             reviewer would say, adjusts the next problem to your real level, and remembers
             the pattern you keep repeating.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/login" className="btn btn-primary">
-              Start practising
+          <div className="mt-4 flex items-center gap-2 font-mono text-xs text-muted">
+            <span className="inline-block h-2 w-2 rounded-full bg-accent"></span>
+            <span>160-Day Python & DSA Roadmap • 14 Structured Modules</span>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/learning" className="btn btn-primary flex items-center gap-2">
+              <span>Start 160-Day Roadmap</span>
+              <span>→</span>
             </Link>
             <Link href="/practice" className="btn">
-              Browse problems
+              Browse Practice Problems
             </Link>
           </div>
         </div>

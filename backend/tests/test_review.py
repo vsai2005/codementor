@@ -181,5 +181,42 @@ def test_extract_json_handles_common_model_wrappers(raw):
 
 
 def test_extract_json_raises_on_garbage():
-    with pytest.raises(ValueError):
+    from app.services.llm import LLMJsonParseError
+    with pytest.raises((ValueError, LLMJsonParseError)):
         extract_json("there is no json here")
+
+
+def test_parse_llm_json_valid_schema():
+    from pydantic import BaseModel
+    from app.services.llm import parse_llm_json
+
+    class SampleSchema(BaseModel):
+        score: int
+        label: str
+
+    res = parse_llm_json('```json\n{"score": 95, "label": "pass"}\n```', SampleSchema)
+    assert res.score == 95
+    assert res.label == "pass"
+
+
+def test_parse_llm_json_repair_heuristic():
+    from pydantic import BaseModel
+    from app.services.llm import parse_llm_json
+
+    class SampleSchema(BaseModel):
+        ans: str
+
+    raw = "Here is the response: {\"ans\": \"repaired\"} thanks!"
+    res = parse_llm_json(raw, SampleSchema)
+    assert res.ans == "repaired"
+
+
+def test_parse_llm_json_invalid_schema_raises_error():
+    from pydantic import BaseModel
+    from app.services.llm import LLMJsonParseError, parse_llm_json
+
+    class StrictSchema(BaseModel):
+        required_int: int
+
+    with pytest.raises(LLMJsonParseError):
+        parse_llm_json('{"required_int": "not_an_int"}', StrictSchema)

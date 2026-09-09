@@ -3,13 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-import { api, clearToken, getToken, setToken } from "./api";
+import { api } from "./api";
 import type { User } from "./types";
-
-/** PRD 4.1 names NextAuth.js. This uses Google Identity Services directly and
- *  exchanges the ID token for our own JWT at POST /api/auth/google, because the
- *  backend already issues and owns the session token — adding NextAuth would
- *  mean two session systems to keep in sync for no gain. */
 
 interface AuthState {
   user: User | null;
@@ -30,22 +25,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Authenticate session via HttpOnly cookie transport (no localStorage dependency)
   useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
     api
       .me()
       .then(setUser)
-      .catch(() => clearToken())
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const register = useCallback(
     async (username: string, password: string, email?: string, name?: string) => {
       const result = await api.register({ username, password, email, name });
-      setToken(result.access_token);
       setUser(result.user);
     },
     [],
@@ -53,12 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (identifier: string, password: string) => {
     const result = await api.login({ identifier, password });
-    setToken(result.access_token);
     setUser(result.user);
   }, []);
 
   const signOut = useCallback(() => {
-    clearToken();
+    api.logout().catch(() => {});
     setUser(null);
   }, []);
 

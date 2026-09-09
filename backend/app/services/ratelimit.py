@@ -1,22 +1,19 @@
-"""Rate limiting for LLM-backed endpoints (PRD 5.4 step 1, PRD 6).
+"""Rate limiting for LLM-backed endpoints (Phase 3).
 
-This requirement appears in the PRD but in none of the build prompts, so it
-would have been silently dropped. 10 submissions / 5 min / user.
-
-Implementation is a sliding window. The in-memory backend is correct for a
-single process; on more than one worker each process keeps its own window, so
-the effective limit multiplies by the worker count. Redis is the fix and the
-interface is the same — do not deploy multi-worker on the in-memory backend
-and assume the limit holds.
+Provides:
+  - BaseRateLimiter (ABC)
+  - RedisRateLimiter (atomic sliding window via pipeline)
+  - InMemoryRateLimiter (thread-safe sliding window with cleanup)
 """
 
 from __future__ import annotations
 
+import os
 import threading
 import time
+from abc import ABC, abstractmethod
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from typing import Protocol
 
 
 @dataclass(frozen=True)
@@ -26,11 +23,19 @@ class RateLimitVerdict:
     retry_after_s: int
 
 
-class RateLimiter(Protocol):
-    def check(self, key: str) -> RateLimitVerdict: ...
+class BaseRateLimiter(ABC):
+    @abstractmethod
+    def check(self, key: str) -> RateLimitVerdict:
+        """Evaluate whether an action under `key` is permitted."""
+
+    @abstractmethod
+    def reset(self, key: str | None = None) -> None:
+        """Reset rate-limit state for key (or all keys if None)."""
 
 
-class InMemoryRateLimiter:
+class InMemoryRateLimiter(BaseRateLimiter):
+    """Thread-safe in-memory sliding window limiter for local testing."""
+
     def __init__(self, limit: int = 10, window_s: int = 300) -> None:
         self._limit = limit
         self._window = window_s
@@ -59,8 +64,8 @@ class InMemoryRateLimiter:
                 self._hits.pop(key, None)
 
 
-class RedisRateLimiter:
-    """Sliding window in Redis — correct across workers and restarts."""
+class RedisRateLimiter(BaseRateLimiter):
+    """Distributed sliding window in Redis using an atomic pipeline."""
 
     def __init__(self, redis_client, limit: int = 10, window_s: int = 300) -> None:
         self._redis = redis_client
@@ -89,16 +94,36 @@ class RedisRateLimiter:
 
         return RateLimitVerdict(True, self._limit - count - 1, 0)
 
+    def reset(self, key: str | None = None) -> None:
+        if key is None:
+            for k in self._redis.scan_iter("ratelimit:*"):
+                self._redis.delete(k)
+        else:
+            self._redis.delete(f"ratelimit:{key}")
 
-_default: RateLimiter | None = None
+
+_default: BaseRateLimiter | None = None
 
 
-def get_rate_limiter() -> RateLimiter:
+def get_rate_limiter() -> BaseRateLimiter:
     global _default
     if _default is None:
         from app.config import get_settings
 
         settings = get_settings()
+        redis_url = os.getenv("REDIS_URL")
+
+        if redis_url:
+            try:
+                import redis
+                client = redis.from_url(redis_url)
+                _default = RedisRateLimiter(
+                    client, settings.submission_rate_limit, settings.submission_rate_window_s
+                )
+                return _default
+            except Exception:
+                pass
+
         _default = InMemoryRateLimiter(
             settings.submission_rate_limit, settings.submission_rate_window_s
         )

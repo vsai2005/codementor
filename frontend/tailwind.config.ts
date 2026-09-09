@@ -7,12 +7,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#F6F1E7",
-        surface: "#FFFFFF",
-        ink: "#14213D",
-        accent: "#E4572E",
-        "accent-2": "#17594A",
-        muted: "#5A5A52",
+        // Colors resolve from CSS variables (RGB channel triplets) so the whole
+        // palette — solids AND /alpha utilities — flips with [data-theme].
+        bg: "rgb(var(--bg) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        "accent-2": "rgb(var(--accent-2) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
@@ -20,9 +22,10 @@ const config: Config = {
         mono: ["ui-monospace", "Menlo", "monospace"],
       },
       boxShadow: {
-        hard: "4px 4px 0 #14213D",
-        "hard-sm": "2px 2px 0 #14213D",
-        "hard-accent": "4px 4px 0 #E4572E",
+        // The hard shadow follows --ink, so it becomes a light offset on dark bg.
+        hard: "4px 4px 0 rgb(var(--ink))",
+        "hard-sm": "2px 2px 0 rgb(var(--ink))",
+        "hard-accent": "4px 4px 0 rgb(var(--accent))",
       },
     },
   },

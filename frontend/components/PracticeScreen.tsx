@@ -1,13 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+
+import dynamic from "next/dynamic";
 
 import { ApiError, api } from "@/lib/api";
 import { useAutosave } from "@/lib/useAutosave";
+import { useJourney } from "@/lib/curriculum/useJourney";
 import type { MomentumDelta, ProblemDetail, TestsResponse } from "@/lib/types";
 import { AiCoach, type CoachSubmission } from "./AiCoach";
-import { CodeEditor } from "./CodeEditor";
 import { ConceptLesson } from "./ConceptLesson";
+
+const CodeEditor = dynamic(
+  () => import("./CodeEditor").then((mod) => mod.CodeEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="flex h-full min-h-[320px] w-full items-center justify-center border-2 border-ink bg-surface"
+        aria-label="Loading code editor"
+      >
+        <span className="font-mono text-xs text-muted">Loading editor…</span>
+      </div>
+    ),
+  },
+);
 import { MomentumBanner } from "./MomentumBanner";
 import { DiagnosisPanel } from "./DiagnosisPanel";
 import { PlanFirst } from "./PlanFirst";
@@ -25,7 +44,22 @@ const TABS: { id: MobileTab; label: string }[] = [
   { id: "review", label: "Review" },
 ];
 
-export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
+export function PracticeScreen({
+  problem,
+  dayNumber: propDayNumber,
+}: {
+  problem: ProblemDetail;
+  dayNumber?: number;
+}) {
+  const searchParams = useSearchParams();
+  const queryDay = searchParams?.get("day");
+  const parsedQueryDay = queryDay ? parseInt(queryDay, 10) : undefined;
+  const effectiveDay =
+    propDayNumber ?? (parsedQueryDay && !isNaN(parsedQueryDay) ? parsedQueryDay : undefined);
+
+  const { markDayComplete } = useJourney();
+  const [showDayCompleteModal, setShowDayCompleteModal] = useState(false);
+
   const starter = problem.starter_code["python"] ?? "";
   const [code, setCode] = useState(starter);
   const [tests, setTests] = useState<TestsResponse | null>(null);
@@ -45,6 +79,7 @@ export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
   const [solved, setSolved] = useState(false);
 
   const { restored, savedAt } = useAutosave(problem.id, code);
+
 
   // A ref, not the `running` state: two clicks in the same tick both read the
   // pre-update state value, so state alone does not deduplicate them.
@@ -109,11 +144,22 @@ export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
       setAssistTab("coach");
       // Reward strip (XP / streak / badges) + unlock the reference solution.
       if (result.momentum) setMomentum(result.momentum);
-      if (result.tests.all_passed) setSolved(true);
-      // Only unlock "next problem" once every test passes — a failing solution
-      // keeps you on this problem.
       if (result.tests.all_passed) {
-        api.nextProblem().then(setNextProblem).catch(() => setNextProblem(null));
+        setSolved(true);
+        if (effectiveDay) {
+          markDayComplete(effectiveDay);
+          setShowDayCompleteModal(true);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("codementor:day-completed", {
+                detail: { day_number: effectiveDay },
+              })
+            );
+          }
+        } else {
+          // Standard independent practice: fetch next recommended problem
+          api.nextProblem().then(setNextProblem).catch(() => setNextProblem(null));
+        }
       } else {
         setNextProblem(null);
       }
@@ -130,7 +176,8 @@ export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
     } finally {
       inFlight.current = false;
     }
-  }, [code, problem.id, plan]);
+  }, [code, problem.id, plan, effectiveDay, markDayComplete]);
+
 
   const columnClass = (id: MobileTab) =>
     `${tab === id ? "block" : "hidden"} lg:block min-w-0`;
@@ -153,9 +200,39 @@ export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
         ))}
       </div>
 
+      {/* Day Context Banner — visible when practicing as part of a curriculum day */}
+      {effectiveDay && (
+        <div className="mb-4 card-flat border-2 border-amber-500 bg-amber-500/10 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 shadow-hard-sm">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link
+              href={`/learning/day/${effectiveDay}`}
+              className="btn px-2.5 py-1 text-xs font-mono font-bold hover:border-ink flex items-center gap-1 bg-surface border-2 border-black dark:border-border"
+            >
+              <span>←</span>
+              <span>Day {String(effectiveDay).padStart(3, "0")} Lesson</span>
+            </Link>
+            <span className="font-mono text-xs font-bold bg-amber-500 text-black px-2 py-0.5 rounded-sm uppercase tracking-wider">
+              Daily Practice
+            </span>
+            <span className="text-muted text-xs hidden sm:inline">•</span>
+            <span className="font-display text-sm font-bold text-ink truncate">
+              Solve this problem to complete Day {effectiveDay} and unlock Day {effectiveDay < 160 ? effectiveDay + 1 : 160}
+            </span>
+          </div>
+
+          <Link
+            href="/learning"
+            className="font-mono text-xs font-bold text-ink underline underline-offset-2 ml-auto hover:text-accent"
+          >
+            Learning Roadmap
+          </Link>
+        </div>
+      )}
+
       {momentum && (
         <MomentumBanner momentum={momentum} onDismiss={() => setMomentum(null)} />
       )}
+
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.3fr)_minmax(0,1fr)]">
         {/* Column 1 — problem */}
@@ -253,6 +330,70 @@ export function PracticeScreen({ problem }: { problem: ProblemDetail }) {
           </div>
         </section>
       </div>
+
+      {/* Day Completion Celebration Modal */}
+      {showDayCompleteModal && effectiveDay && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="card w-full max-w-md bg-surface p-6 sm:p-8 shadow-hard border-2 border-accent-2 space-y-5 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full border-2 border-ink bg-accent-2/20 flex items-center justify-center text-3xl shadow-hard-sm">
+              🎉
+            </div>
+
+            <div className="space-y-2">
+              <span className="bg-accent-2 text-white font-mono text-xs font-bold uppercase px-2.5 py-1 border border-ink">
+                DAY {String(effectiveDay).padStart(3, "0")} COMPLETE
+              </span>
+              <h3 className="font-display text-2xl sm:text-3xl font-bold text-ink">
+                {effectiveDay < 160 ? `Day ${effectiveDay + 1} Unlocked!` : "Curriculum Completed!"}
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-ink/80 leading-relaxed">
+                All test cases passed! Day {effectiveDay} practice is verified and recorded on the curriculum roadmap.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {effectiveDay < 160 ? (
+                <Link
+                  href={`/learning/day/${effectiveDay + 1}`}
+                  className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
+                >
+                  <span>Continue to Day {effectiveDay + 1}</span>
+                  <span>→</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/learning"
+                  className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
+                >
+                  <span>🏆 View 160-Day Completed Roadmap</span>
+                  <span>→</span>
+                </Link>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDayCompleteModal(false)}
+                  className="btn flex-1 py-2 text-xs font-semibold hover:border-ink"
+                >
+                  Review Solution & Debrief
+                </button>
+                <Link
+                  href="/learning"
+                  className="btn flex-1 py-2 text-xs font-semibold hover:border-ink flex items-center justify-center"
+                >
+                  Roadmap
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

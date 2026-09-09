@@ -1,4 +1,4 @@
-"""LLM abstraction (PRD 5.6).
+"""LLM abstraction and defensive response parsing (Phase 4).
 
 One interface, provider chosen by env var, so swapping Claude -> GPT -> local
 is a config change. No FastAPI imports here.
@@ -10,7 +10,9 @@ import json
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TypeVar
+
+T = TypeVar("T")
 
 
 class LLMError(RuntimeError):
@@ -21,27 +23,58 @@ class LLMTimeout(LLMError):
     pass
 
 
-def extract_json(raw: str) -> dict[str, Any]:
-    """Pull a JSON object out of a model response.
+class LLMJsonParseError(LLMError):
+    """Structured exception when LLM JSON extraction or validation fails."""
 
-    Models wrap JSON in prose or fences even when told not to. Failing the
-    whole review over a stray ```json is a self-inflicted wound, so we strip
-    fences and fall back to the outermost brace pair before giving up.
-    """
-    text = raw.strip()
+    def __init__(self, message: str, raw_text: str = "") -> None:
+        super().__init__(message)
+        self.raw_text = raw_text
+
+
+def extract_json(raw: str) -> dict[str, Any]:
+    """Pull a JSON object out of a model response with repair heuristic."""
+    text = (raw or "").strip()
     fenced = re.search(r"```(?:json)?\s*(.*?)```", text, re.DOTALL)
     if fenced:
         text = fenced.group(1).strip()
 
     try:
-        return json.loads(text)
+        data = json.loads(text)
+        if isinstance(data, dict):
+            return data
     except json.JSONDecodeError:
         pass
 
     start, end = text.find("{"), text.rfind("}")
     if start != -1 and end > start:
-        return json.loads(text[start : end + 1])
-    raise ValueError("no JSON object found in model response")
+        try:
+            data = json.loads(text[start : end + 1])
+            if isinstance(data, dict):
+                return data
+        except json.JSONDecodeError as exc:
+            raise LLMJsonParseError(f"JSON syntax repair failed: {exc}", raw_text=raw) from exc
+    raise LLMJsonParseError("No valid JSON object found in model response", raw_text=raw)
+
+
+def parse_llm_json(response_text: str, target_schema: type[T]) -> T:
+    """Generic extraction and schema validation helper (Phase 4).
+
+    1. Strips markdown fences.
+    2. Attempts direct deserialization, falling back to outer bracket repair heuristic.
+    3. Validates against target_schema (Pydantic model).
+    4. Raises LLMJsonParseError instead of unhandled 500 runtime errors.
+    """
+    parsed_dict = extract_json(response_text)
+
+    try:
+        if hasattr(target_schema, "model_validate"):
+            return target_schema.model_validate(parsed_dict)
+        return target_schema(**parsed_dict)  # type: ignore[call-arg]
+    except Exception as exc:
+        schema_name = getattr(target_schema, "__name__", str(target_schema))
+        raise LLMJsonParseError(
+            f"Schema validation failed for {schema_name}: {exc}", raw_text=response_text
+        ) from exc
 
 
 class LLMClient(ABC):

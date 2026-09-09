@@ -6,7 +6,13 @@ import { AppShell } from "@/components/AppShell";
 import { PracticeScreen } from "@/components/PracticeScreen";
 import { api } from "@/lib/api";
 
-export function PracticeLoader({ problemId }: { problemId: string }) {
+export function PracticeLoader({
+  problemId,
+  dayNumber,
+}: {
+  problemId: string;
+  dayNumber?: number;
+}) {
   const problem = useQuery({
     queryKey: ["problem", problemId],
     queryFn: () => api.getProblem(problemId),
@@ -22,7 +28,10 @@ export function PracticeLoader({ problemId }: { problemId: string }) {
           Could not load this problem. It may have been removed.
         </p>
       )}
-      {problem.data && <PracticeScreen problem={problem.data} />}
+      {problem.data && (
+        <PracticeScreen problem={problem.data} dayNumber={dayNumber} />
+      )}
     </AppShell>
   );
 }
+

@@ -16,6 +16,7 @@ import type {
   TrendResponse,
   TutorResponse,
   User,
+  LessonRunResponse,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
@@ -60,6 +61,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const response = await fetch(`${BASE}${path}`, {
     method: options.method ?? "GET",
     headers,
+    credentials: "include",
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
     signal: options.signal,
   });
@@ -104,12 +106,18 @@ export const api = {
       body,
     }),
 
+  logout: () =>
+    request<{ detail: string }>("/api/auth/logout", {
+      method: "POST",
+    }),
+
   me: () => request<User>("/api/auth/me"),
 
-  listProblems: (params: { topic?: string; tier?: number; page?: number } = {}) => {
+  listProblems: (params: { topic?: string; tier?: number; page?: number; page_size?: number } = {}) => {
     const query = new URLSearchParams();
     if (params.topic) query.set("topic", params.topic);
     if (params.tier !== undefined) query.set("tier", String(params.tier));
+    if (params.page_size !== undefined) query.set("page_size", String(params.page_size));
     query.set("page", String(params.page ?? 1));
     return request<ProblemPage>(`/api/problems?${query.toString()}`);
   },
@@ -129,6 +137,46 @@ export const api = {
 
   runCustom: (body: { problem_id: string; code: string; args: unknown[] }) =>
     request<CustomRunResponse>("/api/submissions/run-custom", { method: "POST", body }),
+
+  runLessonSnippet: (
+    body: { code: string; day_number?: number },
+    signal?: AbortSignal,
+  ) =>
+    request<LessonRunResponse>("/api/learning/run", {
+      method: "POST",
+      body: { code: body.code, day_number: body.day_number ?? 1 },
+      signal,
+    }),
+
+  learningProgress: (signal?: AbortSignal) =>
+    request<{
+      current_day: number;
+      completed_days: number[];
+      total_days: number;
+      day_states: Record<string, {
+        day_number: number;
+        lesson_completed: boolean;
+        lesson_completed_at?: string | null;
+        practice_passed: boolean;
+        practice_passed_at?: string | null;
+        completed: boolean;
+        completed_at?: string | null;
+        unlocked: boolean;
+        status: "completed" | "current" | "available" | "locked";
+        practice_problem_slug?: string;
+      }>;
+    }>("/api/learning/progress", { method: "GET", signal }),
+
+  completeLesson: (day_number: number, signal?: AbortSignal) =>
+    request<{
+      day_number: number;
+      lesson_completed: boolean;
+      day_completed: boolean;
+      unlocked_next_day: boolean;
+      current_day: number;
+      day_state: any;
+    }>("/api/learning/complete-lesson", { method: "POST", body: { day_number }, signal }),
+
 
   submit: (
     body: { problem_id: string; language: string; code: string; plan?: string },

@@ -1,0 +1,3691 @@
+[
+  {
+    "day_number": 1,
+    "section_id": "python-foundations",
+    "title": "Variables, Expressions & Memory Model",
+    "topic_name": "Python Syntax",
+    "estimated_minutes": 30,
+    "difficulty": "BEGINNER",
+    "prerequisites": [],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Dynamic Typing",
+      "Object References",
+      "Memory Model",
+      "id() & type()"
+    ],
+    "learning_objectives": [
+      "Trace variable assignment as name tags bound to heap objects using id()",
+      "Differentiate between value equality (==) and object identity (is)"
+    ],
+    "description": "Explore dynamic typing, object references, the id() built-in, and Python's memory assignment semantics."
+  },
+  {
+    "day_number": 2,
+    "section_id": "python-foundations",
+    "title": "Numerical Types, Arithmetic & Bitwise",
+    "topic_name": "Numeric System",
+    "estimated_minutes": 25,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      1
+    ],
+    "flow_tier": "tier2",
+    "archetype": "guided",
+    "concepts": [
+      "Integers & Floats",
+      "Floor Division & Modulo",
+      "Bitwise Operators"
+    ],
+    "learning_objectives": [
+      "Calculate floor division and modulo on negative numbers using the mathematical floor invariant",
+      "Apply bitwise operators (&, |, ^, ~, <<, >>) and bit_count() to integer flags"
+    ],
+    "description": "Deep dive into arbitrary-precision integers, IEEE-754 floating point quirks, modulo arithmetic, floor division, and bitwise operators."
+  },
+  {
+    "day_number": 3,
+    "section_id": "python-foundations",
+    "title": "Strings, Slicing & Character Encoding",
+    "topic_name": "String Processing",
+    "estimated_minutes": 30,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      2
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "String Immutability",
+      "Slice Notation [start:stop:step]",
+      "ASCII & ord()/chr()"
+    ],
+    "learning_objectives": [
+      "Apply slice notation to extract and reverse strings without modifying the original sequence",
+      "Convert characters to ASCII values using ord() and chr() for array indexing"
+    ],
+    "description": "Master string immutability, slice notation [start:stop:step], f-strings, and character code conversion using ord() and chr()."
+  },
+  {
+    "day_number": 4,
+    "section_id": "python-foundations",
+    "title": "Booleans & Logical Control Flow",
+    "topic_name": "Conditionals",
+    "estimated_minutes": 25,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      2
+    ],
+    "flow_tier": "tier1",
+    "archetype": "debugging",
+    "concepts": [
+      "Truthiness & Falsy Values",
+      "Short-Circuit Evaluation"
+    ],
+    "learning_objectives": [
+      "Predict short-circuit logical evaluation order to prevent unintended side-effects",
+      "Debug conditional branching relying on truthy and falsy object coercion"
+    ],
+    "description": "Understand truthiness, boolean coercion, short-circuit logical evaluation, and conditional branch structures."
+  },
+  {
+    "day_number": 5,
+    "section_id": "python-foundations",
+    "title": "Loops & Iteration Semantics",
+    "topic_name": "Loop Constructs",
+    "estimated_minutes": 35,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      4
+    ],
+    "flow_tier": "tier2",
+    "archetype": "guided",
+    "concepts": [
+      "for & while Loops",
+      "break, continue & for-else"
+    ],
+    "learning_objectives": [
+      "Construct nested loops with break, continue, and the search-and-confirm for-else construct",
+      "Trace range() lazy evaluation across positive and negative strides"
+    ],
+    "description": "Implement while and for-in loops, loop control statements (break, continue), and the for-else construct."
+  },
+  {
+    "day_number": 6,
+    "section_id": "python-foundations",
+    "title": "Functions, Stack Frames & LEGB Scope",
+    "topic_name": "Function Basics",
+    "estimated_minutes": 30,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      5
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Function Signatures & Return",
+      "LEGB Scope & Call Stack"
+    ],
+    "learning_objectives": [
+      "Trace variable resolution order across Local, Enclosing, Global, and Built-in scopes",
+      "Analyze call stack activation records and lifetime of local variables"
+    ],
+    "description": "Define reusable procedures, return contracts, local vs global scope, and the LEGB namespace lookup rule."
+  },
+  {
+    "day_number": 7,
+    "section_id": "python-foundations",
+    "title": "Function Signatures & Default Argument Trap",
+    "topic_name": "Advanced Parameters",
+    "estimated_minutes": 35,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      6
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "*args & **kwargs",
+      "Mutable Default Argument Trap"
+    ],
+    "learning_objectives": [
+      "Debug the shared mutable default argument pitfall using the None sentinel pattern",
+      "Design flexible function signatures using variadic positional and keyword arguments"
+    ],
+    "description": "Inspect positional and keyword arguments, variadic *args/**kwargs, and the classic mutable default argument trap."
+  },
+  {
+    "day_number": 8,
+    "section_id": "python-foundations",
+    "title": "Basic I/O & Robust Type Casting",
+    "topic_name": "Input / Output",
+    "estimated_minutes": 25,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      6
+    ],
+    "flow_tier": "tier1",
+    "archetype": "guided",
+    "concepts": [
+      "sys.stdin & input()",
+      "Type Casting & Defensive Parsing"
+    ],
+    "learning_objectives": [
+      "Parse token streams from standard input with try-except fallback casting",
+      "Format console and string output using format specifiers and sys.stdout.write"
+    ],
+    "description": "Process standard input safely, parse structured tokens, handle EOF errors, and cast input data."
+  },
+  {
+    "day_number": 9,
+    "section_id": "python-foundations",
+    "title": "Python Standard Library Essentials",
+    "topic_name": "Standard Library",
+    "estimated_minutes": 30,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      8
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "math & sys Modules",
+      "Built-in Iteration Helpers (zip, enumerate)"
+    ],
+    "learning_objectives": [
+      "Utilize math functions and sys parameters for algorithmic utility",
+      "Iterate sequences cleanly using enumerate, zip, any, and all"
+    ],
+    "description": "Leverage standard modules including math, sys, random, and string for algorithmic utility."
+  },
+  {
+    "day_number": 10,
+    "section_id": "python-foundations",
+    "title": "Foundations Check & Synthetic Practice",
+    "topic_name": "Foundations Milestone",
+    "estimated_minutes": 40,
+    "difficulty": "BEGINNER",
+    "prerequisites": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Decomposition",
+      "Input Parsing Pipeline",
+      "Algorithmic Control Flow"
+    ],
+    "learning_objectives": [
+      "Synthesize control flow, functional decomposition, and input parsing into a complete script",
+      "Evaluate time and space characteristics of basic algorithmic procedures"
+    ],
+    "description": "Synthesize variables, conditionals, loops, and functional decomposition to build self-contained algorithmic scripts."
+  },
+  {
+    "day_number": 11,
+    "section_id": "python-core",
+    "title": "Lists: Memory Layout & Dynamic Resizing",
+    "topic_name": "List Architecture",
+    "estimated_minutes": 35,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      10
+    ],
+    "flow_tier": "tier2",
+    "archetype": "guided",
+    "concepts": [
+      "Contiguous Pointer Array",
+      "Amortized O(1) Append vs O(N) Shift"
+    ],
+    "learning_objectives": [
+      "Explain CPython list over-allocation formula and dynamic resizing mechanism",
+      "Contrast amortized O(1) append against O(N) cost of insert(0) and pop(0)"
+    ],
+    "description": "Analyze dynamic array memory layouts, pointer arrays in CPython, amortized O(1) append, and the O(N) insert/pop(0) penalty."
+  },
+  {
+    "day_number": 12,
+    "section_id": "python-core",
+    "title": "List Slicing O(K) Cost & Mutability Traps",
+    "topic_name": "List Mutations",
+    "estimated_minutes": 30,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      11
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Slicing O(K) Time & Space",
+      "Shallow vs Deep Copy"
+    ],
+    "learning_objectives": [
+      "Analyze the hidden O(K) time and space allocation cost of list slicing",
+      "Debug reference alias bugs in nested list initialization and shallow copying"
+    ],
+    "description": "Analyze the O(K) time and space complexity of list slicing, shallow vs deep copies, and in-place list mutations."
+  },
+  {
+    "day_number": 13,
+    "section_id": "python-core",
+    "title": "List Comprehensions & Expressions",
+    "topic_name": "Comprehensions",
+    "estimated_minutes": 25,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      12
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "List Comprehension Syntax",
+      "Nested Comprehensions & Scoping"
+    ],
+    "learning_objectives": [
+      "Construct concise list comprehensions with conditional filtering and mapping",
+      "Flatten and transform 2D matrices using nested comprehension expressions"
+    ],
+    "description": "Transform data expressively and efficiently using list comprehensions and conditional filters."
+  },
+  {
+    "day_number": 14,
+    "section_id": "python-core",
+    "title": "Tuples, Immutability & The Tuple Swap Idiom",
+    "topic_name": "Tuples",
+    "estimated_minutes": 25,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      12
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "Tuple Immutability",
+      "Tuple Packing/Unpacking & Swap"
+    ],
+    "learning_objectives": [
+      "Explain Python's stack-based variable swap idiom (a, b = b, a) via anonymous tuples",
+      "Utilize immutable tuples as composite hashable keys for grid and graph coordinate lookups"
+    ],
+    "description": "Understand tuple immutability, memory savings over lists, unpacking idioms, and using tuples as hashable coordinate keys."
+  },
+  {
+    "day_number": 15,
+    "section_id": "python-core",
+    "title": "Dictionaries: Compact Hash Table Internals",
+    "topic_name": "Hash Maps",
+    "estimated_minutes": 35,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      14
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Compact Hash Table Architecture",
+      "Open Addressing & Load Factor"
+    ],
+    "learning_objectives": [
+      "Trace dictionary key hashing, index mapping, and perturb-based collision resolution",
+      "Explain the 2/3 load factor resize boundary and requirement for hashable immutable keys"
+    ],
+    "description": "Explore CPython's compact dictionary architecture, hash functions, open-addressing collision resolution, and average O(1) lookups."
+  },
+  {
+    "day_number": 16,
+    "section_id": "python-core",
+    "title": "Dictionary Methods, Views & Aggregation",
+    "topic_name": "Dictionary Operations",
+    "estimated_minutes": 30,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      15
+    ],
+    "flow_tier": "tier1",
+    "archetype": "guided",
+    "concepts": [
+      "setdefault() & get()",
+      "Dynamic Dictionary Views & Merge"
+    ],
+    "learning_objectives": [
+      "Build aggregation and grouping pipelines using setdefault and dictionary comprehensions",
+      "Manipulate key, value, and item views without allocating intermediate lists"
+    ],
+    "description": "Apply get(), setdefault(), dictionary views (.keys(), .values(), .items()), and modern dictionary merging."
+  },
+  {
+    "day_number": 17,
+    "section_id": "python-core",
+    "title": "Sets: Value-Free Hash Tables & O(1) Lookups",
+    "topic_name": "Set Theory",
+    "estimated_minutes": 30,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      15
+    ],
+    "flow_tier": "tier1",
+    "archetype": "problem",
+    "concepts": [
+      "Set O(1) Lookups",
+      "Mathematical Set Operations"
+    ],
+    "learning_objectives": [
+      "Eliminate duplicate elements and perform membership tests in O(1) average time",
+      "Execute set union, intersection, and difference operations meeting asymptotic bounds"
+    ],
+    "description": "Use sets for O(1) membership testing, deduplication, set algebra, and understand the immutable frozenset."
+  },
+  {
+    "day_number": 18,
+    "section_id": "python-core",
+    "title": "The Collections Module: Deque & Counter",
+    "topic_name": "Specialized Containers",
+    "estimated_minutes": 35,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      16,
+      17
+    ],
+    "flow_tier": "tier2",
+    "archetype": "guided",
+    "concepts": [
+      "collections.deque O(1) Endpoints",
+      "Counter & defaultdict"
+    ],
+    "learning_objectives": [
+      "Implement O(1) double-ended queues using collections.deque, avoiding list pop(0) penalties",
+      "Count element frequencies and build adjacency groupings using Counter and defaultdict"
+    ],
+    "description": "Master collections.deque for O(1) appends and pops on both ends, defaultdict, and Counter."
+  },
+  {
+    "day_number": 19,
+    "section_id": "python-core",
+    "title": "Iterators & The Iteration Protocol",
+    "topic_name": "Iteration Architecture",
+    "estimated_minutes": 30,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      18
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "__iter__ & __next__ Protocol",
+      "StopIteration & Exhaustion"
+    ],
+    "learning_objectives": [
+      "Implement a custom stateful iterator class conforming to the Python iteration protocol",
+      "Handle StopIteration termination and consumable stream invariants"
+    ],
+    "description": "Understand iterable vs iterator, the __iter__ and __next__ protocols, and consumable stream behavior."
+  },
+  {
+    "day_number": 20,
+    "section_id": "python-core",
+    "title": "Generators & Lazy Memory Streaming",
+    "topic_name": "Lazy Evaluation",
+    "estimated_minutes": 35,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      19
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "yield State Suspension",
+      "yield from & O(1) Space Streams"
+    ],
+    "learning_objectives": [
+      "Construct generator functions that yield values incrementally in O(1) auxiliary memory",
+      "Delegate sub-generator execution cleanly using yield from"
+    ],
+    "description": "Implement generator functions with yield, understand execution suspension, generator expressions, and pipeline composition."
+  },
+  {
+    "day_number": 21,
+    "section_id": "python-core",
+    "title": "Decorators, Closures & Metadata Wrappers",
+    "topic_name": "Higher-Order Functions",
+    "estimated_minutes": 35,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      20
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Closures & Cell Objects",
+      "functools.wraps Decorators"
+    ],
+    "learning_objectives": [
+      "Construct function decorators that intercept calls and preserve docstring metadata with functools.wraps",
+      "Debug variable binding bugs in nested function closures"
+    ],
+    "description": "Write function decorators, understand closures, cell objects, and preserving function metadata with functools.wraps."
+  },
+  {
+    "day_number": 22,
+    "section_id": "python-core",
+    "title": "OOP Classes, Dunder Protocols & __lt__",
+    "topic_name": "Object-Oriented Python",
+    "estimated_minutes": 40,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      21
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Class Construction & __init__",
+      "Dunders: __repr__, __eq__, __hash__, __lt__"
+    ],
+    "learning_objectives": [
+      "Implement custom classes with __repr__, __eq__, and __hash__ contracts",
+      "Define the __lt__ dunder method to enable native sorting and heapq priority queue compatibility"
+    ],
+    "description": "Build classes, manage instance state, and implement dunder protocols (__repr__, __eq__, __hash__, and __lt__ for comparators)."
+  },
+  {
+    "day_number": 23,
+    "section_id": "python-core",
+    "title": "Inheritance & Method Resolution Order (C3)",
+    "topic_name": "Inheritance Models",
+    "estimated_minutes": 30,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      22
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Single & Multiple Inheritance",
+      "C3 Linearization & super()"
+    ],
+    "learning_objectives": [
+      "Trace multiple inheritance lookup order using C3 linearization MRO",
+      "Coordinate cooperative super() initialization across class hierarchies"
+    ],
+    "description": "Master single and multiple inheritance, super(), and CPython's C3 Linearization Method Resolution Order (MRO)."
+  },
+  {
+    "day_number": 24,
+    "section_id": "python-core",
+    "title": "Exception Handling & Custom Hierarchies",
+    "topic_name": "Error Architecture",
+    "estimated_minutes": 25,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      22
+    ],
+    "flow_tier": "tier1",
+    "archetype": "debugging",
+    "concepts": [
+      "try/except/else/finally",
+      "Custom Exception Hierarchies"
+    ],
+    "learning_objectives": [
+      "Refactor broad exception handlers into precise catch blocks with cleanup guarantees",
+      "Define domain-specific custom exception classes inheriting from Exception"
+    ],
+    "description": "Write robust error-handling code with try/except/else/finally and build custom domain exception classes."
+  },
+  {
+    "day_number": 25,
+    "section_id": "python-core",
+    "title": "Python DSA Algorithmic Toolkit & Milestone",
+    "topic_name": "Core Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "FOUNDATIONAL",
+    "prerequisites": [
+      11,
+      14,
+      15,
+      18,
+      22
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "list.sort() vs sorted() & Multi-Key",
+      "heapq & Tie-Breaker Crash Prevention",
+      "sys.setrecursionlimit & Float Infinity"
+    ],
+    "learning_objectives": [
+      "Sort complex structures with multi-key tuple lambdas and utilize heapq min-heaps safely",
+      "Configure recursion limits (sys.setrecursionlimit) and sentinel infinities for algorithmic problem solving"
+    ],
+    "description": "Synthesize Python core data structures into a complete algorithmic toolkit bridging into Data Structures & Algorithms."
+  },
+  {
+    "day_number": 26,
+    "section_id": "computational-thinking",
+    "title": "Asymptotic Analysis & Big-O Notation",
+    "topic_name": "Complexity Foundations",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      25
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Big-O Asymptotic Upper Bound",
+      "Growth Orders (O(1) to O(2^N))"
+    ],
+    "learning_objectives": [
+      "Classify mathematical functions by asymptotic growth rate as N approaches infinity",
+      "Differentiate best-case, average-case, and worst-case performance metrics"
+    ],
+    "description": "Understand Big-O notation, asymptotic upper bounds, growth rate hierarchies, and worst-case vs average-case behavior."
+  },
+  {
+    "day_number": 27,
+    "section_id": "computational-thinking",
+    "title": "Identifying Common Time Complexities",
+    "topic_name": "Code Complexity Analysis",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      26
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Nested Loops & Stride Halving",
+      "Drop Constants & Non-Dominant Terms"
+    ],
+    "learning_objectives": [
+      "Analyze code snippets to extract time complexity formulas by inspecting loop bounds",
+      "Identify logarithmic complexity in divide-by-two search and stride halving patterns"
+    ],
+    "description": "Analyze code snippets to determine O(1), O(log N), O(N), O(N log N), O(N^2), and O(2^N) time complexities."
+  },
+  {
+    "day_number": 28,
+    "section_id": "computational-thinking",
+    "title": "Space Complexity & Auxiliary Memory",
+    "topic_name": "Space Analysis",
+    "estimated_minutes": 25,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      27
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Auxiliary Space vs Input Space",
+      "Call Stack Frame Allocation"
+    ],
+    "learning_objectives": [
+      "Calculate auxiliary heap memory consumption independently of input storage",
+      "Account for maximum call stack depth when computing recursive space complexity"
+    ],
+    "description": "Differentiate total space from auxiliary space, measure memory allocations, and analyze recursion stack overhead."
+  },
+  {
+    "day_number": 29,
+    "section_id": "computational-thinking",
+    "title": "Brute Force to Optimized Reductions",
+    "topic_name": "Optimization Strategies",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      27,
+      28
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Bottleneck Identification",
+      "Trading Space for Time"
+    ],
+    "learning_objectives": [
+      "Identify algorithmic bottlenecks that degrade procedures into quadratic runtimes",
+      "Refactor O(N^2) brute-force searches into linear O(N) pipelines using hash lookups"
+    ],
+    "description": "Learn systematic techniques to recognize quadratic bottlenecks and optimize them using precomputation or hash tables."
+  },
+  {
+    "day_number": 30,
+    "section_id": "computational-thinking",
+    "title": "Linear Recursion Fundamentals & Call Stack",
+    "topic_name": "Recursion Foundations",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      6,
+      28
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Base Case & Recursive Step",
+      "Call Stack Unwinding & Frame Allocation"
+    ],
+    "learning_objectives": [
+      "Formulate inductive base cases and recursive steps that guarantee termination",
+      "Trace recursive call stack frame allocation, state isolation, and return unwinding"
+    ],
+    "description": "Master base cases, recursive steps, stack frame allocation, stack unwinding, and recursion depth limits."
+  },
+  {
+    "day_number": 31,
+    "section_id": "computational-thinking",
+    "title": "Branching Recursion & Tree Diagramming",
+    "topic_name": "Branching Recursion",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      30
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Multiple Recursive Calls & Branching",
+      "Recursion Tree Level Work"
+    ],
+    "learning_objectives": [
+      "Model multi-branch recursive algorithms using visual recursion tree diagrams",
+      "Compute total work by summing level work across tree depths to explain O(2^N) explosion"
+    ],
+    "description": "Analyze branching recursion, tree representations of recursive calls, redundant work in Fibonacci, and work per level."
+  },
+  {
+    "day_number": 32,
+    "section_id": "computational-thinking",
+    "title": "Tail Recursion & State Accumulators",
+    "topic_name": "Tail Recursion",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      30
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Tail Call Position",
+      "Accumulator Passing Style"
+    ],
+    "learning_objectives": [
+      "Convert head recursion into tail-call form using accumulator parameters",
+      "Transform linear recursive procedures into iterative loops to prevent stack overflow"
+    ],
+    "description": "Understand tail calls, accumulator parameters, transforming recursion to iteration, and Python recursion limitations."
+  },
+  {
+    "day_number": 33,
+    "section_id": "computational-thinking",
+    "title": "Divide & Conquer Master Theorem",
+    "topic_name": "Recurrence Analysis",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      31
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Divide, Conquer, Combine Paradigm",
+      "Master Theorem Cases"
+    ],
+    "learning_objectives": [
+      "Formulate recurrence relations T(N) = aT(N/b) + f(N) for divide-and-conquer algorithms",
+      "Apply the three cases of the Master Theorem to deduce exact asymptotic complexity"
+    ],
+    "description": "Formulate recurrence relations and apply the Master Theorem to divide-and-conquer recurrences T(n) = aT(n/b) + f(n)."
+  },
+  {
+    "day_number": 34,
+    "section_id": "computational-thinking",
+    "title": "Invariant Design & Loop Verification",
+    "topic_name": "Algorithmic Invariants",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      27
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "Loop Invariant Specification",
+      "Initialization, Maintenance & Termination"
+    ],
+    "learning_objectives": [
+      "Specify inductive loop invariants that prove algorithmic correctness",
+      "Verify initialization, maintenance, and termination conditions for array loops"
+    ],
+    "description": "Formalize algorithm correctness using loop invariants: initialization, maintenance, and termination proof techniques."
+  },
+  {
+    "day_number": 35,
+    "section_id": "computational-thinking",
+    "title": "Section 3 Milestone & Complexity Audit",
+    "topic_name": "Complexity Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      26,
+      27,
+      28,
+      30,
+      31,
+      33,
+      34
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Asymptotic Profiling",
+      "Space-Time Tradeoff Design",
+      "Formal Invariant Proof"
+    ],
+    "learning_objectives": [
+      "Conduct a comprehensive asymptotic audit optimizing three distinct algorithmic routines",
+      "Formulate mathematical correctness proofs and recurrence trees under interview constraints"
+    ],
+    "description": "Perform an end-to-end complexity audit and algorithmic proof evaluation across recursion, iterative state, and recurrences."
+  },
+  {
+    "day_number": 36,
+    "section_id": "arrays-and-strings",
+    "title": "Static vs Dynamic Arrays & Cache Locality",
+    "topic_name": "Array Memory",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      11,
+      27
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Contiguous Physical Memory",
+      "CPU Cache Lines & Stride Locality"
+    ],
+    "learning_objectives": [
+      "Contrast fixed memory allocations with dynamic pointer arrays",
+      "Predict CPU cache hits and misses across row-major vs column-major matrix sweeps"
+    ],
+    "description": "Understand physical contiguous arrays, memory layouts, CPU cache line caching, and access patterns."
+  },
+  {
+    "day_number": 37,
+    "section_id": "arrays-and-strings",
+    "title": "1D Prefix Sums & O(1) Range Queries",
+    "topic_name": "Prefix Sums",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      36
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Prefix Sum Array Construction",
+      "O(1) Range Sum Formula"
+    ],
+    "learning_objectives": [
+      "Construct a 1-indexed prefix sum array in O(N) preprocessing time",
+      "Answer arbitrary range sum queries (L to R) in strict O(1) time"
+    ],
+    "description": "Construct 1D prefix sum arrays to answer range sum queries in O(1) time after O(N) precomputation."
+  },
+  {
+    "day_number": 38,
+    "section_id": "arrays-and-strings",
+    "title": "Difference Arrays & Range Updates",
+    "topic_name": "Difference Arrays",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      37
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Difference Array Invariant",
+      "O(1) Range Updates with O(N) Reconstruction"
+    ],
+    "learning_objectives": [
+      "Execute range increment updates in O(1) time by mutating difference boundary indices",
+      "Reconstruct final array values in a single O(N) prefix summation pass"
+    ],
+    "description": "Master difference arrays for O(1) range updates followed by a single O(N) prefix sum reconstruction."
+  },
+  {
+    "day_number": 39,
+    "section_id": "arrays-and-strings",
+    "title": "Two Pointers: Opposing Direction",
+    "topic_name": "Two Pointers",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      34,
+      36
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Converging Boundary Pointers",
+      "Monotonic Search Space Elimination"
+    ],
+    "learning_objectives": [
+      "Eliminate suboptimal search space candidates monotonically using inward-converging pointers",
+      "Solve two-sum on sorted arrays and Container With Most Water in O(N) time and O(1) space"
+    ],
+    "description": "Use two pointers moving inward from boundaries to solve two-sum on sorted arrays and maximize area."
+  },
+  {
+    "day_number": 40,
+    "section_id": "arrays-and-strings",
+    "title": "Two Pointers: Fast & Slow In-Place Writers",
+    "topic_name": "In-Place Pointers",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      39
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "Read/Write Pointer Invariant",
+      "In-Place Array Compaction"
+    ],
+    "learning_objectives": [
+      "Maintain read and write pointer invariants for in-place array compaction",
+      "Remove duplicates and shift elements in-place without allocating auxiliary lists"
+    ],
+    "description": "Implement fast and slow pointers for in-place array mutation, deduplication, and zero-shifting in O(1) space."
+  },
+  {
+    "day_number": 41,
+    "section_id": "arrays-and-strings",
+    "title": "Sliding Window: Fixed Size",
+    "topic_name": "Fixed Window",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      37,
+      40
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Rolling Window State",
+      "O(1) Element Slide Transition"
+    ],
+    "learning_objectives": [
+      "Maintain rolling window state across fixed length k by adding incoming and subtracting outgoing elements",
+      "Compute maximum subarray sums and rolling averages in O(N) time"
+    ],
+    "description": "Apply fixed-size sliding windows to compute rolling sums, max averages, and contiguous subarray statistics in O(N) time."
+  },
+  {
+    "day_number": 42,
+    "section_id": "arrays-and-strings",
+    "title": "Sliding Window: Dynamic Size",
+    "topic_name": "Dynamic Window",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      41
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Expand-Right & Contract-Left",
+      "Monotonic Condition Predicates"
+    ],
+    "learning_objectives": [
+      "Expand right pointers to find valid subsegments and contract left pointers to restore invariants",
+      "Solve the Longest Substring Without Repeating Characters in O(N) time"
+    ],
+    "description": "Master dynamic sliding windows that expand and contract based on validity predicates, solving substring problems."
+  },
+  {
+    "day_number": 43,
+    "section_id": "arrays-and-strings",
+    "title": "Kadane's Algorithm & Maximum Subarray",
+    "topic_name": "Subarray Optimization",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      37
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Kadane's Local vs Global Maxima",
+      "Subarray Reset Condition"
+    ],
+    "learning_objectives": [
+      "Formulate the local choice invariant: extend existing subarray or start fresh from current element",
+      "Implement Kadane's algorithm tracking maximum sum and subarray boundary indices in O(N) time and O(1) space"
+    ],
+    "description": "Implement Kadane's algorithm to find maximum contiguous subarray sums in O(N) time and O(1) space, with boundary tracking."
+  },
+  {
+    "day_number": 44,
+    "section_id": "arrays-and-strings",
+    "title": "In-Place Array Rotation & Reversal",
+    "topic_name": "Array Manipulations",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      40
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Triple-Reversal Algorithm",
+      "Block Swap Invariants"
+    ],
+    "learning_objectives": [
+      "Rotate arrays by k positions in O(N) time and O(1) auxiliary space using triple reversals",
+      "Debug off-by-one pointer swaps on odd and even length segments"
+    ],
+    "description": "Rotate arrays in O(1) auxiliary space using the three-reversal trick, cyclic replacements, and block swapping."
+  },
+  {
+    "day_number": 45,
+    "section_id": "arrays-and-strings",
+    "title": "String Parsing & State Machine Tokenization",
+    "topic_name": "String State Machines",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      3,
+      44
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Deterministic Finite Automata (DFA)",
+      "Edge Case Parsing Guardrails"
+    ],
+    "learning_objectives": [
+      "Design a deterministic finite automaton state machine to parse strings into typed tokens",
+      "Implement robust string-to-integer conversion (atoi) handling leading whitespace, signs, and clamping"
+    ],
+    "description": "Build state machines to parse complex strings, validate numeric formats, and implement string-to-integer (atoi)."
+  },
+  {
+    "day_number": 46,
+    "section_id": "arrays-and-strings",
+    "title": "Palindrome Verification & Center Expansion",
+    "topic_name": "Palindromes",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      39,
+      45
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Center Expansion Paradigm",
+      "Odd vs Even Length Palindromes"
+    ],
+    "learning_objectives": [
+      "Expand around 2N - 1 potential centers to identify palindromic substrings in O(N^2) time and O(1) space",
+      "Verify alphanumeric palindrome sentences using two pointers skipping non-alphanumeric characters"
+    ],
+    "description": "Verify palindromes using two pointers and find longest palindromic substrings by expanding around 2N-1 centers."
+  },
+  {
+    "day_number": 47,
+    "section_id": "arrays-and-strings",
+    "title": "2D Matrix Traversals & Spiral Order",
+    "topic_name": "Matrix Algorithms",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      36
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Matrix Boundary Invariants",
+      "Directional Offset Stepping"
+    ],
+    "learning_objectives": [
+      "Traverse an M x N matrix in spiral order while updating top, bottom, left, and right boundary limits",
+      "Rotate matrices 90 degrees in-place by transposing and reversing rows"
+    ],
+    "description": "Navigate 2D grids, extract diagonals, rotate matrices in-place, and traverse boundary spirals without allocations."
+  },
+  {
+    "day_number": 48,
+    "section_id": "arrays-and-strings",
+    "title": "2D Prefix Sums & Matrix Accumulation",
+    "topic_name": "2D Prefix Sums",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      37,
+      47
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Inclusion-Exclusion Principle",
+      "O(1) Submatrix Sum Queries"
+    ],
+    "learning_objectives": [
+      "Construct a 2D prefix sum table using the 2D inclusion-exclusion principle",
+      "Evaluate arbitrary submatrix sum queries in strict O(1) time"
+    ],
+    "description": "Construct 2D prefix sum tables using the inclusion-exclusion principle to query rectangular submatrix sums in O(1) time."
+  },
+  {
+    "day_number": 49,
+    "section_id": "arrays-and-strings",
+    "title": "Intervals: Sorting & Merging Overlaps",
+    "topic_name": "Interval Scheduling",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      25,
+      40
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Interval Overlap Invariant",
+      "Greedy Interval Merging"
+    ],
+    "learning_objectives": [
+      "Sort intervals by start times and merge overlapping segments in O(N log N) time",
+      "Determine non-overlapping intervals and schedule rooms using boundary scan lines"
+    ],
+    "description": "Sort intervals, merge overlapping ranges, insert new intervals, and determine interval intersections in O(N log N) time."
+  },
+  {
+    "day_number": 50,
+    "section_id": "arrays-and-strings",
+    "title": "Section 4 Capstone: Linear Array Patterns",
+    "topic_name": "Array Capstone",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      37,
+      39,
+      41,
+      43,
+      49
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Pattern Hybridization",
+      "Composite Data Pipelines",
+      "Production Bounds"
+    ],
+    "learning_objectives": [
+      "Synthesize prefix sums, two pointers, and interval merges to architect a calendar engine",
+      "Optimize compound array queries meeting strict O(N) time constraints"
+    ],
+    "description": "Synthesize two-pointers, sliding windows, prefix sums, and interval merging into a composite challenge."
+  },
+  {
+    "day_number": 51,
+    "section_id": "searching-and-sorting",
+    "title": "Linear Search vs Binary Search Halving",
+    "topic_name": "Search Foundations",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      27,
+      36
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Linear Scan vs Logarithmic Halving",
+      "Search Space Invariant"
+    ],
+    "learning_objectives": [
+      "Trace binary search interval halving and logarithmic depth bounds",
+      "Prove necessity of sorted order before applying binary search"
+    ],
+    "description": "Contrast linear search with binary search, proving O(log N) runtime through search-space halving."
+  },
+  {
+    "day_number": 52,
+    "section_id": "searching-and-sorting",
+    "title": "Classical Binary Search & Boundary Indices",
+    "topic_name": "Binary Search Boundaries",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      51
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "Midpoint Calculation (L + (R-L)//2)",
+      "Bisect Left & Right Boundaries"
+    ],
+    "learning_objectives": [
+      "Prevent integer overflow bugs in midpoint computation",
+      "Implement exact lower-bound and upper-bound binary searches (bisect_left / bisect_right)"
+    ],
+    "description": "Master boundary conditions, lower and upper bounds, bisect semantics, and avoiding infinite loops in binary search."
+  },
+  {
+    "day_number": 53,
+    "section_id": "searching-and-sorting",
+    "title": "Binary Search on Monotonic Answer Space",
+    "topic_name": "Answer Space Search",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      52
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Monotonic Feasibility Predicate",
+      "Answer Space Search Invariant"
+    ],
+    "learning_objectives": [
+      "Map optimization problems to monotonic boolean check functions",
+      "Solve Capacity to Ship Packages and Koko Eating Bananas in O(N log(Range)) time"
+    ],
+    "description": "Apply binary search to monotonic answer spaces to find optimal parameters meeting problem constraints."
+  },
+  {
+    "day_number": 54,
+    "section_id": "searching-and-sorting",
+    "title": "Rotated Sorted Arrays & Peak Finding",
+    "topic_name": "Rotated Search",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      52
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Sorted Half Identification",
+      "Inflection Point Invariants"
+    ],
+    "learning_objectives": [
+      "Determine which half of a rotated sorted array is monotonically ordered",
+      "Locate target elements and inflection minimums in O(log N) time"
+    ],
+    "description": "Find elements in rotated sorted arrays and locate local peaks using modified binary search predicates."
+  },
+  {
+    "day_number": 55,
+    "section_id": "searching-and-sorting",
+    "title": "Quadratic Sorts: Bubble, Selection, Insertion",
+    "topic_name": "Quadratic Sorts",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      34,
+      36
+    ],
+    "flow_tier": "tier1",
+    "archetype": "debugging",
+    "concepts": [
+      "Insertion Sort Invariant",
+      "Stability in Sorting Algorithms"
+    ],
+    "learning_objectives": [
+      "Explain why insertion sort achieves linear O(N) performance on nearly-sorted data",
+      "Debug sorting stability violations where equal keys are unintentionally swapped"
+    ],
+    "description": "Analyze Bubble, Selection, and Insertion Sort, proving O(N^2) bounds and stability trade-offs."
+  },
+  {
+    "day_number": 56,
+    "section_id": "searching-and-sorting",
+    "title": "Merge Sort: Divide, Conquer, Combine",
+    "topic_name": "Merge Sort",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      31,
+      33,
+      55
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Divide & Conquer Merge Step",
+      "Stable O(N log N) Guarantee"
+    ],
+    "learning_objectives": [
+      "Implement recursive Merge Sort with linear merge combination passes",
+      "Analyze O(N log N) time and O(N) auxiliary space requirements"
+    ],
+    "description": "Implement Merge Sort recursively, trace recursion trees, and prove the O(N log N) stable sorting guarantee."
+  },
+  {
+    "day_number": 57,
+    "section_id": "searching-and-sorting",
+    "title": "Quick Sort & Hoare Partitioning",
+    "topic_name": "Quick Sort",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      31,
+      56
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Hoare vs Lomuto Partitioning",
+      "Pivot Selection & O(N^2) Degeneracy"
+    ],
+    "learning_objectives": [
+      "Implement in-place Hoare partition scheme with median-of-three pivot selection",
+      "Explain worst-case O(N^2) degradation on sorted inputs and randomization fixes"
+    ],
+    "description": "Implement Quick Sort, master Lomuto and Hoare partitioning, analyze expected O(N log N) time, and avoid worst-case pivots."
+  },
+  {
+    "day_number": 58,
+    "section_id": "searching-and-sorting",
+    "title": "Quickselect: Expected O(N) Kth Order",
+    "topic_name": "Order Statistics",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      57
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "Single-Sided Partition Discarding",
+      "Expected O(N) Recurrence"
+    ],
+    "learning_objectives": [
+      "Discard non-promising partitions to locate the Kth largest element in expected O(N) time",
+      "Prove the geometric series convergence T(N) = N + N/2 + N/4 = 2N"
+    ],
+    "description": "Use Quickselect to find the Kth smallest or largest element in expected O(N) time without full sorting."
+  },
+  {
+    "day_number": 59,
+    "section_id": "searching-and-sorting",
+    "title": "Counting Sort & Non-Comparison Bounds",
+    "topic_name": "Counting Sort",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      36,
+      56
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Non-Comparison Sorting Invariant",
+      "Cumulative Frequency Offsets"
+    ],
+    "learning_objectives": [
+      "Bypass the Omega(N log N) comparison sort lower bound using frequency arrays",
+      "Implement stable Counting Sort in O(N + K) time and O(K) space"
+    ],
+    "description": "Break the Omega(N log N) comparison barrier with stable Counting Sort over bounded integer ranges."
+  },
+  {
+    "day_number": 60,
+    "section_id": "searching-and-sorting",
+    "title": "Radix Sort & Bucket Sort",
+    "topic_name": "Distribution Sorts",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      59
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "LSD vs MSD Radix Passes",
+      "Bucket Sort Distribution"
+    ],
+    "learning_objectives": [
+      "Implement Least Significant Digit (LSD) Radix Sort across fixed integer representations",
+      "Distribute uniform floating-point keys into buckets in O(N) average time"
+    ],
+    "description": "Implement Radix Sort and Bucket Sort for linear-time sorting of fixed-width integers and uniform numbers."
+  },
+  {
+    "day_number": 61,
+    "section_id": "searching-and-sorting",
+    "title": "Python's Timsort Architecture",
+    "topic_name": "Timsort Architecture",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      56,
+      60
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Natural Runs & Galloping Mode",
+      "Minrun Computation & Stack Balance"
+    ],
+    "learning_objectives": [
+      "Trace natural ascending and descending run identification in Python's list.sort()",
+      "Explain binary insertion sort integration on sub-arrays under minrun thresholds"
+    ],
+    "description": "Examine Python's built-in Timsort algorithm, minruns, run merging invariants, and galloping mode."
+  },
+  {
+    "day_number": 62,
+    "section_id": "searching-and-sorting",
+    "title": "Custom Comparators & Multi-Key Sorting",
+    "topic_name": "Custom Sorting",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      22,
+      25,
+      61
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "key Function Lambdas",
+      "Multi-Attribute Tuple Keys"
+    ],
+    "learning_objectives": [
+      "Construct complex multi-key sorting pipelines using tuple keys and reverse flags",
+      "Bridge legacy three-way comparators using functools.cmp_to_key"
+    ],
+    "description": "Master Python's key parameter in sorted(), multi-level tuple keys, and functools.cmp_to_key."
+  },
+  {
+    "day_number": 63,
+    "section_id": "searching-and-sorting",
+    "title": "Inversion Counting with Merge Sort",
+    "topic_name": "Inversion Counting",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      56
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Inversion Pair Invariant",
+      "Merge Step Accumulation"
+    ],
+    "learning_objectives": [
+      "Count array inversions in O(N log N) time by instrumenting the Merge Sort merge phase",
+      "Deduce remaining inversions when an element from the right array is selected first"
+    ],
+    "description": "Count the number of inverted pairs in an array in O(N log N) time by augmenting the merge sort procedure."
+  },
+  {
+    "day_number": 64,
+    "section_id": "searching-and-sorting",
+    "title": "Ternary Search on Unimodal Functions",
+    "topic_name": "Ternary Search",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      51
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "Unimodal Function Extremum",
+      "Trisection Convergence"
+    ],
+    "learning_objectives": [
+      "Locate the extremum of a unimodal continuous function via search-space trisection",
+      "Prove the 2/3 range reduction factor per iteration"
+    ],
+    "description": "Apply ternary search to find extrema of unimodal functions by dividing intervals into three equal segments."
+  },
+  {
+    "day_number": 65,
+    "section_id": "searching-and-sorting",
+    "title": "Section 5 Review & Search/Sort Mastery",
+    "topic_name": "Search & Sort Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      52,
+      53,
+      56,
+      57,
+      61,
+      62
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Search/Sort Hybridization",
+      "Asymptotic Trade-off Selection",
+      "Adaptive Pipelines"
+    ],
+    "learning_objectives": [
+      "Design a high-performance hybrid sorting algorithm dynamically switching strategies at threshold K",
+      "Solve composite placement interview problems under strict time and space budgets"
+    ],
+    "description": "Synthesize binary search paradigms, comparison and non-comparison sorting algorithms, and custom comparators."
+  },
+  {
+    "day_number": 66,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Hash Functions, Prime Moduli & Distribution",
+    "topic_name": "Hash Functions",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      15,
+      27
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Uniform Distribution & Avalanche Effect",
+      "Prime Modulo Bucketing"
+    ],
+    "learning_objectives": [
+      "Evaluate hash functions on key avalanche and uniformity metrics",
+      "Apply prime modulus division to minimize bucket collisions"
+    ],
+    "description": "Understand hash function properties: uniformity, determinism, avalanche effect, and prime-number modulo bucketing."
+  },
+  {
+    "day_number": 67,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Collision Resolution: Chaining vs Probing",
+    "topic_name": "Collision Resolution",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      66
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Separate Chaining with Buckets",
+      "Linear & Quadratic Probing"
+    ],
+    "learning_objectives": [
+      "Implement a hash map resolving collisions via separate chaining buckets",
+      "Trace open addressing probing sequences and tombstone deletion markers"
+    ],
+    "description": "Implement collision resolution via separate chaining and open addressing (linear, quadratic, and double hashing)."
+  },
+  {
+    "day_number": 68,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Frequency Counting & Anagram Detection",
+    "topic_name": "Frequency Hashing",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      3,
+      17,
+      67
+    ],
+    "flow_tier": "tier1",
+    "archetype": "problem",
+    "concepts": [
+      "Fixed Alphabet Frequency Arrays",
+      "Valid Anagram Verification"
+    ],
+    "learning_objectives": [
+      "Count character frequencies in O(N) time and O(1) auxiliary space using ord() offsets",
+      "Determine anagram equivalence without sorting inputs"
+    ],
+    "description": "Use frequency tables and hash maps to solve anagram detection and character count equality in O(N) time."
+  },
+  {
+    "day_number": 69,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Subarray Sums = K with Prefix Hash Maps",
+    "topic_name": "Prefix Hash Maps",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      37,
+      68
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Prefix Sum Frequency Invariant",
+      "Two-Sum Reduction (pref - k)"
+    ],
+    "learning_objectives": [
+      "Store cumulative prefix sum frequencies in a hash table to find target subarrays",
+      "Solve Subarray Sum Equals K in O(N) time and O(N) space"
+    ],
+    "description": "Combine prefix sums with hash maps to count contiguous subarrays summing to K in O(N) time."
+  },
+  {
+    "day_number": 70,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Grouping & Canonical Equivalence Keys",
+    "topic_name": "Equivalence Hashing",
+    "estimated_minutes": 30,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      14,
+      68
+    ],
+    "flow_tier": "tier1",
+    "archetype": "problem",
+    "concepts": [
+      "Canonical Representation Tuple",
+      "Multi-Element Grouping"
+    ],
+    "learning_objectives": [
+      "Construct immutable tuple signature keys to partition elements into equivalence classes",
+      "Group anagrams in O(N * K) time without expensive string sorts"
+    ],
+    "description": "Design canonical hash keys to group anagrams, coordinate patterns, and equivalence classes in O(N * K) time."
+  },
+  {
+    "day_number": 71,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Hash Sets for O(1) Consecutive Sequences",
+    "topic_name": "Sequence Hashing",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      17,
+      70
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Sequence Start Verification (num - 1)",
+      "O(1) Set Membership Streak"
+    ],
+    "learning_objectives": [
+      "Identify sequence heads by checking absence of (num - 1) in a hash set",
+      "Find the Longest Consecutive Sequence in an unsorted array in strict O(N) time"
+    ],
+    "description": "Find the longest consecutive integer sequence in unsorted arrays in O(N) time using O(1) hash set lookups."
+  },
+  {
+    "day_number": 72,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Rolling Hash & Rabin-Karp Substring Search",
+    "topic_name": "Rolling Hash",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      45,
+      66
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Polynomial Rolling Hash Formula",
+      "Spurious Hit Spurious Verification"
+    ],
+    "learning_objectives": [
+      "Implement the polynomial rolling hash window slide formula in O(1) update time",
+      "Execute the Rabin-Karp substring search algorithm with prime modulo hashing"
+    ],
+    "description": "Implement polynomial rolling hashes and the Rabin-Karp algorithm for average O(N + M) substring matching."
+  },
+  {
+    "day_number": 73,
+    "section_id": "hashing-and-hash-tables",
+    "title": "LRU Cache Architecture via OrderedDict",
+    "topic_name": "OrderedDict LRU",
+    "estimated_minutes": 35,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      18,
+      67
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Doubly Linked Hash Table Concept",
+      "O(1) Move-to-End Eviction"
+    ],
+    "learning_objectives": [
+      "Implement an LRU Cache in O(1) time using Python's collections.OrderedDict",
+      "Manage key eviction policies under fixed capacity limits"
+    ],
+    "description": "Build an O(1) Least Recently Used (LRU) Cache utilizing collections.OrderedDict as an introductory bridge."
+  },
+  {
+    "day_number": 74,
+    "section_id": "hashing-and-hash-tables",
+    "title": "LFU Cache Design Principles",
+    "topic_name": "LFU Cache",
+    "estimated_minutes": 45,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      73
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Frequency Bucket Doubly Linked Lists",
+      "Min-Frequency Pointer Invariant"
+    ],
+    "learning_objectives": [
+      "Design an LFU cache tracking access frequencies and secondary recency orders",
+      "Maintain min_freq tracking in O(1) time across get and put operations"
+    ],
+    "description": "Architect an O(1) Least Frequently Used (LFU) cache using nested frequency buckets and reciprocal pointers."
+  },
+  {
+    "day_number": 75,
+    "section_id": "hashing-and-hash-tables",
+    "title": "Section 6 Review & Hashing Mastery",
+    "topic_name": "Hashing Milestone",
+    "estimated_minutes": 40,
+    "difficulty": "DEVELOPING",
+    "prerequisites": [
+      67,
+      69,
+      70,
+      71,
+      72,
+      73
+    ],
+    "flow_tier": "tier2",
+    "archetype": "milestone",
+    "concepts": [
+      "Hash Table Architectural Trade-offs",
+      "Collision Resistance",
+      "Cache Policy Integration"
+    ],
+    "learning_objectives": [
+      "Evaluate hash table designs under adversarial collision attack scenarios",
+      "Synthesize hash tables and sliding windows into an optimal streaming lookup pipeline"
+    ],
+    "description": "Synthesize hash maps, hash sets, rolling hashes, and cache architectures into a complete caching engine."
+  },
+  {
+    "day_number": 76,
+    "section_id": "linked-lists",
+    "title": "Singly Linked List: Structure & Traversal",
+    "topic_name": "Linked List Basics",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      22,
+      36
+    ],
+    "flow_tier": "tier1",
+    "archetype": "guided",
+    "concepts": [
+      "ListNode Pointer Reference",
+      "Sequential Pointer Traversal"
+    ],
+    "learning_objectives": [
+      "Construct a custom ListNode class and traverse nodes until curr is None",
+      "Contrast linked list dynamic pointer chains with contiguous array memory"
+    ],
+    "description": "Define ListNode nodes, manage head references, traverse lists, and analyze non-contiguous heap allocations."
+  },
+  {
+    "day_number": 77,
+    "section_id": "linked-lists",
+    "title": "Insertion, Deletion & Dummy Sentinels",
+    "topic_name": "Sentinel Nodes",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      76
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "Dummy Sentinel Head Node",
+      "Predecessor Pointer Rewiring"
+    ],
+    "learning_objectives": [
+      "Eliminate head edge-case conditionals using a dummy sentinel node",
+      "Insert and delete interior list nodes in O(1) pointer operations given predecessor"
+    ],
+    "description": "Use dummy sentinel nodes to eliminate special cases when inserting or deleting nodes at list boundaries."
+  },
+  {
+    "day_number": 78,
+    "section_id": "linked-lists",
+    "title": "In-Place Linked List Pointer Reversal",
+    "topic_name": "List Reversal",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      77
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Three-Pointer Iterative Reversal",
+      "next_node Forward Caching"
+    ],
+    "learning_objectives": [
+      "Cache forward references in next_node before mutating curr.next to prev",
+      "Reverse a singly linked list in-place in O(N) time and O(1) space"
+    ],
+    "description": "Reverse singly linked lists iteratively in O(N) time and O(1) space using three pointers (prev, curr, next_node)."
+  },
+  {
+    "day_number": 79,
+    "section_id": "linked-lists",
+    "title": "Fast & Slow Pointers (Tortoise & Hare)",
+    "topic_name": "Runner Technique",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      78
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "2x Speed Differential",
+      "Midpoint & Kth-from-End Extraction"
+    ],
+    "learning_objectives": [
+      "Locate the exact midpoint of a linked list in a single pass using runner pointers",
+      "Extract the Kth node from the end using a fixed-gap pointer pair"
+    ],
+    "description": "Use the fast and slow pointer technique to find list midpoints and Kth-from-end nodes in a single traversal."
+  },
+  {
+    "day_number": 80,
+    "section_id": "linked-lists",
+    "title": "Floyd's Cycle Detection & Entry Proof",
+    "topic_name": "Cycle Detection",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      79
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Floyd's Tortoise & Hare Cycle",
+      "Mathematical Entry Point Derivation"
+    ],
+    "learning_objectives": [
+      "Detect whether a linked list contains a cycle without auxiliary hash sets",
+      "Prove mathematically that moving one pointer from head matches the cycle entry node"
+    ],
+    "description": "Implement Floyd's Cycle Detection algorithm, prove 2k - k = k cycle convergence, and locate cycle start nodes."
+  },
+  {
+    "day_number": 81,
+    "section_id": "linked-lists",
+    "title": "Merge Two Sorted Lists & K-Way Splicing",
+    "topic_name": "List Merging",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      77,
+      78
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Sentinel Splice Invariant",
+      "Iterative In-Place Splice"
+    ],
+    "learning_objectives": [
+      "Merge two sorted singly linked lists in-place in O(N + M) time without new allocations",
+      "Splice node pointers monotonically preserving sorted sequence"
+    ],
+    "description": "Merge two sorted linked lists in-place in O(N1 + N2) time and introduce K-way list splicing."
+  },
+  {
+    "day_number": 82,
+    "section_id": "linked-lists",
+    "title": "Doubly Linked Lists & Bi-Directional Nodes",
+    "topic_name": "Doubly Linked Lists",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      77
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "prev & next Bi-Directional Pointers",
+      "O(1) Self-Detachment"
+    ],
+    "learning_objectives": [
+      "Implement a Doubly Linked List node with prev and next references",
+      "Detach arbitrary interior nodes in strict O(1) time without finding predecessor"
+    ],
+    "description": "Implement Doubly Linked Lists, manage prev/next pointers, and achieve O(1) arbitrary node detachment."
+  },
+  {
+    "day_number": 83,
+    "section_id": "linked-lists",
+    "title": "Scratch-Built LRU Cache (DLL + Hash Map)",
+    "topic_name": "Scratch LRU Cache",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      73,
+      82
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Hash Map to DLL Node Pointers",
+      "O(1) get() and put() Operations"
+    ],
+    "learning_objectives": [
+      "Architect a complete LRU Cache from scratch pairing a hash map with a doubly linked list",
+      "Maintain head/tail dummy sentinels to guarantee O(1) eviction and promotion"
+    ],
+    "description": "Build a production-grade O(1) LRU Cache from scratch combining a Hash Map with a Doubly Linked List with sentinels."
+  },
+  {
+    "day_number": 84,
+    "section_id": "linked-lists",
+    "title": "Reverse Nodes in K-Group",
+    "topic_name": "K-Group Reversal",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      78,
+      81
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "K-Node Segment Isolation",
+      "Boundary Pointer Re-Wiring"
+    ],
+    "learning_objectives": [
+      "Count and reverse contiguous subsegments of k nodes in-place",
+      "Reconnect reversed segment endpoints cleanly to preceding and following sublists"
+    ],
+    "description": "Reverse linked lists in groups of K nodes, handling subsegment reversals and boundary reconnects in O(N) time."
+  },
+  {
+    "day_number": 85,
+    "section_id": "linked-lists",
+    "title": "Section 7 Review & Pointer Discipline",
+    "topic_name": "Linked List Milestone",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      78,
+      80,
+      81,
+      83,
+      84
+    ],
+    "flow_tier": "tier2",
+    "archetype": "milestone",
+    "concepts": [
+      "Pointer Leak Prevention",
+      "In-Place List Merge Sort",
+      "Sentinel Standardization"
+    ],
+    "learning_objectives": [
+      "Sort linked lists in O(N log N) time and O(log N) stack space using linked list merge sort",
+      "Audit pointer manipulation logic against cyclic reference leaks and lost heads"
+    ],
+    "description": "Synthesize pointer manipulation disciplines, sentinel architectures, and recursive linked-list sorting."
+  },
+  {
+    "day_number": 86,
+    "section_id": "stacks-and-queues",
+    "title": "Stack LIFO Mechanics & Array Backing",
+    "topic_name": "Stack Foundations",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      11,
+      28
+    ],
+    "flow_tier": "tier1",
+    "archetype": "guided",
+    "concepts": [
+      "LIFO Ordering & Operations",
+      "Stack Overflow & Underflow Guards"
+    ],
+    "learning_objectives": [
+      "Implement an array-backed stack with O(1) push, pop, and peek operations",
+      "Enforce defensive bounds checking against stack underflow"
+    ],
+    "description": "Understand Last-In-First-Out (LIFO) stack mechanics, amortized O(1) list backing, and underflow guards."
+  },
+  {
+    "day_number": 87,
+    "section_id": "stacks-and-queues",
+    "title": "Parentheses Matching & Balanced Syntax",
+    "topic_name": "Balanced Syntax",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      86
+    ],
+    "flow_tier": "tier1",
+    "archetype": "problem",
+    "concepts": [
+      "Closing-to-Opening Hash Map",
+      "Stack Emptiness Termination Invariant"
+    ],
+    "learning_objectives": [
+      "Validate nested bracket syntax by matching closing brackets against the stack top",
+      "Determine syntax correctness in O(N) time and O(N) space"
+    ],
+    "description": "Solve balanced parentheses matching with multiple bracket types in O(N) time using a LIFO stack."
+  },
+  {
+    "day_number": 88,
+    "section_id": "stacks-and-queues",
+    "title": "Min-Stack Design with O(1) Retrieval",
+    "topic_name": "Min-Stack",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      86
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "Auxiliary Min-Tracker Stack",
+      "Value-Min State Tuples"
+    ],
+    "learning_objectives": [
+      "Architect a stack supporting getMin() in strict O(1) time alongside push() and pop()",
+      "Maintain running minimum invariants across push and pop mutations"
+    ],
+    "description": "Design a stack supporting push, pop, top, and retrieving the minimum element in O(1) auxiliary time."
+  },
+  {
+    "day_number": 89,
+    "section_id": "stacks-and-queues",
+    "title": "Queue FIFO Mechanics & Circular Ring Buffers",
+    "topic_name": "Queue Foundations",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      11,
+      86
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "FIFO Ordering & Head/Tail Indices",
+      "Circular Ring Buffer Modulo Math"
+    ],
+    "learning_objectives": [
+      "Implement a fixed-capacity circular queue using head, tail, and modulo index arithmetic",
+      "Explain why list.pop(0) causes O(N) degradation and how ring buffers achieve O(1)"
+    ],
+    "description": "Implement First-In-First-Out (FIFO) queue semantics, circular array buffers, and avoid list pop(0) penalties."
+  },
+  {
+    "day_number": 90,
+    "section_id": "stacks-and-queues",
+    "title": "Implement Queue Using Two Stacks",
+    "topic_name": "Two-Stack Queue",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      86,
+      89
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "Input Stack & Output Stack",
+      "Amortized O(1) Transfer Invariant"
+    ],
+    "learning_objectives": [
+      "Simulate FIFO queue behavior using two LIFO stacks",
+      "Prove amortized O(1) time per element using potential function accounting"
+    ],
+    "description": "Implement a FIFO queue using two LIFO stacks, proving amortized O(1) time per operation via lazy transfers."
+  },
+  {
+    "day_number": 91,
+    "section_id": "stacks-and-queues",
+    "title": "Monotonic Stack: Next Greater Element",
+    "topic_name": "Monotonic Stack",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      86
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Monotonically Decreasing Stack",
+      "Immediate Pop Resolution"
+    ],
+    "learning_objectives": [
+      "Maintain a monotonically decreasing stack of array indices to find next greater elements",
+      "Process array elements in O(N) total time by amortizing pushes and pops"
+    ],
+    "description": "Master the monotonic stack pattern to solve Next Greater Element and stock span problems in linear O(N) time."
+  },
+  {
+    "day_number": 92,
+    "section_id": "stacks-and-queues",
+    "title": "Monotonic Stack: Largest Histogram Rectangle",
+    "topic_name": "Histogram Monotonic Stack",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      91
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "Left & Right Smaller Bounds",
+      "Width Calculation from Popped Index"
+    ],
+    "learning_objectives": [
+      "Calculate maximum rectangular area under a histogram in O(N) time using a monotonic stack",
+      "Extend histogram algorithms to solve Maximal Rectangle in 2D binary matrices"
+    ],
+    "description": "Apply monotonic stacks to compute the largest rectangular area in histograms and maximal binary rectangles in O(N) time."
+  },
+  {
+    "day_number": 93,
+    "section_id": "stacks-and-queues",
+    "title": "Monotonic Queue & Sliding Window Maximum",
+    "topic_name": "Monotonic Queue",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      18,
+      91
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Monotonically Decreasing Deque",
+      "Out-of-Window Index Eviction"
+    ],
+    "learning_objectives": [
+      "Maintain a double-ended queue storing candidate maximums in strictly descending order",
+      "Solve the Sliding Window Maximum problem in strict O(N) time and O(K) space"
+    ],
+    "description": "Implement monotonic double-ended queues (deques) to solve the Sliding Window Maximum problem in O(N) time."
+  },
+  {
+    "day_number": 94,
+    "section_id": "stacks-and-queues",
+    "title": "Expression Parsing & Shunting-Yard Algorithm",
+    "topic_name": "Expression Parsing",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      86,
+      87
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Operator Precedence & Associativity",
+      "Dijkstra's Shunting-Yard (Infix to Postfix)"
+    ],
+    "learning_objectives": [
+      "Convert infix mathematical expressions into postfix Reverse Polish Notation (RPN)",
+      "Evaluate composite arithmetic expressions containing parentheses, +, -, *, / in O(N) time"
+    ],
+    "description": "Implement Dijkstra's Shunting-Yard algorithm to parse infix expressions into postfix RPN and evaluate them."
+  },
+  {
+    "day_number": 95,
+    "section_id": "stacks-and-queues",
+    "title": "Section 8 Review & Linear State Machines",
+    "topic_name": "Stacks & Queues Milestone",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      87,
+      88,
+      91,
+      92,
+      93,
+      94
+    ],
+    "flow_tier": "tier2",
+    "archetype": "milestone",
+    "concepts": [
+      "Linear Data Structure Selection",
+      "State Machine Buffer Coordination",
+      "Amortized Bounds"
+    ],
+    "learning_objectives": [
+      "Architect a calculator engine evaluating nested expressions with unary operators",
+      "Select optimal stack and queue structures matching problem invariants"
+    ],
+    "description": "Synthesize stacks, queues, deques, and monotonic patterns into a complete expression and state evaluation engine."
+  },
+  {
+    "day_number": 96,
+    "section_id": "trees-and-bst",
+    "title": "Tree Terminology & Hierarchical Anatomy",
+    "topic_name": "Tree Foundations",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      76
+    ],
+    "flow_tier": "tier1",
+    "archetype": "guided",
+    "concepts": [
+      "Hierarchical Node Anatomy",
+      "Height, Depth & Edge Counts"
+    ],
+    "learning_objectives": [
+      "Define a binary tree TreeNode class and recursive child pointer structures",
+      "Calculate tree height, node depths, and verify leaf node conditions"
+    ],
+    "description": "Understand tree terminology: root, leaves, depth, height, ancestor/descendant relationships, and TreeNode classes."
+  },
+  {
+    "day_number": 97,
+    "section_id": "trees-and-bst",
+    "title": "Recursive Traversals: Pre, In, Post-Order",
+    "topic_name": "Recursive Traversals",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      30,
+      96
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "NLR, LNR, LRN Visiting Orders",
+      "Call Stack Tree Traversal"
+    ],
+    "learning_objectives": [
+      "Trace Pre-order, In-order, and Post-order recursive visits across binary trees",
+      "Predict visiting sequence output for tree construction and destruction"
+    ],
+    "description": "Implement recursive pre-order (NLR), in-order (LNR), and post-order (LRN) binary tree traversals in O(N) time."
+  },
+  {
+    "day_number": 98,
+    "section_id": "trees-and-bst",
+    "title": "Iterative Tree Traversals via Explicit Stack",
+    "topic_name": "Iterative Traversals",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      86,
+      97
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Explicit Stack Simulation",
+      "Left-Spine Descent Invariant"
+    ],
+    "learning_objectives": [
+      "Implement iterative in-order and pre-order tree traversals using an explicit stack",
+      "Eliminate recursion overhead and prevent stack overflow on deep unbalanced trees"
+    ],
+    "description": "Implement pre-order, in-order, and post-order tree traversals iteratively using an explicit stack in O(N) time."
+  },
+  {
+    "day_number": 99,
+    "section_id": "trees-and-bst",
+    "title": "BFS & Level-Order Queue Traversal",
+    "topic_name": "Level-Order BFS",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      89,
+      97
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "FIFO Queue Level Batching",
+      "Zigzag & Level Width Tracking"
+    ],
+    "learning_objectives": [
+      "Traverse binary trees level-by-level using a FIFO queue recording row arrays",
+      "Compute level averages, tree widths, and zigzag level-order paths in O(N) time"
+    ],
+    "description": "Implement breadth-first search (BFS) level-order traversal on trees using queues, handling level batching."
+  },
+  {
+    "day_number": 100,
+    "section_id": "trees-and-bst",
+    "title": "Tree Properties: Height, Diameter & Symmetry",
+    "topic_name": "Tree Properties",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      97
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Post-Order State Aggregation",
+      "Global Diameter Calculation (Left + Right)"
+    ],
+    "learning_objectives": [
+      "Calculate maximum tree diameter by computing left and right branch heights bottom-up",
+      "Verify binary tree mirror symmetry using recursive dual-node checks"
+    ],
+    "description": "Compute tree height, diameter, balance factors, and test tree symmetry using bottom-up post-order DFS in O(N) time."
+  },
+  {
+    "day_number": 101,
+    "section_id": "trees-and-bst",
+    "title": "Binary Search Tree (BST) Invariant & Search",
+    "topic_name": "BST Invariant",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      52,
+      97
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "Left < Root < Right Invariant",
+      "Recursive Boundary Validation (low, high)"
+    ],
+    "learning_objectives": [
+      "Verify binary search tree validity by passing recursive open interval bounds (low, high)",
+      "Search for target keys in O(H) time where H is tree height"
+    ],
+    "description": "Understand the BST property (Left < Root < Right), validate BST invariants, and perform O(H) key lookups."
+  },
+  {
+    "day_number": 102,
+    "section_id": "trees-and-bst",
+    "title": "BST Insertion, Deletion & Successor Rewiring",
+    "topic_name": "BST Mutations",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      101
+    ],
+    "flow_tier": "tier3",
+    "archetype": "debugging",
+    "concepts": [
+      "In-Order Successor Substitution",
+      "Two-Child Deletion Rewiring"
+    ],
+    "learning_objectives": [
+      "Insert new values into BST leaf positions preserving the BST invariant",
+      "Delete interior nodes with two children by substituting the in-order successor"
+    ],
+    "description": "Implement BST insertion and deletion, handling 0, 1, and 2-child cases and in-order successor replacements."
+  },
+  {
+    "day_number": 103,
+    "section_id": "trees-and-bst",
+    "title": "Lowest Common Ancestor (LCA) in BST and Tree",
+    "topic_name": "Lowest Common Ancestor",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      101
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "BST Value-Guided Bifurcation",
+      "General Tree Dual-Branch DFS"
+    ],
+    "learning_objectives": [
+      "Find the LCA of two nodes in a BST in O(H) time using numerical value bifurcation",
+      "Locate LCA in general binary trees using post-order node presence bubbling"
+    ],
+    "description": "Find the Lowest Common Ancestor (LCA) in BSTs in O(H) time and general binary trees in O(N) time via DFS."
+  },
+  {
+    "day_number": 104,
+    "section_id": "trees-and-bst",
+    "title": "Tree Serialization & Deserialization",
+    "topic_name": "Tree Serialization",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      97,
+      99
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Pre-order String Representation",
+      "None Marker Stream Reconstruction"
+    ],
+    "learning_objectives": [
+      "Encode a binary tree into a delimited string representation using pre-order traversal with null markers",
+      "Reconstruct the identical tree structure from string tokens in O(N) time"
+    ],
+    "description": "Serialize binary trees into flat string representations and reconstruct them using pre-order and BFS iterators."
+  },
+  {
+    "day_number": 105,
+    "section_id": "trees-and-bst",
+    "title": "Morris In-Order Traversal & Threaded Pointers",
+    "topic_name": "Morris Traversal",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      102
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "In-Order Predecessor Rightmost Pointer",
+      "O(1) Auxiliary Space Invariant"
+    ],
+    "learning_objectives": [
+      "Establish temporary threads from in-order predecessors to current nodes",
+      "Traverse binary search trees in strictly O(1) auxiliary space without stack or recursion"
+    ],
+    "description": "Traverse binary trees in-order in O(1) auxiliary space using Morris Traversal and threaded binary tree pointers."
+  },
+  {
+    "day_number": 106,
+    "section_id": "trees-and-bst",
+    "title": "Balanced BSTs: AVL Tree Rotations (LL, RR)",
+    "topic_name": "AVL Rotations",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      102
+    ],
+    "flow_tier": "tier3",
+    "archetype": "tracing",
+    "concepts": [
+      "Height Balance Factor (-1, 0, +1)",
+      "Single & Double Rotations (LL, RR, LR, RL)"
+    ],
+    "learning_objectives": [
+      "Calculate AVL node balance factors from left and right subtree heights",
+      "Trace single and double tree rotations that restore O(log N) height balance"
+    ],
+    "description": "Understand AVL balance factors, height-balance invariants, and implement left and right tree rotations."
+  },
+  {
+    "day_number": 107,
+    "section_id": "trees-and-bst",
+    "title": "Red-Black Tree Principles & Invariants",
+    "topic_name": "Red-Black Trees",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      106
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Red/Black Color Invariants",
+      "Black-Height Invariant & Recolor Rules"
+    ],
+    "learning_objectives": [
+      "Trace the 5 Red-Black tree properties guaranteeing maximum height <= 2 log(N+1)",
+      "Differentiate recoloring steps from rotation steps during node insertion"
+    ],
+    "description": "Analyze Red-Black tree color invariants, black-height guarantees, and compare performance trade-offs against AVL trees."
+  },
+  {
+    "day_number": 108,
+    "section_id": "trees-and-bst",
+    "title": "Tries (Prefix Trees): Structure & Lookup",
+    "topic_name": "Trie Architecture",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      15,
+      96
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "26-Child Alphabet TrieNode",
+      "is_end Word Termination Flag"
+    ],
+    "learning_objectives": [
+      "Implement a prefix Trie with insert, search, and startsWith methods in O(L) time",
+      "Contrast Trie string prefix search with hash map string lookups"
+    ],
+    "description": "Build a Trie (Prefix Tree) data structure supporting O(L) word insertion, full-word search, and prefix matching."
+  },
+  {
+    "day_number": 109,
+    "section_id": "trees-and-bst",
+    "title": "Trie Applications: Autocomplete & Wildcards",
+    "topic_name": "Trie Applications",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      108
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "DFS Prefix Subtree Collection",
+      "Wildcard '.' Branching Traversal"
+    ],
+    "learning_objectives": [
+      "Implement an autocomplete search engine returning all words sharing a common prefix",
+      "Traverse all child branches upon encountering wildcard '.' characters"
+    ],
+    "description": "Apply Tries to autocomplete dictionary queries and wildcard pattern searches using recursive backtracking."
+  },
+  {
+    "day_number": 110,
+    "section_id": "trees-and-bst",
+    "title": "Section 9 Review & Tree Recursion Mastery",
+    "topic_name": "Trees Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      100,
+      102,
+      103,
+      104,
+      105,
+      108
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Recursive Tree Decomposition",
+      "BST Balancing Trade-offs",
+      "Trie Indexing Integration"
+    ],
+    "learning_objectives": [
+      "Architect an in-memory search catalog combining a Trie with a balanced BST",
+      "Evaluate asymptotic worst-case bounds on degenerate vs balanced trees"
+    ],
+    "description": "Synthesize binary tree recursions, BST search invariants, self-balancing rotations, and prefix Trie indexing."
+  },
+  {
+    "day_number": 111,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Binary Heap Layout in Flat Arrays",
+    "topic_name": "Heap Array Layout",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      36,
+      96
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Complete Binary Tree Property",
+      "0-Indexed Parent/Child Formulas"
+    ],
+    "learning_objectives": [
+      "Map a complete binary tree into a 1D flat array using parent=(i-1)//2 and children=2i+1, 2i+2",
+      "Verify the binary min-heap property: parent <= children"
+    ],
+    "description": "Examine binary heap flat-array indexing (parent = (i-1)//2, left = 2i+1, right = 2i+2) and complete tree layouts."
+  },
+  {
+    "day_number": 112,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Heapify, Sift-Up & Sift-Down Mechanics",
+    "topic_name": "Heap Mechanics",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      111
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Sift-Up (Bubble-Up) & Sift-Down",
+      "Linear O(N) Bottom-Up Heapify"
+    ],
+    "learning_objectives": [
+      "Implement sift-up and sift-down mechanics to restore heap invariants in O(log N) time",
+      "Prove mathematically that bottom-up heapify builds a heap in linear O(N) time"
+    ],
+    "description": "Implement sift-up and sift-down operations, and prove that bottom-up heapify runs in linear O(N) time."
+  },
+  {
+    "day_number": 113,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Python's heapq Module & Tie-Breaker Patterns",
+    "topic_name": "heapq Mechanics",
+    "estimated_minutes": 30,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      22,
+      112
+    ],
+    "flow_tier": "tier1",
+    "archetype": "completion",
+    "concepts": [
+      "heapq Min-Heap Primitives",
+      "Tuple Tie-Breaker Crash Prevention"
+    ],
+    "learning_objectives": [
+      "Use heapq.heappush, heappop, and heapify to manage priority queues",
+      "Prevent tuple comparison crashes on identical priorities using unique counter sequence ids"
+    ],
+    "description": "Master Python's heapq module, simulate max-heaps via negation, and use counter tie-breakers to prevent comparison crashes."
+  },
+  {
+    "day_number": 114,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Top K Frequent Elements in Data Streams",
+    "topic_name": "Top-K Streaming",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      68,
+      113
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Bounded Min-Heap of Size K",
+      "O(N log K) Extraction"
+    ],
+    "learning_objectives": [
+      "Maintain a min-heap of size K to identify top K frequent elements in O(N log K) time",
+      "Contrast bounded min-heap filtering against full O(N log N) array sorting"
+    ],
+    "description": "Find the K most frequent items in continuous streams in O(N log K) time using bounded min-heaps."
+  },
+  {
+    "day_number": 115,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Merge K Sorted Lists via Min-Heap",
+    "topic_name": "K-Way Merging",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      81,
+      113
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Frontier Pointer Min-Heap",
+      "O(N log K) Multi-Stream Merging"
+    ],
+    "learning_objectives": [
+      "Merge K sorted linked lists or streams using a min-heap tracking current heads",
+      "Achieve optimal O(N log K) total runtime and O(K) auxiliary space"
+    ],
+    "description": "Merge K sorted lists or streams into a single sorted list in O(N log K) time using priority queue frontiers."
+  },
+  {
+    "day_number": 116,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Two-Heap Pattern: Median of a Stream",
+    "topic_name": "Two Heaps",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      113
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Max-Heap (Lower) & Min-Heap (Upper)",
+      "O(1) Median & O(log N) Insertion"
+    ],
+    "learning_objectives": [
+      "Balance a max-heap of smaller elements and min-heap of larger elements",
+      "Retrieve running medians in O(1) time and insert stream values in O(log N) time"
+    ],
+    "description": "Implement the two-heap pattern (max-heap for lower half, min-heap for upper half) to find stream medians in O(1) time."
+  },
+  {
+    "day_number": 117,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Task Scheduler & Priority Reorganization",
+    "topic_name": "Task Scheduling",
+    "estimated_minutes": 40,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      113,
+      114
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Greedy Max-Frequency Extraction",
+      "Cooldown Queue Waiting Line"
+    ],
+    "learning_objectives": [
+      "Schedule CPU tasks with cooldown interval n using a max-heap and wait queue",
+      "Compute minimum CPU idle intervals to complete all tasks"
+    ],
+    "description": "Schedule CPU tasks with cooling intervals using greedy max-heaps and cooldown queue staging in O(N) time."
+  },
+  {
+    "day_number": 118,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Indexed Priority Queue Principles",
+    "topic_name": "Indexed Priority Queue",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      112
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Position Lookup Mapping (Key -> Index)",
+      "O(log N) decrease_key Operation"
+    ],
+    "learning_objectives": [
+      "Augment a binary heap with a hash map tracking element array indices",
+      "Update priorities in-place (decrease_key) in strict O(log N) time without scanning"
+    ],
+    "description": "Design an Indexed Priority Queue supporting O(log N) arbitrary priority updates (decrease-key) and deletions."
+  },
+  {
+    "day_number": 119,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Kth Smallest Element in Sorted Matrix",
+    "topic_name": "Matrix Kth Smallest",
+    "estimated_minutes": 35,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      47,
+      113
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Row/Column Frontier Min-Heap",
+      "O(K log(min(K, N))) Search"
+    ],
+    "learning_objectives": [
+      "Extract K smallest elements from row-and-column sorted matrices via frontier heaps",
+      "Contrast priority queue frontier search against monotonic binary search"
+    ],
+    "description": "Locate the Kth smallest element in row/column sorted matrices using heap frontier exploration in O(K log N) time."
+  },
+  {
+    "day_number": 120,
+    "section_id": "heaps-and-priority-queues",
+    "title": "Section 10 Review & Priority Queue Design",
+    "topic_name": "Heaps Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "INTERMEDIATE",
+    "prerequisites": [
+      112,
+      113,
+      115,
+      116,
+      118
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Priority Queue Engineering",
+      "Dynamic Rebalancing",
+      "Stream Processing Under SLA"
+    ],
+    "learning_objectives": [
+      "Architect a priority dispatch engine handling dynamic priority shifts and task starvation",
+      "Evaluate space-time trade-offs between two-heaps, sorted arrays, and balanced BSTs"
+    ],
+    "description": "Synthesize binary heap algorithms, running median dual-heaps, and indexed priority queues into a streaming scheduler."
+  },
+  {
+    "day_number": 121,
+    "section_id": "graphs",
+    "title": "Graph Representations & Adjacency Lists",
+    "topic_name": "Graph Representations",
+    "estimated_minutes": 30,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      15,
+      18,
+      36
+    ],
+    "flow_tier": "tier1",
+    "archetype": "guided",
+    "concepts": [
+      "Adjacency List vs Adjacency Matrix",
+      "Directed, Undirected & Weighted Graphs"
+    ],
+    "learning_objectives": [
+      "Construct adjacency list dictionary representations from edge lists in O(V + E) time",
+      "Evaluate space and edge query trade-offs between sparse lists and dense matrices"
+    ],
+    "description": "Represent graphs using adjacency lists, adjacency matrices, and edge lists; evaluate density trade-offs."
+  },
+  {
+    "day_number": 122,
+    "section_id": "graphs",
+    "title": "BFS & Unweighted Shortest Path",
+    "topic_name": "Breadth-First Search",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      89,
+      121
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "FIFO Queue Level Expansion",
+      "Predecessor Array & Distance Tracking"
+    ],
+    "learning_objectives": [
+      "Implement Breadth-First Search (BFS) to find shortest path distances on unweighted graphs",
+      "Reconstruct shortest path vertices using a predecessor parent map in O(V + E) time"
+    ],
+    "description": "Implement BFS using collections.deque to find shortest paths on unweighted graphs and reconstruct shortest paths."
+  },
+  {
+    "day_number": 123,
+    "section_id": "graphs",
+    "title": "DFS, Connected Components & Flood Fill",
+    "topic_name": "Depth-First Search",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      30,
+      121
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Recursive DFS Traversal",
+      "Visited Set & Grid Flood Fill"
+    ],
+    "learning_objectives": [
+      "Traverse all reachable graph vertices using Depth-First Search with a visited set",
+      "Count connected components and solve 2D grid flood fill problems in O(V + E) time"
+    ],
+    "description": "Implement recursive and iterative DFS, count connected components, and solve 2D grid flood fill problems."
+  },
+  {
+    "day_number": 124,
+    "section_id": "graphs",
+    "title": "Cycle Detection in Directed Graphs (3-Color)",
+    "topic_name": "Cycle Detection",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      123
+    ],
+    "flow_tier": "tier2",
+    "archetype": "debugging",
+    "concepts": [
+      "Three-Color State Marking (White, Gray, Black)",
+      "Back-Edge Detection"
+    ],
+    "learning_objectives": [
+      "Detect cycles in directed graphs by identifying back-edges to gray nodes on the current recursion stack",
+      "Differentiate directed cycle detection from undirected visited-set checks"
+    ],
+    "description": "Detect cycles in directed graphs using three-color DFS marking (Unvisited, Visiting, Visited) and back-edge identification."
+  },
+  {
+    "day_number": 125,
+    "section_id": "graphs",
+    "title": "Topological Sort: Kahn's In-Degree BFS",
+    "topic_name": "Topological Sort BFS",
+    "estimated_minutes": 40,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      122,
+      124
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "In-Degree Array Construction",
+      "Zero-In-Degree FIFO Queue"
+    ],
+    "learning_objectives": [
+      "Compute vertex in-degrees and process zero-in-degree nodes sequentially",
+      "Produce a valid topological order of a DAG or detect cyclic dependency errors in O(V + E) time"
+    ],
+    "description": "Implement Kahn's algorithm for topological sorting of DAGs using in-degree arrays and zero-degree queues."
+  },
+  {
+    "day_number": 126,
+    "section_id": "graphs",
+    "title": "Topological Sort: DFS Post-Order Reversal",
+    "topic_name": "Topological Sort DFS",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      123,
+      125
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "DFS Finishing Time Post-Order",
+      "Reversed Post-Order Sequence"
+    ],
+    "learning_objectives": [
+      "Record DFS finish order and reverse the post-order sequence to produce a topological sort",
+      "Solve Course Schedule II under prerequisite constraints"
+    ],
+    "description": "Implement topological sort using DFS post-order traversal reversal and detect invalid cyclic dependencies."
+  },
+  {
+    "day_number": 127,
+    "section_id": "graphs",
+    "title": "Bipartite Graph Verification (2-Coloring)",
+    "topic_name": "Bipartite Verification",
+    "estimated_minutes": 30,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      122
+    ],
+    "flow_tier": "tier1",
+    "archetype": "problem",
+    "concepts": [
+      "Vertex 2-Coloring Invariant",
+      "Odd-Length Cycle Non-Bipartite Rule"
+    ],
+    "learning_objectives": [
+      "Color graph vertices with two alternating labels using BFS/DFS",
+      "Prove a graph is non-bipartite if adjacent vertices share identical color labels"
+    ],
+    "description": "Determine whether a graph is bipartite (2-colorable) using alternating BFS/DFS vertex coloring in O(V + E) time."
+  },
+  {
+    "day_number": 128,
+    "section_id": "graphs",
+    "title": "Dijkstra's Algorithm: Shortest Paths",
+    "topic_name": "Dijkstra's Algorithm",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      113,
+      121
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Greedy Distance Relaxation (d[v] = d[u] + w)",
+      "Min-Heap Optimization O((V+E) log V)"
+    ],
+    "learning_objectives": [
+      "Implement Dijkstra's algorithm to compute single-source shortest paths on non-negative weighted graphs",
+      "Maintain a min-heap of tentative distances and skip stale extracted entries in O((V + E) log V) time"
+    ],
+    "description": "Implement Dijkstra's algorithm using priority queues to compute single-source shortest paths with non-negative edge weights."
+  },
+  {
+    "day_number": 129,
+    "section_id": "graphs",
+    "title": "Bellman-Ford & Negative Cycle Detection",
+    "topic_name": "Bellman-Ford",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      128
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "V-1 Edge Relaxation Passes",
+      "Negative Weight Cycle Detection on Pass V"
+    ],
+    "learning_objectives": [
+      "Relax all graph edges V - 1 times to find shortest paths with negative edge weights",
+      "Identify negative-weight cycles by checking if distances continue decreasing on pass V"
+    ],
+    "description": "Implement the Bellman-Ford algorithm in O(V * E) time, handle negative weights, and detect reachable negative cycles."
+  },
+  {
+    "day_number": 130,
+    "section_id": "graphs",
+    "title": "Disjoint Set Union (DSU / Union-Find)",
+    "topic_name": "Disjoint Set Union",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      121
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Path Compression Invariant",
+      "Union by Rank/Size & Inverse Ackermann O(alpha(N))"
+    ],
+    "learning_objectives": [
+      "Implement Disjoint Set Union (Union-Find) with root representative find operations",
+      "Achieve nearly O(1) amortized operations using Path Compression and Union by Rank"
+    ],
+    "description": "Implement Disjoint Set Union (DSU) with Path Compression and Union by Rank, achieving near-O(1) amortized time."
+  },
+  {
+    "day_number": 131,
+    "section_id": "graphs",
+    "title": "Minimum Spanning Tree: Kruskal's with DSU",
+    "topic_name": "Kruskal's MST",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      130
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Greedy Edge Weight Sorting",
+      "Cycle Avoidance via DSU"
+    ],
+    "learning_objectives": [
+      "Sort all graph edges by weight and greedily select non-cyclic edges using DSU",
+      "Construct a Minimum Spanning Tree in O(E log E) time"
+    ],
+    "description": "Implement Kruskal's algorithm to find Minimum Spanning Trees (MST) by sorting edges and avoiding cycles with DSU."
+  },
+  {
+    "day_number": 132,
+    "section_id": "graphs",
+    "title": "Minimum Spanning Tree: Prim's Algorithm",
+    "topic_name": "Prim's MST",
+    "estimated_minutes": 40,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      113,
+      131
+    ],
+    "flow_tier": "tier2",
+    "archetype": "algorithm",
+    "concepts": [
+      "Growing Subtree Frontier Cut",
+      "Min-Heap Crossing Edge Selection"
+    ],
+    "learning_objectives": [
+      "Grow an MST from a start vertex by repeatedly selecting the minimum crossing edge via a min-heap",
+      "Achieve O((V + E) log V) runtime on dense graphs"
+    ],
+    "description": "Implement Prim's algorithm for Minimum Spanning Trees using priority queues to select minimum crossing edges."
+  },
+  {
+    "day_number": 133,
+    "section_id": "graphs",
+    "title": "Undirected Bridges & Articulation Points",
+    "topic_name": "Bridges & Articulation",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      123
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "DFS Discovery Times (tin)",
+      "Low-Link Values (low) & Bridge Condition (low[v] > tin[u])"
+    ],
+    "learning_objectives": [
+      "Calculate discovery times and lowest reachable ancestor depths during a single DFS traversal",
+      "Locate all critical bridges and articulation cut-vertices in O(V + E) time"
+    ],
+    "description": "Find all bridges and articulation points in undirected graphs using Tarjan's discovery time (tin) and low-link (low) DFS."
+  },
+  {
+    "day_number": 134,
+    "section_id": "graphs",
+    "title": "Strongly Connected Components (Kosaraju)",
+    "topic_name": "Strongly Connected Components",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      123,
+      133
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Transpose Graph Reversal",
+      "Kosaraju's Two-Pass DFS Algorithm"
+    ],
+    "learning_objectives": [
+      "Reconstruct transposed reversed graphs where directed edge orientations are inverted",
+      "Extract all Strongly Connected Components (SCCs) in directed graphs using Kosaraju's algorithm in O(V + E) time"
+    ],
+    "description": "Implement Kosaraju's two-pass DFS algorithm on graphs and their transposes to find Strongly Connected Components in DAGs."
+  },
+  {
+    "day_number": 135,
+    "section_id": "graphs",
+    "title": "Section 11 Review & Graph Synthesis",
+    "topic_name": "Graph Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      122,
+      125,
+      128,
+      130,
+      131,
+      134
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Shortest Path vs MST Selection",
+      "Topological Pipeline Architecture",
+      "Component Condensation"
+    ],
+    "learning_objectives": [
+      "Design a multi-modal routing engine integrating Dijkstra, BFS, and DSU under real-world constraints",
+      "Condense directed cyclic graphs into topological DAG components"
+    ],
+    "description": "Synthesize BFS, DFS, topological sorting, Dijkstra, DSU, MSTs, and SCC algorithms into a comprehensive network router."
+  },
+  {
+    "day_number": 136,
+    "section_id": "greedy-algorithms",
+    "title": "Greedy Choice Property & Exchange Arguments",
+    "topic_name": "Greedy Foundations",
+    "estimated_minutes": 30,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      26,
+      49
+    ],
+    "flow_tier": "tier1",
+    "archetype": "tracing",
+    "concepts": [
+      "Greedy-Choice Property",
+      "Exchange Argument Proof Technique"
+    ],
+    "learning_objectives": [
+      "Evaluate whether locally optimal choices lead to globally optimal solutions",
+      "Formulate exchange argument proofs showing no optimal solution beats greedy"
+    ],
+    "description": "Understand the Greedy Choice Property, Optimal Substructure, and prove optimality using exchange arguments."
+  },
+  {
+    "day_number": 137,
+    "section_id": "greedy-algorithms",
+    "title": "Activity Selection & Interval Scheduling",
+    "topic_name": "Activity Selection",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      49,
+      136
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "Earliest Finishing Time Greedy Sort",
+      "Non-Overlapping Choice Invariant"
+    ],
+    "learning_objectives": [
+      "Sort intervals by earliest finish time to maximize non-overlapping scheduled tasks",
+      "Prove greedy interval scheduling optimality in O(N log N) time"
+    ],
+    "description": "Solve the Activity Selection problem by sorting on earliest finish time, proving optimality via exchange arguments."
+  },
+  {
+    "day_number": 138,
+    "section_id": "greedy-algorithms",
+    "title": "Fractional Knapsack & Value Density Sorting",
+    "topic_name": "Fractional Knapsack",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      136
+    ],
+    "flow_tier": "tier1",
+    "archetype": "algorithm",
+    "concepts": [
+      "Value-to-Weight Ratio Density",
+      "Continuous Item Partitioning"
+    ],
+    "learning_objectives": [
+      "Sort items by value-per-weight density to maximize total value in fractional knapsacks",
+      "Contrast fractional greedy solvability with 0/1 integer knapsack NP-hardness"
+    ],
+    "description": "Implement the Fractional Knapsack problem in O(N log N) time by greedily sorting items by value-to-weight density."
+  },
+  {
+    "day_number": 139,
+    "section_id": "greedy-algorithms",
+    "title": "Huffman Coding & Optimal Prefix Trees",
+    "topic_name": "Huffman Coding",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      113,
+      136
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Optimal Prefix Code Invariant",
+      "Min-Heap Bottom-Up Tree Merging"
+    ],
+    "learning_objectives": [
+      "Construct an optimal prefix code tree by repeatedly merging the two least frequent nodes",
+      "Generate variable-length binary encoding tables without prefix ambiguity"
+    ],
+    "description": "Construct optimal variable-length prefix codes using Huffman's algorithm with priority queues in O(N log N) time."
+  },
+  {
+    "day_number": 140,
+    "section_id": "greedy-algorithms",
+    "title": "Jump Game & Reachability Frontiers",
+    "topic_name": "Reachability Greedy",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      43,
+      136
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Max Reachability Frontier Invariant",
+      "Boundary Jump Step Increments"
+    ],
+    "learning_objectives": [
+      "Track maximum reachable index frontiers to determine if array ends are reachable in O(N) time",
+      "Compute minimum jumps to reach the end using greedy interval boundary shifts"
+    ],
+    "description": "Solve Jump Game I (reachability) and Jump Game II (minimum jumps) using greedy frontier advancement in O(N) time."
+  },
+  {
+    "day_number": 141,
+    "section_id": "greedy-algorithms",
+    "title": "Partition Labels & Last Seen Indices",
+    "topic_name": "Partition Labels",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      15,
+      140
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Last Occurrence Index Hash Map",
+      "Frontier Extension Invariant"
+    ],
+    "learning_objectives": [
+      "Record the last occurrence index of each character to partition strings into disjoint subsegments",
+      "Return maximum partition sizes in O(N) time and O(1) space"
+    ],
+    "description": "Partition strings into maximal parts such that each character appears in at most one part in O(N) time."
+  },
+  {
+    "day_number": 142,
+    "section_id": "greedy-algorithms",
+    "title": "Gas Station & Circular Circuit Greedy",
+    "topic_name": "Circular Greedy",
+    "estimated_minutes": 40,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      140
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Total Gas >= Total Cost Invariant",
+      "Deficit Reset Starting Point Shift"
+    ],
+    "learning_objectives": [
+      "Prove a unique starting gas station exists if and only if total gas >= total cost",
+      "Reset prospective starting points in a single O(N) scan whenever running tank deficits occur"
+    ],
+    "description": "Determine the starting gas station to complete a circular tour in O(N) time using net balance greedy sweeps."
+  },
+  {
+    "day_number": 143,
+    "section_id": "greedy-algorithms",
+    "title": "Candy Distribution: Two-Pass Greedy",
+    "topic_name": "Two-Pass Greedy",
+    "estimated_minutes": 40,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      140
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "Left-to-Right & Right-to-Left Passes",
+      "Local Rating Maximization"
+    ],
+    "learning_objectives": [
+      "Satisfy neighbor rating constraints using independent forward and backward greedy sweeps",
+      "Compute minimum required resources in O(N) time and O(N) auxiliary space"
+    ],
+    "description": "Solve the Candy distribution problem using two independent greedy passes (left-to-right, right-to-left) in O(N) time."
+  },
+  {
+    "day_number": 144,
+    "section_id": "greedy-algorithms",
+    "title": "Frequency Decrementing for Uniqueness",
+    "topic_name": "Unique Frequencies",
+    "estimated_minutes": 30,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      17,
+      68
+    ],
+    "flow_tier": "tier1",
+    "archetype": "problem",
+    "concepts": [
+      "Seen-Frequencies Set Invariant",
+      "Greedy Deletion Count Minimization"
+    ],
+    "learning_objectives": [
+      "Ensure all character frequencies are strictly unique by greedily decrementing duplicates",
+      "Compute minimum character deletions in O(N) time and O(K) space"
+    ],
+    "description": "Find the minimum character deletions to make all character frequencies unique using greedy decrement sets."
+  },
+  {
+    "day_number": 145,
+    "section_id": "greedy-algorithms",
+    "title": "Section 12 Review & Greedy Proof Formalism",
+    "topic_name": "Greedy Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      136,
+      137,
+      139,
+      140,
+      142,
+      143
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Greedy vs Dynamic Programming Discrimination",
+      "Formal Exchange Proofs",
+      "Deadline Scheduling"
+    ],
+    "learning_objectives": [
+      "Determine whether optimization problems admit greedy solutions or require dynamic programming",
+      "Implement job sequencing with deadlines and profits using greedy selection and DSU"
+    ],
+    "description": "Synthesize greedy choice proofs, interval scheduling, reachability frontiers, and distinguish greedy from DP."
+  },
+  {
+    "day_number": 146,
+    "section_id": "dynamic-programming",
+    "title": "Memoization vs Tabulation Paradigms",
+    "topic_name": "DP Foundations",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      30,
+      31
+    ],
+    "flow_tier": "tier2",
+    "archetype": "tracing",
+    "concepts": [
+      "Overlapping Subproblems & Optimal Substructure",
+      "Top-Down Memoization vs Bottom-Up Tabulation"
+    ],
+    "learning_objectives": [
+      "Identify overlapping subproblems in recursive DAGs and cache results in hash maps",
+      "Construct iterative bottom-up tables eliminating call stack overhead"
+    ],
+    "description": "Understand overlapping subproblems, optimal substructure, top-down memoization (lru_cache) vs bottom-up tabulation."
+  },
+  {
+    "day_number": 147,
+    "section_id": "dynamic-programming",
+    "title": "1D DP: Climbing Stairs & House Robber",
+    "topic_name": "1D State Recurrences",
+    "estimated_minutes": 35,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      146
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "State Transition Recurrence",
+      "O(1) Rolling Variable Space Optimization"
+    ],
+    "learning_objectives": [
+      "Formulate 1D state transition equations dp[i] = max(dp[i-1], dp[i-2] + val)",
+      "Compress 1D DP arrays into two rolling variables achieving O(1) auxiliary space"
+    ],
+    "description": "Formulate 1D DP recurrences (Climbing Stairs, House Robber) and optimize auxiliary space to O(1) rolling variables."
+  },
+  {
+    "day_number": 148,
+    "section_id": "dynamic-programming",
+    "title": "2D Grid DP: Unique Paths & Min Path Sum",
+    "topic_name": "2D Grid DP",
+    "estimated_minutes": 40,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      47,
+      147
+    ],
+    "flow_tier": "tier2",
+    "archetype": "problem",
+    "concepts": [
+      "2D Grid State dp[r][c]",
+      "In-Place Matrix Space Compression"
+    ],
+    "learning_objectives": [
+      "Compute unique paths and minimum path sums on grids with obstacles",
+      "Optimize 2D grid DP memory from O(M * N) to O(N) single-row buffers"
+    ],
+    "description": "Solve grid dynamic programming problems (Unique Paths, Minimum Path Sum) and compress 2D tables into 1D rows in O(M*N) time."
+  },
+  {
+    "day_number": 149,
+    "section_id": "dynamic-programming",
+    "title": "0/1 Knapsack: Table to 1D Reverse Pass",
+    "topic_name": "0/1 Knapsack",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      147
+    ],
+    "flow_tier": "tier3",
+    "archetype": "debugging",
+    "concepts": [
+      "Capacity Inclusion-Exclusion Choice",
+      "1D Reverse Traversal to Prevent Item Re-use"
+    ],
+    "learning_objectives": [
+      "Formulate the 0/1 Knapsack recurrence choosing to include or skip current item",
+      "Debug 1D space-optimized knapsack updates by reversing capacity sweeps from W down to weight"
+    ],
+    "description": "Master the classical 0/1 Knapsack problem, formulate 2D state tables, and optimize space via 1D reverse-capacity sweeps."
+  },
+  {
+    "day_number": 150,
+    "section_id": "dynamic-programming",
+    "title": "Unbounded Knapsack & Coin Change Combinations",
+    "topic_name": "Unbounded Knapsack",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      149
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "Forward Capacity Loop Invariant",
+      "Min Coins (Minimization) vs Ways (Counting)"
+    ],
+    "learning_objectives": [
+      "Implement unbounded knapsack choices where items can be selected repeatedly via forward loops",
+      "Differentiate Coin Change 1 (minimum coins) from Coin Change 2 (combination ways)"
+    ],
+    "description": "Solve Unbounded Knapsack and Coin Change (min coins and combinations count) using 1D forward capacity loops in O(N * W) time."
+  },
+  {
+    "day_number": 151,
+    "section_id": "dynamic-programming",
+    "title": "Longest Increasing Subsequence (O(N log N))",
+    "topic_name": "LIS Optimization",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      52,
+      147
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "O(N^2) Tabulation Recurrence",
+      "Patience Sorting & Tails Array O(N log N)"
+    ],
+    "learning_objectives": [
+      "Formulate the standard O(N^2) LIS recurrence checking all predecessor indices",
+      "Optimize LIS to O(N log N) time using Patience Sorting and bisect binary search over tails arrays"
+    ],
+    "description": "Optimize Longest Increasing Subsequence from O(N^2) DP to O(N log N) using patience sorting and binary search."
+  },
+  {
+    "day_number": 152,
+    "section_id": "dynamic-programming",
+    "title": "Longest Common Subsequence (LCS)",
+    "topic_name": "LCS Alignment",
+    "estimated_minutes": 40,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      148
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "2D Sequence Matching Recurrence",
+      "Backtracking Alignment Reconstruction"
+    ],
+    "learning_objectives": [
+      "Construct a 2D LCS matrix tracking character matches and max diagonal transitions",
+      "Reconstruct the optimal subsequence string by backtracking through the DP table in O(M * N) time"
+    ],
+    "description": "Implement Longest Common Subsequence (LCS) for two strings, formulate 2D transitions, and reconstruct alignments."
+  },
+  {
+    "day_number": 153,
+    "section_id": "dynamic-programming",
+    "title": "Edit Distance (Levenshtein Distance)",
+    "topic_name": "Edit Distance",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      152
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "Insert, Delete, Replace Cost Operations",
+      "2D Distance Matrix Invariant"
+    ],
+    "learning_objectives": [
+      "Formulate the Levenshtein distance recurrence evaluating insert, delete, and substitute costs",
+      "Compute minimum edit operations to transform word1 into word2 in O(M * N) time"
+    ],
+    "description": "Compute the Levenshtein Edit Distance between two strings with insertion, deletion, and replacement operations in O(M*N) time."
+  },
+  {
+    "day_number": 154,
+    "section_id": "dynamic-programming",
+    "title": "Interval DP: Matrix Chain & Burst Balloons",
+    "topic_name": "Interval DP",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      149,
+      152
+    ],
+    "flow_tier": "tier3",
+    "archetype": "problem",
+    "concepts": [
+      "Subarray Span Iteration (len 2 to N)",
+      "Last Operation Partition Choice"
+    ],
+    "learning_objectives": [
+      "Solve optimization problems over contiguous intervals by iterating span lengths",
+      "Solve Burst Balloons by choosing which balloon bursts last within interval (i, j)"
+    ],
+    "description": "Master Interval DP by iterating over subarray lengths, formulating boundary transitions (Burst Balloons, Matrix Chain)."
+  },
+  {
+    "day_number": 155,
+    "section_id": "dynamic-programming",
+    "title": "Section 13 Review & Multi-State DP Design",
+    "topic_name": "DP Milestone",
+    "estimated_minutes": 45,
+    "difficulty": "ADVANCED",
+    "prerequisites": [
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      154
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Finite State Machine DP (Buy/Sell/Cooldown)",
+      "Multi-Dimensional State Formulation",
+      "Space Optimization"
+    ],
+    "learning_objectives": [
+      "Architect state-machine DP models tracking multiple simultaneous states (e.g. stock trading with cooldowns)",
+      "Select optimal state representations and recurrence orders across all DP archetypes"
+    ],
+    "description": "Synthesize 1D, 2D, knapsack, subsequence, interval, and state-machine DP patterns into a comprehensive DP master class."
+  },
+  {
+    "day_number": 156,
+    "section_id": "advanced-dsa",
+    "title": "Bit Manipulation, Bitmasks & Brian Kernighan",
+    "topic_name": "Bitmask Mastery",
+    "estimated_minutes": 35,
+    "difficulty": "EXPERT",
+    "prerequisites": [
+      2,
+      147
+    ],
+    "flow_tier": "tier2",
+    "archetype": "completion",
+    "concepts": [
+      "Brian Kernighan's Algorithm (n & (n-1))",
+      "Bitmask Subsets & State Representation"
+    ],
+    "learning_objectives": [
+      "Clear the lowest set bit in O(1) operations using n & (n - 1) to count set bits",
+      "Represent subsets and visited states compactly using integer bitmasks (1 << i)"
+    ],
+    "description": "Master bitwise operations, Brian Kernighan's algorithm, power-of-two tests, and subset generation with bitmasks."
+  },
+  {
+    "day_number": 157,
+    "section_id": "advanced-dsa",
+    "title": "Backtracking & State-Space Pruning (N-Queens)",
+    "topic_name": "Backtracking & Pruning",
+    "estimated_minutes": 45,
+    "difficulty": "EXPERT",
+    "prerequisites": [
+      123,
+      156
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "State-Space Decision Tree Exploration",
+      "Constraint Propagation & Diagonal Bitmasks"
+    ],
+    "learning_objectives": [
+      "Implement complete backtracking frameworks with choose, explore, and unchoose steps",
+      "Prune invalid search branches in N-Queens using column and diagonal bitmask sets"
+    ],
+    "description": "Implement systematic backtracking with search-space pruning, bitmask tracking, and solve the N-Queens problem."
+  },
+  {
+    "day_number": 158,
+    "section_id": "advanced-dsa",
+    "title": "Segment Trees & Fenwick Trees Primer",
+    "topic_name": "Range Query Trees",
+    "estimated_minutes": 45,
+    "difficulty": "EXPERT",
+    "prerequisites": [
+      37,
+      111
+    ],
+    "flow_tier": "tier3",
+    "archetype": "algorithm",
+    "concepts": [
+      "Array-Based Segment Tree (2*i, 2*i+1)",
+      "O(log N) Range Query & Point Update"
+    ],
+    "learning_objectives": [
+      "Construct flat array-based Segment Trees supporting logarithmic range queries and point updates",
+      "Differentiate Segment Trees from Binary Indexed Trees (Fenwick Trees) for range computations"
+    ],
+    "description": "Build array-based Segment Trees and Fenwick Trees supporting O(log N) range queries and point updates."
+  },
+  {
+    "day_number": 159,
+    "section_id": "advanced-dsa",
+    "title": "Complex Problem Decomposition & System Design",
+    "topic_name": "System Decomposition",
+    "estimated_minutes": 45,
+    "difficulty": "EXPERT",
+    "prerequisites": [
+      73,
+      116,
+      128,
+      149
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Hybrid Algorithmic Architecture",
+      "Concurrency & Cache Invalidation",
+      "Trade-off Communication"
+    ],
+    "learning_objectives": [
+      "Deconstruct ambiguous multi-faceted problems into clear data structure and algorithm pipelines",
+      "Design a rate limiter and cache eviction system meeting production scale constraints"
+    ],
+    "description": "Decompose complex end-to-end coding interview challenges into interconnected DS/algorithm components."
+  },
+  {
+    "day_number": 160,
+    "section_id": "advanced-dsa",
+    "title": "The 160-Day Capstone: Interview Readiness",
+    "topic_name": "160-Day Capstone",
+    "estimated_minutes": 60,
+    "difficulty": "EXPERT",
+    "prerequisites": [
+      10,
+      25,
+      35,
+      50,
+      65,
+      75,
+      85,
+      95,
+      110,
+      120,
+      135,
+      145,
+      155,
+      159
+    ],
+    "flow_tier": "tier3",
+    "archetype": "milestone",
+    "concepts": [
+      "Comprehensive Interview Synthesis",
+      "Asymptotic Optimality Verification",
+      "Production-Ready Engineering"
+    ],
+    "learning_objectives": [
+      "Demonstrate full fluency across Python fundamentals, memory models, data structures, and algorithms",
+      "Complete the final capstone assessment simulating a rigorous technical interview loop"
+    ],
+    "description": "Complete the comprehensive 160-day curriculum capstone, demonstrating complete technical mastery from Python foundations to advanced DSA."
+  }
+]
