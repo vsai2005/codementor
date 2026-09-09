@@ -500,13 +500,15 @@ def _build_providers() -> list[dict]:
     nbase = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1").strip() or "https://integrate.api.nvidia.com/v1"
 
     # 1. NVIDIA Tutor keys (5 keys dedicated to learning/teacher)
-    tutor_keys = [k.strip() for k in os.getenv("NVIDIA_TUTOR_API_KEYS", "").split(",") if k.strip()]
+    raw_tutor = (os.getenv("NVIDIA_TUTOR_API_KEYS") or os.getenv("NVIDIA_TUTOR_API_KEY") or "").strip()
+    tutor_keys = [k.strip() for k in raw_tutor.split(",") if k.strip()]
     for i, k in enumerate(tutor_keys, 1):
         provs.append({"name": f"nvidia-tutor-{i}", "kind": "openai", "role": "tutor",
                       "base": nbase, "key": k, "model": nmodel})
 
     # 2. NVIDIA Practice keys (2 keys dedicated to practice review/coach)
-    practice_keys = [k.strip() for k in os.getenv("NVIDIA_PRACTICE_API_KEYS", "").split(",") if k.strip()]
+    raw_practice = (os.getenv("NVIDIA_PRACTICE_API_KEYS") or os.getenv("NVIDIA_PRACTICE_API_KEY") or "").strip()
+    practice_keys = [k.strip() for k in raw_practice.split(",") if k.strip()]
     for i, k in enumerate(practice_keys, 1):
         provs.append({"name": f"nvidia-practice-{i}", "kind": "openai", "role": "practice",
                       "base": nbase, "key": k, "model": nmodel})
