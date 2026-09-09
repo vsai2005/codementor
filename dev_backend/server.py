@@ -500,15 +500,37 @@ def _build_providers() -> list[dict]:
     nbase = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1").strip() or "https://integrate.api.nvidia.com/v1"
 
     # 1. NVIDIA Tutor keys (5 keys dedicated to learning/teacher)
+    # Check individual rows first (NVIDIA_TUTOR_KEY_1..5 or NVIDIA_TUTOR_API_KEY_1..5)
+    tutor_keys: list[str] = []
+    for idx in range(1, 10):
+        val = (os.getenv(f"NVIDIA_TUTOR_KEY_{idx}") or os.getenv(f"NVIDIA_TUTOR_API_KEY_{idx}") or "").strip()
+        if val and val not in tutor_keys:
+            tutor_keys.append(val)
+    # Also support single comma-separated row
     raw_tutor = (os.getenv("NVIDIA_TUTOR_API_KEYS") or os.getenv("NVIDIA_TUTOR_API_KEY") or "").strip()
-    tutor_keys = [k.strip() for k in raw_tutor.split(",") if k.strip()]
+    for k in raw_tutor.split(","):
+        k = k.strip()
+        if k and k not in tutor_keys:
+            tutor_keys.append(k)
+
     for i, k in enumerate(tutor_keys, 1):
         provs.append({"name": f"nvidia-tutor-{i}", "kind": "openai", "role": "tutor",
                       "base": nbase, "key": k, "model": nmodel})
 
     # 2. NVIDIA Practice keys (2 keys dedicated to practice review/coach)
+    # Check individual rows first (NVIDIA_PRACTICE_KEY_1..5 or NVIDIA_PRACTICE_API_KEY_1..5)
+    practice_keys: list[str] = []
+    for idx in range(1, 10):
+        val = (os.getenv(f"NVIDIA_PRACTICE_KEY_{idx}") or os.getenv(f"NVIDIA_PRACTICE_API_KEY_{idx}") or "").strip()
+        if val and val not in practice_keys:
+            practice_keys.append(val)
+    # Also support single comma-separated row
     raw_practice = (os.getenv("NVIDIA_PRACTICE_API_KEYS") or os.getenv("NVIDIA_PRACTICE_API_KEY") or "").strip()
-    practice_keys = [k.strip() for k in raw_practice.split(",") if k.strip()]
+    for k in raw_practice.split(","):
+        k = k.strip()
+        if k and k not in practice_keys:
+            practice_keys.append(k)
+
     for i, k in enumerate(practice_keys, 1):
         provs.append({"name": f"nvidia-practice-{i}", "kind": "openai", "role": "practice",
                       "base": nbase, "key": k, "model": nmodel})

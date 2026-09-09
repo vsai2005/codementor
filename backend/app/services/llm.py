@@ -202,8 +202,16 @@ def get_llm_client() -> LLMClient:
     provider = os.getenv("LLM_PROVIDER", "").lower()
 
     # 1. Check NVIDIA Tutor / General keys first if configured
+    tutor_keys: list[str] = []
+    for idx in range(1, 10):
+        val = (os.getenv(f"NVIDIA_TUTOR_KEY_{idx}") or os.getenv(f"NVIDIA_TUTOR_API_KEY_{idx}") or "").strip()
+        if val and val not in tutor_keys:
+            tutor_keys.append(val)
     raw_tutor = (os.getenv("NVIDIA_TUTOR_API_KEYS") or os.getenv("NVIDIA_TUTOR_API_KEY") or "").strip()
-    tutor_keys = [k.strip() for k in raw_tutor.split(",") if k.strip()]
+    for k in raw_tutor.split(","):
+        k = k.strip()
+        if k and k not in tutor_keys:
+            tutor_keys.append(k)
     nkey = (tutor_keys[0] if tutor_keys else None) or os.getenv("NVIDIA_API_KEY")
     if provider == "nvidia" or (not provider and nkey):
         base = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
