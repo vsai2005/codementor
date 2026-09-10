@@ -680,7 +680,7 @@ def llm_complete(prompt: str, *, system: str = "", temperature: float = 0.2,
         fresh = sorted(ordered, key=lambda p: _COOLDOWN.get(p["name"], 0))[:1]
 
     last_exc: Exception | None = None
-    for p in fresh[:3]:
+    for p in fresh:
         try:
             text = _dispatch(p, prompt, system, temperature, max_tokens, want_json, timeout)
             _COOLDOWN.pop(p["name"], None)
@@ -1846,7 +1846,8 @@ def generate_problem(topic_slug: str | None = None, tier: int | None = None) -> 
     for _ in range(3):
         try:
             raw = gemini_complete(prompt, system=PROBLEM_GEN_SYSTEM, temperature=0.7,
-                                  want_json=True, max_tokens=4096, timeout=45.0)
+                                  want_json=True, max_tokens=4096, timeout=60.0,
+                                  purpose="practice")
             spec = _extract_json(raw)
             entry = str(spec.get("entry_point", "")).strip()
             ref = str(spec.get("reference_solution", "")).strip()
@@ -1856,7 +1857,7 @@ def generate_problem(topic_slug: str | None = None, tier: int | None = None) -> 
             if len(cases) < 3:
                 raise ValueError("could not validate enough test cases from the reference")
             break
-        except (ValueError, KeyError, TypeError) as exc:
+        except (ValueError, KeyError, TypeError, LLMError) as exc:
             last_err = exc
             spec = None
     if spec is None:
