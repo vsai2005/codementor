@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user_optional
 from app.database import get_db
 from app.models.models import Problem, User
 from app.schemas.api import MemoryNoteOut, TutorRequest, TutorResponse
@@ -30,10 +30,12 @@ Do not write the full solution unless explicitly asked; guide toward it."""
 @router.post("/chat", response_model=TutorResponse)
 def chat(
     payload: TutorRequest,
+    request: Request,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User | None = Depends(get_current_user_optional),
 ) -> TutorResponse:
-    verdict = get_rate_limiter().check(f"tutor:{user.id}")
+    ratelimit_key = f"tutor:{user.id}" if user else f"tutor:{request.client.host if request.client else 'guest'}"
+    verdict = get_rate_limiter().check(ratelimit_key)
     if not verdict.allowed:
         raise HTTPException(
             status.HTTP_429_TOO_MANY_REQUESTS,
@@ -42,12 +44,13 @@ def chat(
         )
 
     notes = []
-    try:
-        memory = MemoryService(PgMemoryRepository(db), get_embedder())
-        notes = memory.retrieve(str(user.id), payload.message, k=5)
-    except Exception:
-        # A new user, or a down embedding provider, must still get an answer.
-        log.exception("memory retrieval failed; answering without context")
+    if user:
+        try:
+            memory = MemoryService(PgMemoryRepository(db), get_embedder())
+            notes = memory.retrieve(str(user.id), payload.message, k=5)
+        except Exception:
+            # A new user, or a down embedding provider, must still get an answer.
+            log.exception("memory retrieval failed; answering without context")
 
     context = "\n".join(f"- {n.content}" for n in notes) or "- (no past notes yet)"
     problem_context = ""

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_optional
 from app.database import get_db
 from app.models.models import User
 from app.schemas.api import (
@@ -82,12 +82,14 @@ def complete_lesson(
 @router.post("/tutor/chat", response_model=LearningTutorResponse)
 async def tutor_chat(
     payload: LearningTutorChatRequest,
-    user: User = Depends(get_current_user),
+    request: Request,
+    user: User | None = Depends(get_current_user_optional),
     teacher_svc: AITeacherService = Depends(get_teacher_service),
 ) -> LearningTutorResponse:
     """Chat with the Socratic AI Teacher for a specific curriculum day and step."""
     limiter = get_tutor_rate_limiter()
-    verdict = limiter.check(str(user.id))
+    ratelimit_key = str(user.id) if user else (request.client.host if request.client else "anonymous")
+    verdict = limiter.check(ratelimit_key)
     if not verdict.allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -116,12 +118,14 @@ async def tutor_chat(
 @router.post("/tutor/quick-action", response_model=LearningTutorResponse)
 async def tutor_quick_action(
     payload: LearningTutorQuickActionRequest,
-    user: User = Depends(get_current_user),
+    request: Request,
+    user: User | None = Depends(get_current_user_optional),
     teacher_svc: AITeacherService = Depends(get_teacher_service),
 ) -> LearningTutorResponse:
     """Execute a pedagogical quick action (e.g. explain simply, give hint, find mistake)."""
     limiter = get_tutor_rate_limiter()
-    verdict = limiter.check(str(user.id))
+    ratelimit_key = str(user.id) if user else (request.client.host if request.client else "anonymous")
+    verdict = limiter.check(ratelimit_key)
     if not verdict.allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

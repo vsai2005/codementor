@@ -50,3 +50,26 @@ def get_current_user(
     if user is None:
         raise _UNAUTHORIZED
     return user
+
+
+def get_current_user_optional(
+    request: Request,
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+) -> User | None:
+    token: str | None = None
+    cookie_token = request.cookies.get("access_token")
+    if cookie_token:
+        token = cookie_token.strip()
+    elif authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+
+    if not token:
+        return None
+
+    try:
+        claims = decode_access_token(token)
+        user_id = uuid.UUID(claims["sub"])
+        return db.get(User, user_id)
+    except Exception:
+        return None

@@ -2488,9 +2488,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(404, {"detail": "Problem not found"})
             return self._json(200, _detail(problem))
         if path == "/api/learning/progress":
-            if not self._require():
-                return
-            return self._json(200, compute_learning_progress(_S()))
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+                return self._json(200, compute_learning_progress(_S()))
+            else:
+                return self._json(200, compute_learning_progress(_new_store()))
         if path == "/api/progress/topics":
 
             if not self._require():
@@ -2615,12 +2618,15 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, run_learning_snippet(code))
 
         if path == "/api/learning/complete-lesson":
-            user = self._require()
-            if not user:
-                return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             day_num = body.get("day_number")
             status_code, resp = complete_lesson(day_num)
-            _save_store(user["username"])
+            if user:
+                _save_store(user["username"])
             return self._json(status_code, resp)
 
         if path == "/api/learning/dev-set-progress":
@@ -2641,9 +2647,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, compute_learning_progress(_S()))
 
         if path == "/api/learning/tutor/chat":
-            user = self._require()
-            if not user:
+            if self._rate_limited("learning_tutor", 40):
                 return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             msg = (body.get("message") or "").strip()
             user_code = body.get("user_code")
             day_num = int(body.get("day_number", 1))
@@ -2687,9 +2697,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, resp)
 
         if path == "/api/learning/tutor/quick-action":
-            user = self._require()
-            if not user:
+            if self._rate_limited("learning_tutor", 40):
                 return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             action = (body.get("action") or "").strip()
             if not action:
                 return self._json(400, {"detail": "Action is required"})
@@ -2762,8 +2776,13 @@ class Handler(BaseHTTPRequestHandler):
 
 
         if path == "/api/tutor/chat":
-            if not self._require():
+            if self._rate_limited("practice_tutor", 40):
                 return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             msg = (body.get("message") or "").strip()
             code = body.get("code", "")
             problem = PROBLEMS.get(body.get("problem_id"))

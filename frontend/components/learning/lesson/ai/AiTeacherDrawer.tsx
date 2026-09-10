@@ -156,6 +156,8 @@ export function AiTeacherDrawer({
         if (err instanceof ApiError) {
           if (err.status === 429) {
             errText = `You've asked quite a few questions! Please wait ${err.retryAfterS || 30} seconds before asking again.`;
+          } else if (err.status === 401) {
+            errText = "Please sign in or refresh your session to continue chatting with the AI Mentor.";
           } else if (err.message) {
             errText = err.message;
           }
