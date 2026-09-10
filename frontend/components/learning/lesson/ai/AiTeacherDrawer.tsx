@@ -32,7 +32,6 @@ export function AiTeacherDrawer({
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hintLevel, setHintLevel] = useState(1);
-  const [isPinned, setIsPinned] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,13 +71,13 @@ export function AiTeacherDrawer({
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         if (isOpen) onClose();
-      } else if (e.key === "Escape" && isOpen && !isPinned) {
+      } else if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isPinned, onClose]);
+  }, [isOpen, onClose]);
 
   // Send a regular user question
   const handleSendMessage = useCallback(
@@ -197,9 +196,7 @@ export function AiTeacherDrawer({
     <>
       {/* Backdrop overlay for mobile */}
       <div
-        className={`fixed inset-0 bg-ink/30 z-40 transition-opacity md:hidden ${
-          isPinned ? "hidden" : "block"
-        }`}
+        className="fixed inset-0 bg-ink/30 z-40 transition-opacity md:hidden"
         onClick={onClose}
       />
 
