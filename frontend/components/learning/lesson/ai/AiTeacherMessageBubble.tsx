@@ -32,7 +32,7 @@ export function AiTeacherMessageBubble({
             : "bg-surface text-ink font-bold"
         }`}
       >
-        {isUser ? "YOU" : "\ud83e\udde0"}
+        {isUser ? "YOU" : "🧠"}
       </div>
 
       {/* Bubble Container */}

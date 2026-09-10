@@ -28,13 +28,13 @@ export interface QuickActionItem {
 }
 
 export const QUICK_ACTIONS: QuickActionItem[] = [
-  { id: "explain_simply", label: "Explain Simply", icon: "\ud83d\udca1", description: "Break down into simple intuition" },
-  { id: "give_example", label: "Give Example", icon: "\ud83d\udccb", description: "Show a tiny, clear Python example" },
-  { id: "explain_deeper", label: "Explain Deeper", icon: "\ud83d\udd2c", description: "Under the hood and complexity" },
-  { id: "show_visually", label: "Show Visually", icon: "\ud83d\udcca", description: "ASCII diagram and mental model" },
-  { id: "connect_concept", label: "Connect Concept", icon: "\ud83d\udd17", description: "How this connects to broader DSA" },
-  { id: "teach_prerequisite", label: "Prerequisites", icon: "\ud83e\uddf1", description: "Foundations to know first" },
-  { id: "give_hint", label: "Give Me a Hint", icon: "\ud83e\udded", description: "Get progressive guidance" },
-  { id: "find_mistake", label: "Find My Mistake", icon: "\ud83d\udd0d", description: "Diagnose bug in your code" },
-  { id: "quiz_me", label: "Quiz Me", icon: "\u2753", description: "Active recall check-in" },
+  { id: "explain_simply", label: "Explain Simply", icon: "💡", description: "Break down into simple intuition" },
+  { id: "give_example", label: "Give Example", icon: "📋", description: "Show a tiny, clear Python example" },
+  { id: "explain_deeper", label: "Explain Deeper", icon: "🔬", description: "Under the hood and complexity" },
+  { id: "show_visually", label: "Show Visually", icon: "📊", description: "ASCII diagram and mental model" },
+  { id: "connect_concept", label: "Connect Concept", icon: "🔗", description: "How this connects to broader DSA" },
+  { id: "teach_prerequisite", label: "Prerequisites", icon: "🧱", description: "Foundations to know first" },
+  { id: "give_hint", label: "Give Me a Hint", icon: "🧭", description: "Get progressive guidance" },
+  { id: "find_mistake", label: "Find My Mistake", icon: "🔍", description: "Diagnose bug in your code" },
+  { id: "quiz_me", label: "Quiz Me", icon: "❓", description: "Active recall check-in" },
 ];

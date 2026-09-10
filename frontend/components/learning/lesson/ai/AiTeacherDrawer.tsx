@@ -206,46 +206,48 @@ export function AiTeacherDrawer({
       {/* Main Drawer Container */}
       <aside
         aria-label="AI Mentor Learning Assistant"
-        className={`fixed top-0 right-0 z-50 h-full w-full md:w-[480px] lg:w-[520px] bg-bg border-l-2 border-ink shadow-hard-lg flex flex-col transition-transform duration-200 ease-out`}
+        className="fixed top-0 right-0 z-50 h-full w-full md:w-[400px] lg:w-[440px] bg-bg border-l-2 border-ink shadow-hard-lg flex flex-col transition-transform duration-200 ease-out"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b-2 border-ink bg-surface shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">\ud83e\udde0</span>
-            <div>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xl select-none shrink-0">🧠</span>
+            <div className="min-w-0">
               <h2 className="font-display text-sm font-bold text-ink leading-tight flex items-center gap-2">
                 <span>AI Mentor</span>
                 <span className="font-mono text-[10px] px-1.5 py-0.5 rounded border border-accent/40 bg-accent/10 text-accent uppercase font-bold">
                   Socratic
                 </span>
               </h2>
-              <p className="font-mono text-[11px] text-muted truncate max-w-[240px]">
-                Day {dayNumber} \u2022 Step {stepNumber}: {stepHeading}
+              <p className="font-mono text-[11px] text-muted truncate max-w-[220px]">
+                Day {dayNumber} • Step {stepNumber}: {stepHeading}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {/* Desktop Pin/Split View Toggle */}
-            <button
-              type="button"
-              onClick={() => setIsPinned((prev) => !prev)}
-              className={`hidden md:inline-flex font-mono text-xs px-2 py-1 border border-ink/30 rounded transition-colors ${
-                isPinned ? "bg-ink text-bg font-bold" : "hover:border-ink bg-surface text-ink"
-              }`}
-              title={isPinned ? "Unpin drawer" : "Pin drawer side-by-side"}
-            >
-              {isPinned ? "\ud83d\udccc Pinned" : "\ud83d\udccc Pin"}
-            </button>
-
-            {/* Close Button */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Close Button ('X') */}
             <button
               type="button"
               onClick={onClose}
-              className="font-mono text-sm font-bold w-8 h-8 rounded border border-ink/30 hover:border-ink hover:bg-ink hover:text-bg flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded border-2 border-ink/40 bg-surface hover:border-ink hover:bg-ink hover:text-bg flex items-center justify-center transition-colors text-ink font-bold"
               aria-label="Close AI Mentor"
+              title="Close AI Mentor (Esc)"
             >
-              \u2715
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         </div>
@@ -298,7 +300,7 @@ export function AiTeacherDrawer({
                 className="w-full resize-none rounded border-2 border-ink bg-bg p-2 font-mono text-xs text-ink placeholder:text-muted focus:outline-none focus:border-accent disabled:opacity-50"
               />
               <span className="hidden sm:inline-block absolute right-2 bottom-2 font-mono text-[10px] text-muted select-none">
-                \u23ce Enter
+                ↵ Enter
               </span>
             </div>
 

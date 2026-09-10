@@ -25,12 +25,12 @@ export function AiTeacherLauncher({
           : "bg-surface hover:bg-bg text-ink hover:shadow-hard-lg"
       }`}
     >
-      <span className="text-base select-none">\ud83e\udde0</span>
+      <span className="text-base select-none">🧠</span>
       <span className="font-display tracking-wide">
         {isOpen ? "Close Mentor" : "AI Mentor"}
       </span>
       <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-ink/10 text-ink/80 text-[10px] font-mono border border-ink/20">
-        \u2318K
+        ⌘K
       </kbd>
 
       {hasUnread && !isOpen && (

@@ -6,7 +6,7 @@ export function AiTeacherTypingIndicator() {
   return (
     <div className="flex items-start gap-2.5 my-2">
       <div className="w-7 h-7 rounded border border-ink/40 bg-accent/20 flex items-center justify-center font-mono text-xs shrink-0 select-none shadow-hard-sm">
-        \ud83e\udde0
+        🧠
       </div>
       <div className="card bg-surface border-2 border-ink px-3 py-2 shadow-hard-sm max-w-[80%] flex items-center gap-2">
         <span className="font-mono text-xs text-muted">AI Mentor is thinking</span>

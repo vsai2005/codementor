@@ -97,7 +97,13 @@ export function LessonShell({
   const activeStep = currentStep;
 
   return (
-    <div className="min-h-screen bg-bg text-ink flex flex-col pb-24">
+    <div
+      className={`min-h-screen bg-bg text-ink flex flex-col pb-24 transition-[margin] duration-200 ease-out ${
+        isAiTeacherOpen
+          ? "md:mr-[400px] lg:mr-[440px]"
+          : "mr-0"
+      }`}
+    >
       {/* Sticky Top Navigation & Progress Header */}
       <header className="sticky top-0 z-30 border-b-2 border-ink bg-surface shadow-hard-sm">
         <div className="mx-auto max-w-5xl px-3 sm:px-6 py-3 space-y-3">
@@ -193,7 +199,14 @@ export function LessonShell({
       </main>
 
       {/* Sticky Bottom Action Dock */}
-      <nav aria-label="Lesson Step Navigation" className="fixed bottom-0 left-0 right-0 z-30 border-t-2 border-ink bg-surface shadow-hard">
+      <nav
+        aria-label="Lesson Step Navigation"
+        className={`fixed bottom-0 left-0 z-30 border-t-2 border-ink bg-surface shadow-hard transition-[right] duration-200 ease-out ${
+          isAiTeacherOpen
+            ? "right-0 md:right-[400px] lg:right-[440px]"
+            : "right-0"
+        }`}
+      >
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between gap-3">
           <button
             type="button"
