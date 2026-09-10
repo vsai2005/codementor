@@ -2472,8 +2472,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"items": items, "page": 1,
                                     "page_size": len(items), "total": len(items)})
         if path == "/api/problems/next":
-            if not self._require():
-                return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             return self._json(200, _detail(next_problem()))
         if path.startswith("/api/problems/") and path.endswith("/reference"):
             pid = path[len("/api/problems/"):-len("/reference")]
@@ -2547,8 +2550,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(status, payload)
 
         if path == "/api/problems/generate":
-            if not self._require():
-                return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             topic = body.get("topic")
             tier = body.get("tier")
             try:
@@ -2568,9 +2574,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, run_tests(problem, body.get("code", "")))
 
         if path.startswith("/api/problems/") and path.endswith("/submit"):
-            user = self._require()
-            if not user:
-                return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             pid = path[len("/api/problems/"):-len("/submit")]
             problem = _find_problem(pid)
             if not problem:
@@ -2590,7 +2598,8 @@ class Handler(BaseHTTPRequestHandler):
             _S()["submissions"].append({"submission_id": sid,
                                         "overall_score": review["overall_score"],
                                         "created_at": datetime.now(timezone.utc).isoformat()})
-            _save_store(user["username"])
+            if user:
+                _save_store(user["username"])
             return self._json(200, {"submission_id": sid, "tests": tests,
                                     "review": review, "difficulty": difficulty,
                                     "review_schedule": schedule,
@@ -2744,9 +2753,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, resp)
 
         if path == "/api/submissions":
-            user = self._require()
-            if not user:
-                return
+            user = _user_by_token(self._bearer())
+            if user:
+                _CTX.store = _store_for(user["username"])
+            else:
+                _CTX.store = _new_store()
             problem = _find_problem(body.get("problem_id"))
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
@@ -2766,7 +2777,8 @@ class Handler(BaseHTTPRequestHandler):
             _S()["submissions"].append({"submission_id": sid,
                                         "overall_score": review["overall_score"],
                                         "created_at": datetime.now(timezone.utc).isoformat()})
-            _save_store(user["username"])   # persist this learner's database
+            if user:
+                _save_store(user["username"])   # persist this learner's database
             return self._json(200, {"submission_id": sid, "tests": tests,
                                     "review": review, "difficulty": difficulty,
                                     "review_schedule": schedule,
