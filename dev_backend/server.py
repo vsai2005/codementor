@@ -2441,6 +2441,16 @@ class Handler(BaseHTTPRequestHandler):
         _CTX.store = _store_for(user["username"])
         return user
 
+    def _bind_user(self) -> dict | None:
+        """Resolve the signed-in user if token is valid and bind their per-user
+        store. If guest/anonymous, binds a clean isolated store without error."""
+        user = _user_by_token(self._bearer())
+        if user:
+            _CTX.store = _store_for(user["username"])
+        else:
+            _CTX.store = _new_store()
+        return user
+
     def do_OPTIONS(self):
         self.send_response(204)
         self._cors()
@@ -2499,36 +2509,28 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 return self._json(200, compute_learning_progress(_new_store()))
         if path == "/api/progress/topics":
-
-            if not self._require():
-                return
+            self._bind_user()
             return self._json(200, progress_topics())
         if path == "/api/progress/trend":
-            if not self._require():
-                return
+            self._bind_user()
             points = [{"submission_id": s["submission_id"],
                        "overall_score": s["overall_score"],
                        "created_at": s["created_at"]} for s in _S()["submissions"][-20:]]
             return self._json(200, {"points": points})
         if path == "/api/review/due":
-            if not self._require():
-                return
+            self._bind_user()
             return self._json(200, review_queue())
         if path == "/api/recent-solved":
-            if not self._require():
-                return
+            self._bind_user()
             return self._json(200, recent_solved())
         if path == "/api/account/summary":
-            if not self._require():
-                return
+            self._bind_user()
             return self._json(200, account_summary())
         if path == "/api/insights/misconceptions":
-            if not self._require():
-                return
+            self._bind_user()
             return self._json(200, misconceptions_summary())
         if path == "/api/momentum":
-            if not self._require():
-                return
+            self._bind_user()
             return self._json(200, momentum_summary())
         return self._json(404, {"detail": "Not found"})
 
@@ -2819,8 +2821,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"reply": reply, "retrieved_notes": notes})
 
         if path == "/api/coach/debrief":
-            if not self._require():
-                return
+            self._bind_user()
             problem = PROBLEMS.get(body.get("problem_id"))
             if not problem:
                 return self._json(404, {"detail": "Problem not found"})
