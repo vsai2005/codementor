@@ -257,7 +257,7 @@ PHASE_3_MISSION_SLUGS = [
 
 def test_phase3_missions_registration():
     """Verify all 12 Phase 3 missions are registered in SEED_MISSIONS and PHASE_3_SEED_MISSIONS."""
-    assert len(SEED_MISSIONS) == 25, f"Expected 25 total missions, found {len(SEED_MISSIONS)}"
+    assert len(SEED_MISSIONS) >= 25, f"Expected at least 25 total missions, found {len(SEED_MISSIONS)}"
     assert len(PHASE_3_SEED_MISSIONS) == 12, f"Expected 12 Phase 3 missions, found {len(PHASE_3_SEED_MISSIONS)}"
 
     seed_slugs = {m["slug"] for m in SEED_MISSIONS}

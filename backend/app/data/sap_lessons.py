@@ -1584,4 +1584,12 @@ try:
 except ImportError:
     pass
 
+# Merge Phase 4 (Days 45–54)
+try:
+    from app.data.sap_lessons_phase4 import PHASE_4_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_4_DAYS_CONTENT)
+except ImportError:
+    pass
+
+
 

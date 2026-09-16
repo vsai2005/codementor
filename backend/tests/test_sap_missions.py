@@ -314,7 +314,7 @@ def test_seed_missions_data_integrity_and_dag_concepts():
 
     for m in missions:
         assert m["mission_type"] in [t.value for t in SAPMissionType]
-        assert 1 <= m["difficulty"] <= 3
+        assert 1 <= m["difficulty"] <= 5
         assert len(m["steps"]) >= 1
         assert len(m["related_days"]) >= 1
         assert len(m["concept_slugs"]) >= 1

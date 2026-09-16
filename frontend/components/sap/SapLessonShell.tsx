@@ -29,6 +29,14 @@ import { BillingAccountingFlow } from "./BillingAccountingFlow";
 import { InventoryMovementMapper } from "./InventoryMovementMapper";
 import { ProductionOrderFlow } from "./ProductionOrderFlow";
 import { CostSettlementVisualizer } from "./CostSettlementVisualizer";
+import { PlanVizSimulator } from "./PlanVizSimulator";
+import { DeltaMergeVisualizer } from "./DeltaMergeVisualizer";
+import { VDMBuilder } from "./VDMBuilder";
+import { CDSExpressionLab } from "./CDSExpressionLab";
+import { AssociationCardinalityMapper } from "./AssociationCardinalityMapper";
+import { AnnotationInspector } from "./AnnotationInspector";
+import { AnalyticalCubeDesigner } from "./AnalyticalCubeDesigner";
+import { DCLAccessSimulator } from "./DCLAccessSimulator";
 
 interface SapLessonShellProps {
   lesson: SapLessonDetail;
@@ -207,6 +215,22 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
         return <ProductionOrderFlow title={step.title || undefined} instruction={step.instruction || undefined} />;
       case "CostSettlementVisualizer":
         return <CostSettlementVisualizer title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "PlanVizSimulator":
+        return <PlanVizSimulator title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "DeltaMergeVisualizer":
+        return <DeltaMergeVisualizer title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "VDMBuilder":
+        return <VDMBuilder title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "CDSExpressionLab":
+        return <CDSExpressionLab title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "AssociationCardinalityMapper":
+        return <AssociationCardinalityMapper title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "AnnotationInspector":
+        return <AnnotationInspector title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "AnalyticalCubeDesigner":
+        return <AnalyticalCubeDesigner title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "DCLAccessSimulator":
+        return <DCLAccessSimulator title={step.title || undefined} instruction={step.instruction || undefined} />;
       default:
         return (
           <div className="border-2 border-ink bg-surface-raised p-4 text-xs font-mono">

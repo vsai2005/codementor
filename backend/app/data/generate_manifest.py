@@ -1266,6 +1266,152 @@ manifest["remediation_capsules"] = [
         ],
         "remediation_content_md": "# Remediation: Modern SAP Product Landscape\n\n- **SAP S/4HANA**: The digital core ERP system (Finance, Logistics, Manufacturing, Sales).\n- **SAP BTP (Business Technology Platform)**: The innovation and extensibility platform (side-by-side apps, integration suite, AI, analytics).\n- **SAP Signavio**: Business Process Intelligence (mining, modeling, journey mapping, process simulation).\n- **Public Cloud**: Turnkey SaaS with strict standard processes and automatic continuous upgrades.\n- **Private Cloud**: Dedicated cloud environment with greater customizing flexibility and legacy code migration paths.",
         "recovery_assessment_slug": "sap-portfolio-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-hana-performance",
+        "target_concept_slug": "sql-optimizer-pushdown",
+        "title": "Remediation Capsule: HANA SQL Optimizer & Execution Pushdown",
+        "deficiency_triggers": [
+            "Fetching large datasets into ABAP memory instead of executing in-engine aggregations",
+            "Misinterpreting PlanViz execution operator trees",
+            "Triggering un-pushable operations forcing calculation engine row fallback"
+        ],
+        "prerequisite_deficiencies": [
+            "columnar-database-engine",
+            "in-memory-computing",
+            "code-pushdown-philosophy"
+        ],
+        "remediation_content_md": "# Remediation: HANA SQL Optimizer & Pushdown\n\nIn SAP S/4HANA, the HANA database engine features a cost-based SQL optimizer and specialized execution engines (Column Store engine, Row engine, Calculation engine).\n\n### Optimization Rules:\n1. **Push Aggregations & Filters**: Filter at the database level rather than looping in application server memory.\n2. **Avoid Engine Hops**: Unnecessary conversion between SQL engine and calculation engine introduces overhead.\n3. **Inspect PlanViz**: Analyze dominant operators, table scans, and memory consumption in PlanViz to isolate performance bottlenecks.",
+        "recovery_assessment_slug": "hana-performance-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-vdm-architecture",
+        "target_concept_slug": "vdm-architecture-tiers",
+        "title": "Remediation Capsule: Virtual Data Model (VDM) Layering",
+        "deficiency_triggers": [
+            "Creating direct UI consumption views on raw database tables",
+            "Violating Clean Core naming conventions and stability contracts",
+            "Bypassing reusable interface views in analytical applications"
+        ],
+        "prerequisite_deficiencies": [
+            "cds-fundamentals",
+            "view-entity-syntax"
+        ],
+        "remediation_content_md": "# Remediation: S/4HANA Virtual Data Model (VDM)\n\nThe SAP VDM structures database entities into three distinct architectural tiers:\n\n1. **Basic/Interface Views (`I_`)**: 1-to-1 projection on standard database tables (e.g. `I_SalesOrder`, `I_Plant`). Stable, enterprise-reusable building blocks.\n2. **Composite Views (`R_` / `I_`)**: Combine basic views with associations, calculations, and business aggregations. Model core business entities.\n3. **Consumption Views (`C_`)**: Top-level views tailored specifically for applications, analytics, or UI screens. Never accessed by other CDS views.",
+        "recovery_assessment_slug": "vdm-architecture-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-cds-expressions",
+        "target_concept_slug": "cds-case-statements",
+        "title": "Remediation Capsule: CDS Expressions & Conditional CASE Logic",
+        "deficiency_triggers": [
+            "Syntax errors in nested CASE ... WHEN statements",
+            "Improper null handling without coalesce",
+            "Incorrect unit or currency conversion function signatures in CDS"
+        ],
+        "prerequisite_deficiencies": [
+            "cds-fundamentals",
+            "view-entity-syntax"
+        ],
+        "remediation_content_md": "# Remediation: CDS Expressions & Logic\n\nCDS View Entities support rich declarative SQL expressions:\n\n- **CASE Statements**: `case when Condition then Value else Default end as Alias`.\n- **Null Protection**: `coalesce(NullableField, FallbackValue)` avoids null propagation.\n- **Conversions**: Built-in functions like `currency_conversion(...)` and `unit_conversion(...)` perform in-database standard conversions referencing exchange rate tables (TCURR).",
+        "recovery_assessment_slug": "cds-expressions-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-cds-parameters",
+        "target_concept_slug": "cds-parameters",
+        "title": "Remediation Capsule: Parameterized CDS Views & Environment Session Variables",
+        "deficiency_triggers": [
+            "Hardcoding key dates or target currencies in CDS views",
+            "Failing to propagate input parameters across associations",
+            "Misusing $session environment variables"
+        ],
+        "prerequisite_deficiencies": [
+            "cds-fundamentals",
+            "cds-syntax-expressions"
+        ],
+        "remediation_content_md": "# Remediation: Parameterized CDS Views\n\nParameterized CDS views allow passing dynamic runtime inputs into database execution:\n\n- **Parameter Syntax**: `with parameters p_target_curr : waers, p_eval_date : abap.dats`\n- **Session Variables**: `$session.user`, `$session.client`, and `$session.system_date` inject current runtime context without manual parameter entry.\n- **Association Propagation**: Parameters must be passed along associated path expressions using `_Association( p_param: $parameters.p_param )`.",
+        "recovery_assessment_slug": "cds-parameters-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-cds-annotations",
+        "target_concept_slug": "semantics-annotations",
+        "title": "Remediation Capsule: CDS Annotations Framework & Domain Semantics",
+        "deficiency_triggers": [
+            "Missing @Semantics.amount.currencyCode on financial measure fields",
+            "Failure to link quantity fields to unit of measure references",
+            "Improper @Analytics data category configuration"
+        ],
+        "prerequisite_deficiencies": [
+            "cds-fundamentals",
+            "view-entity-syntax"
+        ],
+        "remediation_content_md": "# Remediation: CDS Annotations & Semantics\n\nAnnotations provide semantic metadata consumed by compilers, frameworks, and UIs:\n\n- **Domain Semantics**: `@Semantics.amount.currencyCode: 'CurrencyCodeField'` binds financial numbers to currency references, preventing currency aggregation errors.\n- **Quantity Semantics**: `@Semantics.quantity.unitOfMeasure: 'UnitField'` binds quantities to their physical units (e.g. KG, EA).\n- **Framework Consumers**: Analytical engines and Fiori Elements rely strictly on these annotations to format tables and charts correctly.",
+        "recovery_assessment_slug": "cds-annotations-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-cds-hierarchies",
+        "target_concept_slug": "cds-hierarchies",
+        "title": "Remediation Capsule: Hierarchical Modeling & Compositions in CDS",
+        "deficiency_triggers": [
+            "Failing to define directory and parent-child association structures in hierarchies",
+            "Confusing root entity compositions with loose unmanaged associations",
+            "Referential integrity errors in multi-level bill-of-materials"
+        ],
+        "prerequisite_deficiencies": [
+            "cds-associations-concept",
+            "cardinality-rules"
+        ],
+        "remediation_content_md": "# Remediation: CDS Hierarchies & Compositions\n\n- **CDS Hierarchies (`define hierarchy`)**: Model parent-child tree structures (BOMs, cost centers, profit center groups) directly in the HANA database engine, enabling fast recursive traversal.\n- **Transactional Compositions (`composition of [0..*] ChildEntity`)**: Establish tight lifecycle ownership between parent and child nodes (e.g. Sales Order Header owns Sales Order Items). When the parent is deleted, child nodes are cascade-deleted.",
+        "recovery_assessment_slug": "cds-hierarchies-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-cds-cubes",
+        "target_concept_slug": "cds-analytical-cubes",
+        "title": "Remediation Capsule: Multidimensional Analytical Modeling & Cubes",
+        "deficiency_triggers": [
+            "Missing @Aggregation.default: #SUM on numerical measures",
+            "Treating dimension views as fact tables",
+            "Attempting to query #CUBE views directly from transactional apps without query views"
+        ],
+        "prerequisite_deficiencies": [
+            "vdm-architecture-tiers",
+            "semantics-annotations"
+        ],
+        "remediation_content_md": "# Remediation: Analytical Cubes & Dimensions\n\nIn S/4HANA Embedded Analytics, multidimensional reporting follows star/snowflake schemas:\n\n1. **Cube Views (`@Analytics.dataCategory: #CUBE`)**: Hold transactional fact data and measures (e.g. Invoiced Amount, Net Quantity). Every measure MUST declare `@Aggregation.default: #SUM` (or `#MAX`, `#MIN`, `#AVG`). Note: `@DefaultAggregation` is legacy/obsolete terminology.\n2. **Dimension Views (`@Analytics.dataCategory: #DIMENSION`)**: Provide master data attributes (Customer, Material, Plant).\n3. **Query Views (`@Analytics.query: true`)**: Transient consumption views that project dimensions and measures for execution in analytical tools and KPI cards.",
+        "recovery_assessment_slug": "cds-cubes-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-dcl-security",
+        "target_concept_slug": "dcl-access-control",
+        "title": "Remediation Capsule: Data Control Language (DCL) & Row-Level Security",
+        "deficiency_triggers": [
+            "Omitting @AccessControl.authorizationCheck: #CHECK on CDS entities",
+            "Syntax errors in DEFINE ROLE statements and aspect pfcg_auth mappings",
+            "Accidental data leakage across company codes or plants"
+        ],
+        "prerequisite_deficiencies": [
+            "pfcg-authorizations",
+            "cds-fundamentals"
+        ],
+        "remediation_content_md": "# Remediation: DCL Access Control & Security\n\nData Control Language (DCL) enforces declarative row-level security in the database tier:\n\n1. **Enabling Checks**: View entity must carry `@AccessControl.authorizationCheck: #CHECK`.\n2. **Role Definition**: `DEFINE ROLE RoleName { grant select on CDSView where (Plant) = aspect pfcg_auth(M_MATE_WRK, WERKS, ACTVT = '03'); }`.\n3. **Transparent Enforcement**: When ABAP or Fiori queries the CDS view entity, the HANA SQL engine automatically injects the PFCG authorization filter into the WHERE clause, preventing unauthorized record disclosure.",
+        "recovery_assessment_slug": "dcl-security-recovery-diagnostic"
+    },
+    {
+        "slug": "remediation-vdm-synthesis",
+        "target_concept_slug": "cds-vdm-synthesis",
+        "title": "Remediation Capsule: Comprehensive Secure VDM Design Synthesis",
+        "deficiency_triggers": [
+            "Architectural fragmentation between CDS views, analytical models, and security rules",
+            "Performance degradation due to un-optimized association traversals in consumption queries",
+            "Failure to isolate clean core extensibility layers"
+        ],
+        "prerequisite_deficiencies": [
+            "vdm-architecture-tiers",
+            "cds-analytical-cubes",
+            "dcl-access-control"
+        ],
+        "remediation_content_md": "# Remediation: Secure Enterprise VDM Synthesis\n\nA production-grade S/4HANA analytical architecture unifies:\n\n1. **Strict VDM Layering**: Basic -> Composite -> Consumption (naming prefixes like I_, R_, C_ are SAP conventions, but view types are determined by @VDM.viewType annotations).\n2. **Association Performance**: Navigation path expressions instantiate joins on-demand; accurate cardinalities ([1..1], [0..1]) govern optimization.\n3. **Multidimensional Analytics**: Facts modeled as `#CUBE` with aggregated measures (@Aggregation.default: #SUM), joined with `#DIMENSION` entities.\n4. **Security by Design**: Declarative DCL access rules bound to PFCG authorization objects at the database level.",
+        "recovery_assessment_slug": "vdm-synthesis-recovery-diagnostic"
     }
 ]
 

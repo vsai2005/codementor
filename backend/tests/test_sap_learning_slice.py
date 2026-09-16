@@ -387,6 +387,6 @@ class TestSAPLearningSliceAPI:
         assert data8["steps"][5]["is_capstone"] is True
 
     def test_get_unauthored_day_returns_404(self):
-        res = client.get("/api/sap/learning/lessons/45")
+        res = client.get("/api/sap/learning/lessons/55")
         assert res.status_code == 404
         assert "not authored yet" in res.json()["detail"]

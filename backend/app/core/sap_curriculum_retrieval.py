@@ -288,6 +288,11 @@ class SAPCurriculumKnowledgeEngine:
             "production-order-settlement": "remediation-acdoca",
             "wip-variance-calculation": "remediation-acdoca",
             "e2e-process-integration-synthesis": "remediation-module-interconnectivity",
+            # Phase 4: HANA Engine & Data Semantics concepts
+            "planviz-analysis": "remediation-hana-performance",
+            "delta-merge-architecture": "remediation-hana-performance",
+            "cds-advanced-expressions": "remediation-cds-expressions",
+            "cds-compositions": "remediation-cds-hierarchies",
         }
         if concept_slug in concept_aliases:
             cap_slug = concept_aliases[concept_slug]
