@@ -1,5 +1,19 @@
 """Authoritative content definitions for SAP S/4HANA Guided Learning Days 9–22 (Phase 2).
 
+S/4HANA Technical Accuracy & Architectural Invariants (Audited):
+1. Universal Journal Scope: ACDOCA combines GL (BKPF/BSEG), CO (COEP), AA (ANEP), and ML (MLIT)
+   into an atomic multi-dimension record. Operational documents (VBAK, EKKO) and document headers (BKPF) remain active.
+2. Inventory Ledger: MATDOC records material movement line items in append-only columnar format.
+   Master and valuation tables (MARC, MARD, MBEW) are preserved via generated CDS compatibility views (NSDM_V_*).
+3. Central Business Partner: BUT000 is the mandatory single point of entry. Synchronization writes into
+   traditional projection tables (KNA1, LFA1, KNVV, LFM1) via Customer-Vendor Integration (CVI / MDS_LOAD_COCKPIT).
+4. Modern CDS Standards: Standardizes on DEFINE VIEW ENTITY (2020+). Deprecated @OData.publish: true is removed
+   in favor of RAP Business Service Definitions and Service Bindings (OData V4 - UI).
+5. Landscape Architecture: Central Business Configuration (CBC) is restricted to Public Cloud 3SL.
+   Private Cloud and On-Premise use standard SPRO customizing with CTS/STMS transport pipelines.
+6. Identity & Access Governance: Resolves SoD conflicts by reassigning to restricted roles (SAP_BR_AP_CLERK_INVOICES)
+   without modifying delivered SAP template catalogs or granting direct payment release (F_REGU_BUK).
+
 Strict 8-step pedagogical sequence for every day:
 1. learn: Core concepts, definitions, and business rationale.
 2. understand: Deep-dive architecture, invariants, and anti-patterns.
@@ -593,7 +607,7 @@ SAP S/4HANA completely dismantled this division by introducing table **ACDOCA** 
 - **Unified Journal Line Items**: Every accounting document posts a header record in `BKPF` and balanced debit/credit line items in `ACDOCA` (with open-item-managed items also synchronized in `BSEG`).
 - **350+ Unified Dimensions**: Each line item simultaneously stores G/L Account, Profit Center, Cost Center, Functional Area, Segment, Business Partner, and Fixed Asset subledger assignments.
 - **FI and CO Unification**: Secondary cost elements are configured directly as G/L accounts (categories 42/43). FI and CO read from the exact same line item table, rendering the legacy reconciliation ledger obsolete.
-- **Separation of Operational Documents**: ACDOCA stores accounting postings; operational source documents—such as Sales Orders (`VBAK`/`VBAP`), Purchase Orders (`EKKO`/`EKPO`), and Billing Invoices (`VBRK`/`VBRP`)—remain in their dedicated logistics tables.""",
+- **Separation of Operational Documents**: ACDOCA stores accounting postings; operational source documents—such as Sales Orders (`VBAK`/`VBAP`), Purchase Orders (`EKKO`/`EKPO`), and Billing Invoices (`VBRK`/`VBRP`)—remain in their dedicated logistics tables. ACDOCA entries link back to these source documents via the Object Type (`AWTYP = 'MKPF'` for goods movements, `'VBRK'` for billing) and Reference Key (`AWKEY`/`AWREF`).""",
                 "key_terms": [
                     {"term": "ACDOCA", "definition": "The central Universal Journal line item table in S/4HANA storing all financial, management, asset, and material valuation postings."},
                     {"term": "Parallel Ledgers", "definition": "Maintaining multiple distinct ledgers (e.g. 0L for IFRS and 2L for local tax GAAP) within ACDOCA simultaneously."},

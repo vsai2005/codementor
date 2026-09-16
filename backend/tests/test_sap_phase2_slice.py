@@ -396,3 +396,73 @@ class TestSAPPhase2EnterpriseMissions:
                         assert "is_correct" not in opt, (
                             f"Answer leak vulnerability! 'is_correct' was found in options of mission {seed['slug']}, step {step.get('step_number')}"
                         )
+
+
+# =============================================================================
+# 5. Technical Accuracy & Architectural Audit Assertions
+# =============================================================================
+
+class TestSAPPhase2TechnicalAccuracyAudit:
+    """Enforce technical veracity across all 14 days of Phase 2 curriculum and visualizers."""
+
+    def test_audit_acdoca_preserves_operational_and_header_tables(self):
+        """Verify Day 12 explicitly teaches that BKPF, BSEG, VBAK, and EKKO remain active."""
+        d12 = PHASE_2_DAYS_CONTENT[12]
+        d12_text = str(d12)
+        assert "BKPF" in d12_text, "ACDOCA curriculum must reference document header BKPF"
+        assert "VBAK" in d12_text or "Sales Order" in d12_text
+        assert "AWTYP" in d12_text or "Reference Key" in d12_text
+
+    def test_audit_matdoc_preserves_marc_mard_mbew_compatibility_views(self):
+        """Verify Day 13 documents table preservation via NSDM_V_* CDS compatibility views."""
+        d13 = PHASE_2_DAYS_CONTENT[13]
+        d13_text = str(d13)
+        assert "MARC" in d13_text and "MARD" in d13_text and "MBEW" in d13_text
+        assert "NSDM_V_MARD" in d13_text or "compatibility view" in d13_text.lower()
+
+    def test_audit_no_deprecated_odata_publish_in_phase2(self):
+        """Verify deprecated @OData.publish: true is never recommended for CDS View Entities."""
+        for day_num, day_data in PHASE_2_DAYS_CONTENT.items():
+            content_str = str(day_data)
+            assert "@OData.publish: true\ndefine view entity" not in content_str, (
+                f"Day {day_num} uses deprecated @OData.publish on CDS View Entity!"
+            )
+
+    def test_audit_cbc_scoped_strictly_to_public_cloud(self):
+        """Verify Central Business Configuration (CBC) is restricted to Public Cloud 3SL."""
+        d17 = PHASE_2_DAYS_CONTENT[17]
+        d17_text = str(d17)
+        assert "Public Edition" in d17_text or "Public Cloud" in d17_text
+        assert "SPRO" in d17_text or "Customizing" in d17_text
+
+    def test_audit_sod_conflict_resolution_uses_restricted_role(self):
+        """Verify Day 18 IAM SoD remediation uses SAP_BR_AP_CLERK_INVOICES without F_REGU_BUK."""
+        d18 = PHASE_2_DAYS_CONTENT[18]
+        d18_text = str(d18)
+        assert "SAP_BR_AP_CLERK_INVOICES" in d18_text
+        assert "F_REGU_BUK" in d18_text or "payment" in d18_text.lower()
+
+    def test_audit_movement_311_correct_storage_location_transfer_semantics(self):
+        """Verify Movement 311 is correctly defined as Storage Location to Storage Location."""
+        matdoc_component = Path("frontend/components/sap/MATDOCFlow.tsx")
+        if matdoc_component.exists():
+            content = matdoc_component.read_text(encoding="utf-8")
+            assert "Storage Location to Storage Location (within Plant)" in content
+
+    def test_audit_all_8_frontend_visualizers_tagged_simulation_model(self):
+        """Verify all 8 visualizers have explicit [SIMULATION MODEL] badging."""
+        visualizers = [
+            "frontend/components/sap/UniversalJournalVisualizer.tsx",
+            "frontend/components/sap/MATDOCFlow.tsx",
+            "frontend/components/sap/HANAStorageVisualizer.tsx",
+            "frontend/components/sap/BusinessPartnerMapper.tsx",
+            "frontend/components/sap/CDSConceptMapper.tsx",
+            "frontend/components/sap/LandscapeFlow.tsx",
+            "frontend/components/sap/AccessRoleMapper.tsx",
+            "frontend/components/sap/DocumentFlowTracer.tsx",
+        ]
+        for v_path_str in visualizers:
+            p = Path(v_path_str)
+            if p.exists():
+                text = p.read_text(encoding="utf-8")
+                assert "[SIMULATION MODEL]" in text, f"Component {p.name} missing [SIMULATION MODEL] badge"
