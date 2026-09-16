@@ -12,6 +12,14 @@ import { SAPProductSelector } from "./SAPProductSelector";
 import { ModuleInteractionVisualizer } from "./ModuleInteractionVisualizer";
 import { ScenarioDecision } from "./ScenarioDecision";
 import { MissionRecommendation } from "./MissionRecommendation";
+import { UniversalJournalVisualizer } from "./UniversalJournalVisualizer";
+import { MATDOCFlow } from "./MATDOCFlow";
+import { HANAStorageVisualizer } from "./HANAStorageVisualizer";
+import { BusinessPartnerMapper } from "./BusinessPartnerMapper";
+import { CDSConceptMapper } from "./CDSConceptMapper";
+import { LandscapeFlow } from "./LandscapeFlow";
+import { AccessRoleMapper } from "./AccessRoleMapper";
+import { DocumentFlowTracer } from "./DocumentFlowTracer";
 
 interface SapLessonShellProps {
   lesson: SapLessonDetail;
@@ -155,6 +163,22 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
             options={step.options || []}
           />
         );
+      case "UniversalJournalVisualizer":
+        return <UniversalJournalVisualizer entries={step.entries || []} title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "MATDOCFlow":
+        return <MATDOCFlow records={step.records || []} title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "HANAStorageVisualizer":
+        return <HANAStorageVisualizer title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "BusinessPartnerMapper":
+        return <BusinessPartnerMapper title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "CDSConceptMapper":
+        return <CDSConceptMapper title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "LandscapeFlow":
+        return <LandscapeFlow title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "AccessRoleMapper":
+        return <AccessRoleMapper title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "DocumentFlowTracer":
+        return <DocumentFlowTracer flowNodes={step.flow_nodes || []} title={step.title || undefined} instruction={step.instruction || undefined} />;
       default:
         return (
           <div className="border-2 border-ink bg-surface-raised p-4 text-xs font-mono">

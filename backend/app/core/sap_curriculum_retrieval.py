@@ -203,9 +203,56 @@ class SAPCurriculumKnowledgeEngine:
 
     def get_remediation_capsule(self, concept_slug: str) -> RemediationCapsule | None:
         capsule_slug = self._concept_to_remediation.get(concept_slug)
-        if not capsule_slug:
-            return None
-        return self._remediation_capsules.get(capsule_slug)
+        if capsule_slug:
+            return self._remediation_capsules.get(capsule_slug)
+
+        # 1. Alias / semantic mappings for tightly coupled concept clusters
+        concept_aliases = {
+            "s4hana-value-drivers": "remediation-sap-portfolio",
+            "real-time-enterprise": "remediation-sap-portfolio",
+            "ecc-simplification-items": "remediation-acdoca",
+            "compatibility-views-concept": "remediation-acdoca",
+            "universal-journal-concept": "remediation-acdoca",
+            "fi-co-unification": "remediation-acdoca",
+            "acdoca-table-architecture": "remediation-acdoca",
+            "parallel-ledgers": "remediation-acdoca",
+            "multi-currency-accounting": "remediation-acdoca",
+            "in-memory-computing": "remediation-three-tier",
+            "columnar-database-engine": "remediation-three-tier",
+            "matdoc-table-architecture": "remediation-matdoc",
+            "simplified-inventory-valuation": "remediation-matdoc",
+            "business-partner-cvi": "remediation-master-data",
+            "customer-vendor-synchronization": "remediation-master-data",
+            "cds-fundamentals": "remediation-cds",
+            "view-entity-syntax": "remediation-cds",
+            "code-pushdown-philosophy": "remediation-cds",
+            "transport-management-cts": "remediation-three-tier",
+            "system-landscapes-3tier": "remediation-three-tier",
+            "cloud-implementation-landscapes": "remediation-sap-portfolio",
+            "identity-access-management": "remediation-three-tier",
+            "pfcg-authorizations": "remediation-three-tier",
+            "fiori-role-assignment": "remediation-three-tier",
+            "embedded-analytics-foundations": "remediation-cds",
+            "operational-reporting-vdm": "remediation-cds",
+            "document-flow-continuity": "remediation-module-interconnectivity",
+            "transactional-audit-trail": "remediation-module-interconnectivity",
+            "s4hana-integrated-scenario": "remediation-module-interconnectivity",
+            "s4hana-architecture-synthesis": "remediation-sap-portfolio",
+        }
+        if concept_slug in concept_aliases:
+            cap_slug = concept_aliases[concept_slug]
+            if cap_slug in self._remediation_capsules:
+                return self._remediation_capsules[cap_slug]
+
+        # 2. Graph neighbor fallback: check direct prerequisites and dependents
+        for prereq in self.get_direct_prerequisites(concept_slug):
+            if prereq in self._concept_to_remediation:
+                return self._remediation_capsules.get(self._concept_to_remediation[prereq])
+        for dep in self.get_direct_dependents(concept_slug):
+            if dep in self._concept_to_remediation:
+                return self._remediation_capsules.get(self._concept_to_remediation[dep])
+
+        return None
 
     def search_concepts(self, query: str, limit: int = 10) -> list[ConceptNode]:
         q = query.lower().strip()

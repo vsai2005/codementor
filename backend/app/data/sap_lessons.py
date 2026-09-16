@@ -1569,3 +1569,11 @@ You possess validated proficiency in:
         ],
     },
 }
+
+# Merge Phase 2 (Days 9–22)
+try:
+    from app.data.sap_lessons_phase2 import PHASE_2_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_2_DAYS_CONTENT)
+except ImportError:
+    pass
+

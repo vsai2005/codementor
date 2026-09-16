@@ -28,6 +28,7 @@ from app.models.sap_models import (
 )
 from app.sap.services.enterprise import SAPEnterpriseService
 from app.sap.services.mastery import SAPMasteryService
+from app.sap.services.phase2_missions import PHASE_2_SEED_MISSIONS
 
 
 # =============================================================================
@@ -592,6 +593,9 @@ SEED_MISSIONS: list[dict[str, Any]] = [
     },
 ]
 
+# Merge Phase 2 missions into SEED_MISSIONS (placing them before Day 23 mission)
+SEED_MISSIONS = SEED_MISSIONS[:5] + PHASE_2_SEED_MISSIONS + SEED_MISSIONS[5:]
+
 
 class SAPMissionService:
     """Service managing authored missions, attempts, state consequences, and skill evidence."""
@@ -754,6 +758,17 @@ class SAPMissionService:
             ).order_by(SAPMissionAttempt.started_at.desc())
         ).scalars().first()
 
+        # Sanitize steps so is_correct is not leaked to the frontend
+        sanitized_steps = []
+        for step in (mission.steps or []):
+            s_copy = dict(step)
+            if "options" in s_copy:
+                s_copy["options"] = [
+                    {k: v for k, v in opt.items() if k != "is_correct"}
+                    for opt in s_copy["options"]
+                ]
+            sanitized_steps.append(s_copy)
+
         return {
             "id": str(mission.id),
             "slug": mission.slug,
@@ -767,7 +782,7 @@ class SAPMissionService:
             "company_state": instance.company_state,
             "assistance_level": assistance_level,
             "assistance_rules": rules,
-            "steps": mission.steps,
+            "steps": sanitized_steps,
             "related_days": mission.related_days,
             "concept_slugs": mission.concept_slugs,
             "current_attempt": {
@@ -857,7 +872,7 @@ class SAPMissionService:
         step_feedback = ""
 
         # Step validation logic
-        if step_type in {"read_context", "choose_action", "make_decision"}:
+        if step_type in {"read_context", "choose_action", "make_decision", "decision", "troubleshoot", "config"}:
             selected_id = payload.get("selected_option_id")
             options = target_step.get("options", []) if target_step else []
             correct_opt = next((o for o in options if o.get("is_correct")), None)
@@ -928,6 +943,46 @@ class SAPMissionService:
                 mutation_patch = {
                     "architecture_incident": "RESOLVED_BGD_BATCH_CONFIGURED",
                     "work_process_status": "STABLE_BALANCED",
+                }
+            elif mission.slug == "nova-s4hana-modernization-decision":
+                mutation_patch = {
+                    "modernization_blueprint": "S4HANA_SIMPLIFICATION_APPROVED",
+                    "table_simplification_validated": True,
+                }
+            elif mission.slug == "nova-universal-journal-investigation":
+                mutation_patch = {
+                    "acdoca_reconciliation_status": "VERIFIED_BALANCED",
+                    "parallel_ledgers_audited": True,
+                }
+            elif mission.slug == "nova-matdoc-inventory-incident":
+                mutation_patch = {
+                    "inventory_ledger_status": "MATDOC_HIGH_CONCURRENCY_ACTIVE",
+                    "table_lock_incident": "RESOLVED",
+                }
+            elif mission.slug == "nova-business-partner-migration":
+                mutation_patch = {
+                    "cvi_sync_status": "CVI_SYNCHRONIZED_ACTIVE",
+                    "legacy_customers_vendors_migrated": True,
+                }
+            elif mission.slug == "nova-cds-reporting-requirement":
+                mutation_patch = {
+                    "vdm_reporting_status": "BASIC_COMPOSITE_CONSUMPTION_DEPLOYED",
+                    "code_pushdown_active": True,
+                }
+            elif mission.slug == "nova-landscape-change-request":
+                mutation_patch = {
+                    "cts_transport_route_status": "DEV_QAS_PRD_RELEASED",
+                    "direct_prd_changes_blocked": True,
+                }
+            elif mission.slug == "nova-access-governance-incident":
+                mutation_patch = {
+                    "fiori_access_status": "SPACES_PAGES_RBAC_ENFORCED",
+                    "sod_conflict_resolved": True,
+                }
+            elif mission.slug == "nova-cross-module-document-trace":
+                mutation_patch = {
+                    "document_chain_trace": "VBFA_TRANSPARENT_AUDITED",
+                    "sales_to_finance_reconciliation": "BALANCED_CLEAR",
                 }
             elif mission.slug == "nova-p2p-workflow-incident":
                 mutation_patch = {

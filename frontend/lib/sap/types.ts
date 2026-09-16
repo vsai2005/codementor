@@ -253,6 +253,9 @@ export interface SapLessonStep {
   scenarios?: any[] | null;
   items?: any[] | null;
   units?: any[] | null;
+  entries?: any[] | null;
+  records?: any[] | null;
+  flow_nodes?: any[] | null;
   scenario_md?: string | null;
   options?: any[] | null;
   concept_slug?: string | null;
