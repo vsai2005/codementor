@@ -6,6 +6,7 @@
 :root {
   --bg: 246 241 231;
   --surface: 255 255 255;
+  --surface-raised: 248 245 240;
   --ink: 20 33 61;
   --accent: 228 87 46;
   --accent-2: 23 89 74;
@@ -16,6 +17,7 @@
 :root[data-theme="dark"] {
   --bg: 24 22 19; /* warm charcoal */
   --surface: 38 35 31; /* card, a touch lighter than bg */
+  --surface-raised: 48 44 39;
   --ink: 242 237 227; /* near-cream: text, borders, hard shadows */
   --accent: 240 118 78; /* brightened orange for contrast on dark */
   --accent-2: 82 186 158; /* brightened teal */

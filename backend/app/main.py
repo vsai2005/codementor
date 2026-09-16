@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
 from app.api.routes import auth, learning, problems, progress, submissions, tutor
+from app.api.routes.sap import sap_router
 from app.config import get_settings
 from app.schemas.api import HealthResponse
 
@@ -36,6 +37,7 @@ app.add_middleware(
 for router in (auth.router, learning.router, problems.router, submissions.router,
                progress.router, tutor.router):
     app.include_router(router)
+app.include_router(sap_router)
 
 
 @app.exception_handler(OperationalError)

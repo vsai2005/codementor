@@ -6,11 +6,15 @@ const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      borderWidth: {
+        "3": "3px",
+      },
       colors: {
         // Colors resolve from CSS variables (RGB channel triplets) so the whole
         // palette — solids AND /alpha utilities — flips with [data-theme].
         bg: "rgb(var(--bg) / <alpha-value>)",
         surface: "rgb(var(--surface) / <alpha-value>)",
+        "surface-raised": "rgb(var(--surface-raised, var(--surface)) / <alpha-value>)",
         ink: "rgb(var(--ink) / <alpha-value>)",
         accent: "rgb(var(--accent) / <alpha-value>)",
         "accent-2": "rgb(var(--accent-2) / <alpha-value>)",

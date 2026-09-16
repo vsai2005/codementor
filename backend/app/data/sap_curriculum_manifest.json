@@ -1,0 +1,5869 @@
+{
+  "course": {
+    "slug": "sap-s4hana-mastery",
+    "title": "SAP S/4HANA & ABAP Cloud Enterprise Engineering",
+    "description": "Comprehensive 100-Day Enterprise Roadmap covering ERP Architecture, Core E2E Processes, In-Memory Data Semantics, Fiori Elements, Clean Core Extensibility, RAP & ABAP Cloud, BTP Integration, and Enterprise Capstone.",
+    "total_days": 100,
+    "version": "1.0.0"
+  },
+  "phases": [
+    {
+      "phase_number": 1,
+      "slug": "erp-foundations",
+      "title": "Enterprise Architecture & ERP Foundations",
+      "subtitle": "Days 1\u20138: Enterprise Systems, Organizational Modeling & Core Foundations",
+      "day_start": 1,
+      "day_end": 8,
+      "color_theme": "emerald",
+      "icon": "BuildingOffice2Icon"
+    },
+    {
+      "phase_number": 2,
+      "slug": "s4hana-fundamentals",
+      "title": "S/4HANA Fundamentals & Data Architecture",
+      "subtitle": "Days 9\u201322: In-Memory HANA Engine, Universal Journal, MATDOC & Landscapes",
+      "day_start": 9,
+      "day_end": 22,
+      "color_theme": "blue",
+      "icon": "CircleStackIcon"
+    },
+    {
+      "phase_number": 3,
+      "slug": "e2e-business-processes",
+      "title": "Core End-to-End Business Processes",
+      "subtitle": "Days 23\u201344: P2P, O2C, Financial Accounting, Manufacturing & Settlement",
+      "day_start": 23,
+      "day_end": 44,
+      "color_theme": "indigo",
+      "icon": "ArrowPathRoundedSquareIcon"
+    },
+    {
+      "phase_number": 4,
+      "slug": "hana-data-semantics",
+      "title": "HANA Engine & Data Semantics",
+      "subtitle": "Days 45\u201354: Code Pushdown, Core Data Services (CDS), VDM & Analytical Queries",
+      "day_start": 45,
+      "day_end": 54,
+      "color_theme": "cyan",
+      "icon": "CpuChipIcon"
+    },
+    {
+      "phase_number": 5,
+      "slug": "fiori-enterprise-ux",
+      "title": "SAP Fiori & Enterprise UX",
+      "subtitle": "Days 55\u201364: Fiori Launchpad, SAPUI5, OData Services & Fiori Elements",
+      "day_start": 55,
+      "day_end": 64,
+      "color_theme": "amber",
+      "icon": "DevicePhoneMobileIcon"
+    },
+    {
+      "phase_number": 6,
+      "slug": "cloud-clean-core",
+      "title": "S/4HANA Cloud & Clean Core",
+      "subtitle": "Days 65\u201376: Public/Private Cloud, SAP Activate, Extensibility & Data Migration",
+      "day_start": 65,
+      "day_end": 76,
+      "color_theme": "teal",
+      "icon": "CloudIcon"
+    },
+    {
+      "phase_number": 7,
+      "slug": "abap-cloud-rap",
+      "title": "ABAP Cloud & RAP",
+      "subtitle": "Days 77\u201389: RESTful Application Programming Model, Behavior Definitions & Actions",
+      "day_start": 77,
+      "day_end": 89,
+      "color_theme": "violet",
+      "icon": "CodeBracketIcon"
+    },
+    {
+      "phase_number": 8,
+      "slug": "btp-integration",
+      "title": "SAP BTP & Enterprise Integration",
+      "subtitle": "Days 90\u201395: Integration Suite, iFlows, Event Mesh & Secure Connectivity",
+      "day_start": 90,
+      "day_end": 95,
+      "color_theme": "orange",
+      "icon": "ShareIcon"
+    },
+    {
+      "phase_number": 9,
+      "slug": "enterprise-capstone",
+      "title": "Enterprise Capstone",
+      "subtitle": "Days 96\u2013100: Fit-to-Standard, RAP Implementation, Clean Core Audit & Defense",
+      "day_start": 96,
+      "day_end": 100,
+      "color_theme": "rose",
+      "icon": "TrophyIcon"
+    }
+  ],
+  "days": [
+    {
+      "day_number": 1,
+      "phase_number": 1,
+      "slug": "enterprise-systems-cross-functional",
+      "title": "Enterprise Systems & Cross-Functional Flows",
+      "description": "Introduction to enterprise computing, business process integration, and modular ERP workflows.",
+      "objectives": [
+        "Understand ERP role in modern enterprises",
+        "Trace cross-functional document lineages",
+        "Distinguish silos from integrated systems"
+      ],
+      "estimated_minutes": 60,
+      "tier": 1,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "erp-evolution",
+        "cross-functional-flows"
+      ],
+      "prerequisites": [],
+      "practice_types": [
+        "workflow_trace"
+      ],
+      "assessment_types": [
+        "concept_quiz"
+      ]
+    },
+    {
+      "day_number": 2,
+      "phase_number": 1,
+      "slug": "modern-sap-product-portfolio",
+      "title": "Modern SAP Product Portfolio",
+      "description": "S/4HANA, BTP, Signavio, and deployment options (Public, Private, On-Premise).",
+      "objectives": [
+        "Compare S/4HANA Cloud flavors",
+        "Understand BTP role in innovation",
+        "Position Signavio in process transformation"
+      ],
+      "estimated_minutes": 60,
+      "tier": 1,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "sap-portfolio-overview",
+        "btp-positioning",
+        "deployment-models-intro"
+      ],
+      "prerequisites": [
+        "erp-evolution"
+      ],
+      "practice_types": [
+        "deployment_matrix"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 3,
+      "phase_number": 1,
+      "slug": "master-data-architecture",
+      "title": "Master Data Architecture",
+      "description": "Business Partner (BP), Material Master, Bill of Materials (BOM), and governance.",
+      "objectives": [
+        "Analyze master data lifecycle",
+        "Distinguish master vs transactional records",
+        "Understand central governance principles"
+      ],
+      "estimated_minutes": 60,
+      "tier": 1,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "master-data-concept",
+        "business-partner-foundations",
+        "material-master-basics"
+      ],
+      "prerequisites": [
+        "cross-functional-flows"
+      ],
+      "practice_types": [
+        "data_lineage_trace"
+      ],
+      "assessment_types": [
+        "mcq",
+        "data_modeling"
+      ]
+    },
+    {
+      "day_number": 4,
+      "phase_number": 1,
+      "slug": "organizational-structures",
+      "title": "Organizational Structures in SAP",
+      "description": "Client, Company Code, Plant, Storage Location, Sales Org, and Purchasing Org.",
+      "objectives": [
+        "Model multinational enterprise hierarchies",
+        "Map financial vs logistical org units",
+        "Configure org unit assignments"
+      ],
+      "estimated_minutes": 60,
+      "tier": 1,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "org-structure-client",
+        "org-structure-company-code",
+        "org-structure-plant",
+        "org-structure-logistics"
+      ],
+      "prerequisites": [
+        "master-data-concept"
+      ],
+      "practice_types": [
+        "org_hierarchy_builder"
+      ],
+      "assessment_types": [
+        "decision_matrix"
+      ]
+    },
+    {
+      "day_number": 5,
+      "phase_number": 1,
+      "slug": "module-interconnectivity",
+      "title": "Module Interconnectivity",
+      "description": "Integration touchpoints across FI/CO, MM, SD, and PP.",
+      "objectives": [
+        "Trace cross-module integration triggers",
+        "Understand synchronous financial document creation",
+        "Analyze automatic account determination"
+      ],
+      "estimated_minutes": 60,
+      "tier": 1,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "module-interconnectivity",
+        "automatic-account-determination"
+      ],
+      "prerequisites": [
+        "org-structure-company-code",
+        "org-structure-logistics"
+      ],
+      "practice_types": [
+        "flow_trace"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 6,
+      "phase_number": 1,
+      "slug": "technical-architecture-foundations",
+      "title": "Technical Architecture Foundations",
+      "description": "Three-tier architecture (presentation, application, database), work processes, spool, background jobs, and gateway.",
+      "objectives": [
+        "Map NetWeaver/ABAP platform architecture",
+        "Analyze DIA, BGD, UPD, SPO work process dispatching",
+        "Inspect gateway RFC/HTTP communication"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "three-tier-architecture",
+        "abap-work-processes",
+        "sap-gateway-concept"
+      ],
+      "prerequisites": [
+        "erp-evolution"
+      ],
+      "practice_types": [
+        "architecture_audit"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 7,
+      "phase_number": 1,
+      "slug": "sap-gui-vs-fiori-launchpad",
+      "title": "SAP GUI vs Fiori Launchpad",
+      "description": "Comparing classic Dynpro transactions with role-based modern Fiori Launchpad user experiences.",
+      "objectives": [
+        "Navigate classical SAP GUI with transaction codes",
+        "Explore role-based modern Fiori Launchpad",
+        "Evaluate UX evolution impact on productivity"
+      ],
+      "estimated_minutes": 60,
+      "tier": 1,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "sap-gui-navigation",
+        "fiori-launchpad-overview"
+      ],
+      "prerequisites": [
+        "three-tier-architecture"
+      ],
+      "practice_types": [
+        "navigation_drill"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 8,
+      "phase_number": 1,
+      "slug": "foundation-capstone-assessment",
+      "title": "Foundation Capstone + Assessment",
+      "description": "Comprehensive assessment of enterprise architecture, org structures, and ERP foundational principles.",
+      "objectives": [
+        "Synthesize multi-entity enterprise organizational structures",
+        "Diagnose integration breaks between logistics and finance",
+        "Pass Phase 1 benchmark exam"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "erp-foundations-synthesis"
+      ],
+      "prerequisites": [
+        "org-structure-company-code",
+        "module-interconnectivity",
+        "three-tier-architecture"
+      ],
+      "practice_types": [
+        "e2e_trace"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 9,
+      "phase_number": 2,
+      "slug": "s4hana-value-drivers",
+      "title": "S/4HANA Value Drivers & Business Case",
+      "description": "Value drivers, simplification journey, real-time analytics, and total cost of ownership reductions.",
+      "objectives": [
+        "Articulate core business drivers for S/4HANA",
+        "Contrast batch processing with real-time operations",
+        "Evaluate memory cost economics"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "s4hana-value-drivers",
+        "real-time-enterprise"
+      ],
+      "prerequisites": [
+        "erp-foundations-synthesis"
+      ],
+      "practice_types": [
+        "business_case_eval"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 10,
+      "phase_number": 2,
+      "slug": "ecc-to-s4hana-changes",
+      "title": "ECC to S/4HANA Architectural Changes",
+      "description": "Deconstruction of legacy aggregate and index tables, data model streamlining, and simplification items.",
+      "objectives": [
+        "Analyze simplification list impacts",
+        "Examine deprecation of status and index tables",
+        "Understand compatibility views"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "ecc-simplification-items",
+        "compatibility-views-concept"
+      ],
+      "prerequisites": [
+        "s4hana-value-drivers"
+      ],
+      "practice_types": [
+        "table_diff_analysis"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 11,
+      "phase_number": 2,
+      "slug": "hana-in-memory-architecture",
+      "title": "HANA In-Memory Database Architecture",
+      "description": "Columnar storage, vector processing, delta merge, in-memory caching, and persistence logging.",
+      "objectives": [
+        "Understand column-store vs row-store mechanics",
+        "Analyze read/write compression ratios",
+        "Trace the delta merge write life-cycle"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "in-memory-computing",
+        "columnar-database-engine",
+        "delta-merge-architecture"
+      ],
+      "prerequisites": [
+        "three-tier-architecture"
+      ],
+      "practice_types": [
+        "memory_profiling"
+      ],
+      "assessment_types": [
+        "mcq",
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 12,
+      "phase_number": 2,
+      "slug": "acdoca-universal-journal",
+      "title": "ACDOCA & Universal Journal Architecture",
+      "description": "The universal accounting document table: 350+ dimensions, FI/CO unification, multi-GAAP parallel ledgers, and zero reconciliation.",
+      "objectives": [
+        "Explain unification of General Ledger and Controlling",
+        "Inspect structural schema of ACDOCA (350+ dimensions)",
+        "Trace parallel ledger entries (Leading 0L vs Non-Leading) and multi-currency valuations"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "universal-journal-concept",
+        "fi-co-unification",
+        "acdoca-table-architecture",
+        "parallel-ledgers",
+        "multi-currency-accounting"
+      ],
+      "prerequisites": [
+        "module-interconnectivity",
+        "columnar-database-engine"
+      ],
+      "practice_types": [
+        "acdoca_query_analysis"
+      ],
+      "assessment_types": [
+        "data_modeling",
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 13,
+      "phase_number": 2,
+      "slug": "matdoc-inventory-architecture",
+      "title": "Material Document Architecture (MATDOC)",
+      "description": "Inventory management simplification: elimination of MKPF/MSEG in favor of unified MATDOC table and lock reduction.",
+      "objectives": [
+        "Understand inventory ledger simplification",
+        "Contrast legacy hybrid tables with MATDOC",
+        "Measure locking contention reduction during goods movement"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "matdoc-table-architecture",
+        "simplified-inventory-valuation"
+      ],
+      "prerequisites": [
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "inventory_trace"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 14,
+      "phase_number": 2,
+      "slug": "business-partner-cvi",
+      "title": "Business Partner & Customer-Vendor Integration (CVI)",
+      "description": "Mandatory Business Partner approach, CVI synchronization cockpit, and multi-role assignment.",
+      "objectives": [
+        "Understand mandatory Customer-Vendor Integration",
+        "Configure General, Supplier (FLVN00), and Customer (FLCU00) roles",
+        "Troubleshoot CVI sync errors"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "business-partner-cvi",
+        "customer-vendor-synchronization"
+      ],
+      "prerequisites": [
+        "master-data-concept"
+      ],
+      "practice_types": [
+        "cvi_sync_simulation"
+      ],
+      "assessment_types": [
+        "simulation",
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 15,
+      "phase_number": 2,
+      "slug": "cds-fundamentals-intro",
+      "title": "Core Data Services (CDS) Fundamentals",
+      "description": "Introduction to ABAP Core Data Services: declarative data modeling pushed down to the database.",
+      "objectives": [
+        "Understand code-to-data pushdown philosophy",
+        "Write simple DEFINE VIEW ENTITY statements",
+        "Compare DDIC views vs CDS View Entities"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-fundamentals",
+        "code-pushdown-philosophy",
+        "view-entity-syntax"
+      ],
+      "prerequisites": [
+        "columnar-database-engine"
+      ],
+      "practice_types": [
+        "cds_definition"
+      ],
+      "assessment_types": [
+        "cds_challenge"
+      ]
+    },
+    {
+      "day_number": 16,
+      "phase_number": 2,
+      "slug": "system-landscapes-dev-qas-prd",
+      "title": "DEV / QAS / PRD Landscape Architecture",
+      "description": "Three-system landscape, CTS transport requests, client copy procedures, and release governance.",
+      "objectives": [
+        "Model enterprise development landscapes",
+        "Track transport request lifecycles",
+        "Formulate release management governance"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "transport-management-cts",
+        "system-landscapes-3tier"
+      ],
+      "prerequisites": [
+        "three-tier-architecture"
+      ],
+      "practice_types": [
+        "transport_route_plan"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 17,
+      "phase_number": 2,
+      "slug": "cloud-implementation-landscapes",
+      "title": "Cloud Implementation Landscapes & CBC",
+      "description": "Central Business Configuration (CBC), 2-system vs 3-system cloud landscapes, and provisioning.",
+      "objectives": [
+        "Navigate SAP Central Business Configuration",
+        "Analyze Cloud 3-System Landscape (DEV-TEST-PROD)",
+        "Configure initial baseline scope"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "central-business-configuration",
+        "cloud-3-system-landscape"
+      ],
+      "prerequisites": [
+        "system-landscapes-3tier"
+      ],
+      "practice_types": [
+        "landscape_design"
+      ],
+      "assessment_types": [
+        "decision_matrix"
+      ]
+    },
+    {
+      "day_number": 18,
+      "phase_number": 2,
+      "slug": "identity-access-governance",
+      "title": "Identity & Access Governance in S/4HANA",
+      "description": "PFCG authorization roles, catalogs, business users, and IAM integration.",
+      "objectives": [
+        "Design role-based authorization concepts",
+        "Map business catalogs to business roles",
+        "Enforce segregation of duties (SoD)"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "identity-access-management",
+        "pfcg-authorizations",
+        "fiori-role-assignment"
+      ],
+      "prerequisites": [
+        "fiori-launchpad-overview"
+      ],
+      "practice_types": [
+        "role_assignment_sim"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 19,
+      "phase_number": 2,
+      "slug": "embedded-analytics-foundations",
+      "title": "Embedded Analytics Architecture",
+      "description": "Operational reporting directly on transactional tables without traditional ETL data warehouses.",
+      "objectives": [
+        "Understand Virtual Data Model (VDM) in analytics",
+        "Configure Smart Business KPIs and Multidimensional Reports",
+        "Contrast operational vs strategic reporting"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "embedded-analytics-foundations",
+        "operational-reporting-vdm"
+      ],
+      "prerequisites": [
+        "cds-fundamentals",
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "kpi_card_setup"
+      ],
+      "assessment_types": [
+        "analytics_eval"
+      ]
+    },
+    {
+      "day_number": 20,
+      "phase_number": 2,
+      "slug": "document-flow-integration",
+      "title": "Document Flow & Cross-Document Traceability",
+      "description": "Trace transactional continuity across sales, delivery, goods issue, invoice, and journal entries.",
+      "objectives": [
+        "Navigate end-to-end document status flows",
+        "Investigate relationship tables (VBFA)",
+        "Audit clearing account balances"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "document-flow-continuity",
+        "transactional-audit-trail"
+      ],
+      "prerequisites": [
+        "acdoca-table-architecture",
+        "matdoc-table-architecture"
+      ],
+      "practice_types": [
+        "document_flow_audit"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 21,
+      "phase_number": 2,
+      "slug": "s4hana-integrated-scenario",
+      "title": "Cross-Module Integrated Scenario",
+      "description": "End-to-end transactional integration: executing a complete customer order touching BP, Sales, MATDOC Inventory, and ACDOCA Financials.",
+      "objectives": [
+        "Synthesize transactional lifecycle from Business Partner to Financial Journal",
+        "Trace cross-table document references between VBFA, MATDOC, and ACDOCA",
+        "Resolve simulated posting and ledger clearing discrepancies"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "s4hana-integrated-scenario"
+      ],
+      "prerequisites": [
+        "document-flow-continuity",
+        "acdoca-table-architecture",
+        "matdoc-table-architecture"
+      ],
+      "practice_types": [
+        "e2e_trace"
+      ],
+      "assessment_types": [
+        "troubleshooting",
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 22,
+      "phase_number": 2,
+      "slug": "s4hana-fundamentals-capstone",
+      "title": "S/4HANA Fundamentals & Architecture Evaluation",
+      "description": "Phase 2 synthesis: evaluating data architecture, table simplifications, and enterprise analytics readiness.",
+      "objectives": [
+        "Defend ACDOCA and MATDOC architectural benefits",
+        "Design end-to-end master data and landscape model",
+        "Pass Phase 2 benchmark evaluation"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "s4hana-architecture-synthesis"
+      ],
+      "prerequisites": [
+        "s4hana-integrated-scenario",
+        "business-partner-cvi",
+        "cds-fundamentals"
+      ],
+      "practice_types": [
+        "architecture_defense"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 23,
+      "phase_number": 3,
+      "slug": "p2p-purchase-requisition",
+      "title": "Procure-to-Pay: Purchase Requisitions",
+      "description": "Demand capture, purchase requisition (PR) creation, account assignment, and approval workflows.",
+      "objectives": [
+        "Create PR with Material/Account Assignment categories",
+        "Configure approval workflows",
+        "Understand commitment accounting"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-pr-creation",
+        "account-assignment-categories"
+      ],
+      "prerequisites": [
+        "master-data-concept",
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "pr_creation_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 24,
+      "phase_number": 3,
+      "slug": "p2p-operational-sourcing",
+      "title": "Procure-to-Pay: Operational Sourcing & RFQ",
+      "description": "Source determination, Requests for Quotation (RFQ), supplier comparison, and contract scheduling.",
+      "objectives": [
+        "Run automated source determination",
+        "Compare supplier price quotations",
+        "Generate outline agreements"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-sourcing-rfq",
+        "source-determination"
+      ],
+      "prerequisites": [
+        "p2p-pr-creation",
+        "business-partner-cvi"
+      ],
+      "practice_types": [
+        "rfq_comparison_sim"
+      ],
+      "assessment_types": [
+        "process_ordering"
+      ]
+    },
+    {
+      "day_number": 25,
+      "phase_number": 3,
+      "slug": "p2p-purchase-order",
+      "title": "Procure-to-Pay: Purchase Order Creation & Release",
+      "description": "PO generation, flexible workflow approval steps, item conditions, and purchase order tracking.",
+      "objectives": [
+        "Generate Purchase Orders from approved PRs",
+        "Configure multi-level flexible workflows",
+        "Inspect pricing conditions and tax codes"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-po-processing",
+        "flexible-workflow"
+      ],
+      "prerequisites": [
+        "p2p-sourcing-rfq"
+      ],
+      "practice_types": [
+        "po_approval_run"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 26,
+      "phase_number": 3,
+      "slug": "p2p-goods-receipt",
+      "title": "Procure-to-Pay: Goods Receipt (MIGO)",
+      "description": "Goods receipt posting, inventory valuation impact, MATDOC generation, and GR/IR clearing account entry.",
+      "objectives": [
+        "Execute MIGO goods receipt against PO",
+        "Inspect MATDOC stock updates",
+        "Verify GR/IR clearing balance in ACDOCA"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-goods-receipt-migo",
+        "gr-ir-clearing-account"
+      ],
+      "prerequisites": [
+        "p2p-po-processing",
+        "matdoc-table-architecture"
+      ],
+      "practice_types": [
+        "migo_posting_sim"
+      ],
+      "assessment_types": [
+        "simulation",
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 27,
+      "phase_number": 3,
+      "slug": "p2p-invoice-verification",
+      "title": "Procure-to-Pay: Invoice Verification (MIRO)",
+      "description": "Logistics Invoice Verification (LIV), 3-way matching (PO, GR, Invoice), and tolerance limits.",
+      "objectives": [
+        "Perform 3-way match in MIRO",
+        "Process price/quantity variance tolerances",
+        "Clear GR/IR interim accounts into Accounts Payable"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-invoice-verification-miro",
+        "three-way-matching"
+      ],
+      "prerequisites": [
+        "p2p-goods-receipt-migo"
+      ],
+      "practice_types": [
+        "miro_posting_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 28,
+      "phase_number": 3,
+      "slug": "p2p-payment-exceptions",
+      "title": "Procure-to-Pay: Payment Run & Exception Handling",
+      "description": "Automatic Payment Program (F110), blocked invoices, credit memos, and down payment processing.",
+      "objectives": [
+        "Execute F110 automated payment runs",
+        "Investigate price discrepancy blocks",
+        "Process vendor credit memos"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-f110-payment-run",
+        "payment-block-exceptions"
+      ],
+      "prerequisites": [
+        "p2p-invoice-verification-miro"
+      ],
+      "practice_types": [
+        "f110_proposal_sim"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 29,
+      "phase_number": 3,
+      "slug": "o2c-sales-inquiry-quotation",
+      "title": "Order-to-Cash: Inquiries, Quotes & Pricing",
+      "description": "Sales inquiry, quotation management, condition technique, and pricing procedures.",
+      "objectives": [
+        "Configure condition technique (access sequences, condition types)",
+        "Generate valid customer quotations",
+        "Calculate discounts, freight, and taxes"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-pricing-procedure",
+        "condition-technique"
+      ],
+      "prerequisites": [
+        "business-partner-cvi",
+        "module-interconnectivity"
+      ],
+      "practice_types": [
+        "pricing_procedure_builder"
+      ],
+      "assessment_types": [
+        "data_modeling"
+      ]
+    },
+    {
+      "day_number": 30,
+      "phase_number": 3,
+      "slug": "o2c-sales-order-processing",
+      "title": "Order-to-Cash: Sales Order Creation",
+      "description": "Standard sales order creation (VA01), partner determination, credit limits, and incompletion logs.",
+      "objectives": [
+        "Create sales orders with line item schedules",
+        "Execute customer credit checks",
+        "Resolve incompletion log flags"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-sales-order-creation",
+        "partner-determination",
+        "credit-management"
+      ],
+      "prerequisites": [
+        "o2c-pricing-procedure"
+      ],
+      "practice_types": [
+        "sales_order_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 31,
+      "phase_number": 3,
+      "slug": "o2c-available-to-promise",
+      "title": "Order-to-Cash: Advanced ATP (aATP)",
+      "description": "Product allocation (PAL), Alternative-Based Confirmation (ABC), and backorder processing (BOP).",
+      "objectives": [
+        "Configure advanced ATP confirmation rules",
+        "Run backorder prioritization strategies",
+        "Resolve allocation conflicts"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "advanced-atp-s4",
+        "product-allocation",
+        "backorder-processing"
+      ],
+      "prerequisites": [
+        "o2c-sales-order-creation"
+      ],
+      "practice_types": [
+        "atp_simulation"
+      ],
+      "assessment_types": [
+        "decision_matrix"
+      ]
+    },
+    {
+      "day_number": 32,
+      "phase_number": 3,
+      "slug": "o2c-outbound-delivery",
+      "title": "Order-to-Cash: Outbound Delivery & Picking",
+      "description": "Delivery document generation (VL01N), shipping points, warehouse picking, and packing.",
+      "objectives": [
+        "Create outbound delivery batches",
+        "Confirm picking and packing quantities",
+        "Verify handling units"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-outbound-delivery",
+        "shipping-point-determination"
+      ],
+      "prerequisites": [
+        "o2c-sales-order-creation"
+      ],
+      "practice_types": [
+        "delivery_processing_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 33,
+      "phase_number": 3,
+      "slug": "o2c-post-goods-issue",
+      "title": "Order-to-Cash: Post Goods Issue (PGI)",
+      "description": "PGI execution, inventory reduction in MATDOC, and COGS financial posting in ACDOCA.",
+      "objectives": [
+        "Post goods issue for delivery",
+        "Trace inventory decrease in MATDOC",
+        "Analyze Cost of Goods Sold (COGS) split in ACDOCA"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-post-goods-issue",
+        "cogs-accounting-split"
+      ],
+      "prerequisites": [
+        "o2c-outbound-delivery",
+        "matdoc-table-architecture",
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "pgi_posting_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 34,
+      "phase_number": 3,
+      "slug": "o2c-billing-revenue-accounting",
+      "title": "Order-to-Cash: Billing Document & AR",
+      "description": "Billing creation (VF01), revenue recognition, account assignment, and Accounts Receivable updates.",
+      "objectives": [
+        "Generate customer billing documents",
+        "Trace revenue and sales tax account postings",
+        "Analyze open item customer receivables"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-billing-creation",
+        "revenue-recognition-posting"
+      ],
+      "prerequisites": [
+        "o2c-post-goods-issue"
+      ],
+      "practice_types": [
+        "billing_run_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 35,
+      "phase_number": 3,
+      "slug": "o2c-incoming-payment-dunning",
+      "title": "Order-to-Cash: Incoming Payments & Dunning",
+      "description": "Cash receipt clearing, bank reconciliation, dispute cases, and automated dunning runs.",
+      "objectives": [
+        "Post incoming customer payments",
+        "Reconcile open AR items",
+        "Configure multi-level dunning notices"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-customer-incoming-payment",
+        "dunning-procedures"
+      ],
+      "prerequisites": [
+        "o2c-billing-revenue-accounting"
+      ],
+      "practice_types": [
+        "payment_clearing_sim"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 36,
+      "phase_number": 3,
+      "slug": "o2c-returns-credit-memo",
+      "title": "Order-to-Cash: Returns & Credit Memos",
+      "description": "Customer return order, return delivery, inspection stock, and credit memo processing.",
+      "objectives": [
+        "Process returns with inspection outcomes",
+        "Issue credit memos against billing documents",
+        "Verify reversal accounting entries"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-returns-processing",
+        "credit-memo-requests"
+      ],
+      "prerequisites": [
+        "o2c-billing-revenue-accounting"
+      ],
+      "practice_types": [
+        "returns_workflow_sim"
+      ],
+      "assessment_types": [
+        "process_ordering"
+      ]
+    },
+    {
+      "day_number": 37,
+      "phase_number": 3,
+      "slug": "finance-general-ledger-journal",
+      "title": "Finance: General Ledger Journal Entry",
+      "description": "Manual and automated journal entries (FB50/F-02), document types, posting keys, and field status groups.",
+      "objectives": [
+        "Post multi-line general ledger journal vouchers",
+        "Control input field statuses via Field Status Groups",
+        "Verify balance sheet & P&L classification"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "gl-journal-entry",
+        "field-status-groups",
+        "posting-keys"
+      ],
+      "prerequisites": [
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "journal_entry_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 38,
+      "phase_number": 3,
+      "slug": "finance-ap-ar-management",
+      "title": "Finance: AP & AR Subledger Operations",
+      "description": "Vendor & customer line item displays (FBL1N, FBL5N), open item clearing, and down payments.",
+      "objectives": [
+        "Manage vendor open invoices and payment proposals",
+        "Perform manual open-item clearing",
+        "Post special GL transactions (down payments)"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "ap-ar-subledger-operations",
+        "special-gl-indicators"
+      ],
+      "prerequisites": [
+        "finance-general-ledger-journal",
+        "business-partner-cvi"
+      ],
+      "practice_types": [
+        "open_item_clearing_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 39,
+      "phase_number": 3,
+      "slug": "finance-period-end-closing",
+      "title": "Finance: Period End Closing & Reporting",
+      "description": "Foreign currency valuation, accruals/deferrals, depreciation runs (AFAB), and financial statements.",
+      "objectives": [
+        "Run automated foreign currency revaluations",
+        "Execute Asset Accounting depreciation runs",
+        "Generate Balance Sheet and P&L financial reports"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "period-end-closing",
+        "foreign-currency-valuation",
+        "asset-depreciation-afab"
+      ],
+      "prerequisites": [
+        "finance-general-ledger-journal"
+      ],
+      "practice_types": [
+        "closing_cockpit_sim"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 40,
+      "phase_number": 3,
+      "slug": "mfg-bom-routing-work-centers",
+      "title": "Manufacturing: Master Data (BOM, Routing, Work Center)",
+      "description": "Production master data: Bills of Material, Work Centers, Routings, and Standard Costing.",
+      "objectives": [
+        "Construct multi-level production BOMs",
+        "Define Work Centers with capacity and cost centers",
+        "Establish Routings with standard activity times"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "mfg-bom-master",
+        "mfg-work-centers-routing"
+      ],
+      "prerequisites": [
+        "master-data-concept",
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "bom_routing_builder"
+      ],
+      "assessment_types": [
+        "data_modeling"
+      ]
+    },
+    {
+      "day_number": 41,
+      "phase_number": 3,
+      "slug": "mfg-production-order-lifecycle",
+      "title": "Manufacturing: Production Order Execution",
+      "description": "Production order creation, capacity availability check, order release, and component staging.",
+      "objectives": [
+        "Create production orders from planned orders",
+        "Perform capacity leveling across work centers",
+        "Release production orders and stage components"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "production-order-lifecycle",
+        "capacity-requirements-planning"
+      ],
+      "prerequisites": [
+        "mfg-bom-routing-work-centers"
+      ],
+      "practice_types": [
+        "prod_order_release_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 42,
+      "phase_number": 3,
+      "slug": "mfg-execution-confirmation",
+      "title": "Manufacturing: Confirmation & Goods Receipt",
+      "description": "Time confirmation, scrap recording, backflushing goods issue, and finished goods receipt (MIGO).",
+      "objectives": [
+        "Enter operational labor/machine confirmations",
+        "Trigger backflushing component consumption",
+        "Receive finished goods into stock (101 movement)"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "production-order-confirmation",
+        "component-backflushing"
+      ],
+      "prerequisites": [
+        "mfg-production-order-lifecycle",
+        "matdoc-table-architecture"
+      ],
+      "practice_types": [
+        "confirmation_run_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 43,
+      "phase_number": 3,
+      "slug": "mfg-cost-settlement",
+      "title": "Manufacturing: WIP & Production Order Settlement",
+      "description": "Work-in-Process (WIP) calculation, variance calculation, and production order settlement to CO-PA.",
+      "objectives": [
+        "Calculate WIP for uncompleted production orders",
+        "Compute price and usage variances",
+        "Settle production variances to Cost Object Controlling"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "production-order-settlement",
+        "wip-variance-calculation"
+      ],
+      "prerequisites": [
+        "mfg-execution-confirmation",
+        "acdoca-table-architecture"
+      ],
+      "practice_types": [
+        "settlement_run_sim"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 44,
+      "phase_number": 3,
+      "slug": "e2e-processes-capstone-assessment",
+      "title": "Core Business Processes Capstone & Assessment",
+      "description": "End-to-end integration: executing an integrated customer order triggering production, procurement, and settlement.",
+      "objectives": [
+        "Run cross-module business simulation from Quote to Cash and Procurement",
+        "Resolve integration posting errors across P2P, O2C, and Manufacturing",
+        "Pass Phase 3 benchmark evaluation"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "e2e-process-integration-synthesis"
+      ],
+      "prerequisites": [
+        "p2p-payment-exceptions",
+        "o2c-billing-revenue-accounting",
+        "mfg-cost-settlement"
+      ],
+      "practice_types": [
+        "e2e_business_case"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 45,
+      "phase_number": 4,
+      "slug": "hana-engine-internals",
+      "title": "HANA Engine Architecture & Internals",
+      "description": "Indexserver, persistence layer, delta merge, code pushdown, PlanViz tracing, and calculation engine optimization.",
+      "objectives": [
+        "Interpret PlanViz execution plans",
+        "Analyze delta merge and persistence logging",
+        "Optimize code pushdown for in-memory execution"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "hana-calc-engine",
+        "planviz-analysis",
+        "sql-optimizer-pushdown",
+        "delta-merge-architecture"
+      ],
+      "prerequisites": [
+        "columnar-database-engine"
+      ],
+      "practice_types": [
+        "planviz_audit"
+      ],
+      "assessment_types": [
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 46,
+      "phase_number": 4,
+      "slug": "vdm-architecture",
+      "title": "Virtual Data Model (VDM) Architecture",
+      "description": "SAP VDM design principles: Basic/Interface Views (I_), Composite Views, and Consumption Views (C_).",
+      "objectives": [
+        "Navigate standard VDM hierarchy",
+        "Architect reusable Interface Views on raw tables",
+        "Build specialized Consumption Views for apps"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "vdm-architecture-tiers",
+        "interface-vs-consumption-views"
+      ],
+      "prerequisites": [
+        "cds-fundamentals"
+      ],
+      "practice_types": [
+        "vdm_layering_design"
+      ],
+      "assessment_types": [
+        "data_modeling"
+      ]
+    },
+    {
+      "day_number": 47,
+      "phase_number": 4,
+      "slug": "cds-syntax-expressions",
+      "title": "CDS Syntax, Expressions & Case Statements",
+      "description": "Field expressions, arithmetic, string functions, coalesce, and complex nested CASE logic in CDS.",
+      "objectives": [
+        "Write advanced conditional logic in CDS",
+        "Apply unit and currency conversion functions",
+        "Implement date/time transformation expressions"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-advanced-expressions",
+        "cds-case-statements"
+      ],
+      "prerequisites": [
+        "cds-fundamentals"
+      ],
+      "practice_types": [
+        "cds_expression_coding"
+      ],
+      "assessment_types": [
+        "cds_challenge"
+      ]
+    },
+    {
+      "day_number": 48,
+      "phase_number": 4,
+      "slug": "cds-associations-vs-joins",
+      "title": "CDS Associations vs SQL Joins",
+      "description": "Lazy evaluation, on-demand joins, path expressions, and cardinality definitions (1..1, 1..*, 0..1).",
+      "objectives": [
+        "Distinguish eager SQL joins from lazy CDS Associations",
+        "Define exact cardinalities for query optimization",
+        "Navigate multi-hop path expressions in projections"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-associations-concept",
+        "cardinality-rules",
+        "path-expressions"
+      ],
+      "prerequisites": [
+        "cds-syntax-expressions"
+      ],
+      "practice_types": [
+        "association_query_builder"
+      ],
+      "assessment_types": [
+        "cds_challenge"
+      ]
+    },
+    {
+      "day_number": 49,
+      "phase_number": 4,
+      "slug": "cds-parameters-session-vars",
+      "title": "Parameterized CDS Views & Session Variables",
+      "description": "Passing input parameters, using $session.user, $session.client, and $session.system_date.",
+      "objectives": [
+        "Define typed input parameters in CDS",
+        "Consume environment session variables",
+        "Propagate parameters across associated views"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-parameters",
+        "cds-session-variables"
+      ],
+      "prerequisites": [
+        "cds-associations-vs-joins"
+      ],
+      "practice_types": [
+        "parameterized_view_code"
+      ],
+      "assessment_types": [
+        "cds_challenge"
+      ]
+    },
+    {
+      "day_number": 50,
+      "phase_number": 4,
+      "slug": "cds-annotations-catalog",
+      "title": "CDS Annotations Catalog",
+      "description": "@Semantics, @Analytics, @EndUserText, and @Consumption metadata governance.",
+      "objectives": [
+        "Apply domain semantics (currency codes, quantities)",
+        "Annotate textual descriptions for multi-language support",
+        "Configure consumption search and filter behaviors"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-annotations-framework",
+        "semantics-annotations"
+      ],
+      "prerequisites": [
+        "cds-parameters-session-vars"
+      ],
+      "practice_types": [
+        "annotation_audit"
+      ],
+      "assessment_types": [
+        "mcq",
+        "data_modeling"
+      ]
+    },
+    {
+      "day_number": 51,
+      "phase_number": 4,
+      "slug": "cds-hierarchy-composition",
+      "title": "CDS View Hierarchies & Compositions",
+      "description": "Parent-child relationships, self-referential hierarchies, and root entity composition definitions.",
+      "objectives": [
+        "Model bill-of-materials and cost center hierarchies",
+        "Define composition hierarchies for transactional documents",
+        "Enforce referential integrity in CDS"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-hierarchies",
+        "cds-compositions"
+      ],
+      "prerequisites": [
+        "cds-associations-vs-joins",
+        "vdm-architecture-tiers"
+      ],
+      "practice_types": [
+        "hierarchy_view_code"
+      ],
+      "assessment_types": [
+        "cds_challenge"
+      ]
+    },
+    {
+      "day_number": 52,
+      "phase_number": 4,
+      "slug": "cds-embedded-analytics-cubes",
+      "title": "Analytical Queries: Cubes & Dimensions",
+      "description": "Building analytical cubes (@Analytics.dataCategory: #CUBE) and query views (@Analytics.query: true).",
+      "objectives": [
+        "Construct dimensional models in CDS",
+        "Define measures with automated aggregation rules (#SUM, #MAX)",
+        "Test analytical multidimensional queries"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-analytical-cubes",
+        "multidimensional-queries"
+      ],
+      "prerequisites": [
+        "cds-annotations-catalog",
+        "embedded-analytics-foundations"
+      ],
+      "practice_types": [
+        "cube_query_builder"
+      ],
+      "assessment_types": [
+        "analytics_eval"
+      ]
+    },
+    {
+      "day_number": 53,
+      "phase_number": 4,
+      "slug": "cds-access-control-dcl",
+      "title": "Access Control: Data Control Language (DCL)",
+      "description": "Row-level security, DEFINE ROLE statements, PFCG authorization aspects, and tenant isolation.",
+      "objectives": [
+        "Write declarative DCL access rules for CDS entities",
+        "Link authorization objects to view fields (e.g. BUKRS)",
+        "Test authorization filters in analytical queries"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "dcl-access-control",
+        "row-level-security",
+        "pfcg-authorization-aspects"
+      ],
+      "prerequisites": [
+        "cds-fundamentals",
+        "pfcg-authorizations"
+      ],
+      "practice_types": [
+        "dcl_policy_authoring"
+      ],
+      "assessment_types": [
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 54,
+      "phase_number": 4,
+      "slug": "hana-data-semantics-assessment",
+      "title": "HANA Engine & Data Semantics Assessment",
+      "description": "Phase 4 benchmark: developing a complete, secure, analytical VDM layer on ACDOCA and MATDOC.",
+      "objectives": [
+        "Build multi-tier VDM composite views with associations",
+        "Apply DCL row-level security and analytical annotations",
+        "Pass Phase 4 CDS benchmark challenge"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-vdm-synthesis"
+      ],
+      "prerequisites": [
+        "vdm-architecture-tiers",
+        "cds-associations-vs-joins",
+        "dcl-access-control",
+        "cds-analytical-cubes"
+      ],
+      "practice_types": [
+        "vdm_capstone_challenge"
+      ],
+      "assessment_types": [
+        "cds_challenge",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 55,
+      "phase_number": 5,
+      "slug": "fiori-design-principles",
+      "title": "SAP Fiori Design Principles & App Types",
+      "description": "Role-based, adaptive, coherent, simple, and delightful UX; Transactional, Analytical, and Factsheet apps.",
+      "objectives": [
+        "Apply 5 core Fiori design principles",
+        "Classify standard apps (Transactional, Analytical, Factsheet)",
+        "Evaluate UI modernization benefits"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "fiori-design-principles",
+        "fiori-app-types"
+      ],
+      "prerequisites": [
+        "fiori-launchpad-overview"
+      ],
+      "practice_types": [
+        "ux_heuristic_eval"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 56,
+      "phase_number": 5,
+      "slug": "fiori-launchpad-spaces-pages",
+      "title": "Fiori Launchpad Configuration: Spaces & Pages",
+      "description": "Configuring modern FLP Spaces, Pages, Sections, Business Catalogs, and Business Groups.",
+      "objectives": [
+        "Build user-centric Spaces and Pages",
+        "Assign business catalogs to PFCG authorization roles",
+        "Configure tile display parameters and target mappings"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "flp-spaces-and-pages",
+        "business-catalogs-groups"
+      ],
+      "prerequisites": [
+        "fiori-design-principles",
+        "pfcg-authorizations"
+      ],
+      "practice_types": [
+        "flp_space_designer"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 57,
+      "phase_number": 5,
+      "slug": "sapui5-framework-basics",
+      "title": "SAPUI5 Framework Architecture",
+      "description": "Model-View-Controller (MVC) pattern, XML views, controllers, two-way data binding, and Component.js.",
+      "objectives": [
+        "Understand SAPUI5 runtime loading",
+        "Inspect XML view layouts and controllers",
+        "Trace JSONModel and ODataModel data bindings"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "sapui5-mvc-architecture",
+        "ui5-data-binding"
+      ],
+      "prerequisites": [
+        "fiori-design-principles"
+      ],
+      "practice_types": [
+        "ui5_code_inspection"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 58,
+      "phase_number": 5,
+      "slug": "odata-v2-v4-fundamentals",
+      "title": "OData V2 & OData V4 Protocols",
+      "description": "Entity Data Model (EDM), service metadata documents ($metadata), CRUD-Q operations, and batch requests.",
+      "objectives": [
+        "Inspect OData service metadata definitions",
+        "Execute URI query options ($select, $filter, $expand, $top)",
+        "Compare OData V2 vs V4 specification enhancements"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "odata-protocol-fundamentals",
+        "odata-v2-vs-v4"
+      ],
+      "prerequisites": [
+        "sapui5-mvc-architecture"
+      ],
+      "practice_types": [
+        "odata_query_tester"
+      ],
+      "assessment_types": [
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 59,
+      "phase_number": 5,
+      "slug": "exposing-cds-as-odata",
+      "title": "Exposing CDS Entities as OData Services",
+      "description": "Methods of exposure: auto-exposure (@OData.publish: true), SADL mapping, and RAP Service Definitions.",
+      "objectives": [
+        "Publish CDS Views as consumable OData services",
+        "Register gateway services in /IWFND/MAINT_SERVICE",
+        "Inspect service output in SAP Gateway Client"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cds-odata-exposure",
+        "sap-gateway-registration"
+      ],
+      "prerequisites": [
+        "cds-fundamentals",
+        "odata-v2-v4-fundamentals"
+      ],
+      "practice_types": [
+        "service_exposure_drill"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 60,
+      "phase_number": 5,
+      "slug": "fiori-elements-paradigm",
+      "title": "Fiori Elements Paradigm: Metadata-Driven UIs",
+      "description": "Eliminating custom UI coding: driving frontend application rendering entirely through CDS annotations.",
+      "objectives": [
+        "Understand metadata-driven application architecture",
+        "Compare freestyle SAPUI5 vs Fiori Elements development effort",
+        "Map CDS UI annotations to screen controls"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "fiori-elements-paradigm",
+        "ui-annotations-framework"
+      ],
+      "prerequisites": [
+        "fiori-design-principles",
+        "exposing-cds-as-odata"
+      ],
+      "practice_types": [
+        "pattern_comparison"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 61,
+      "phase_number": 5,
+      "slug": "ui-annotations-lineitem-selection",
+      "title": "UI Annotations: LineItem & SelectionFields",
+      "description": "@UI.lineItem, @UI.selectionField, @UI.headerInfo, and @UI.identification for standard list pages.",
+      "objectives": [
+        "Configure responsive table columns with @UI.lineItem",
+        "Build search filter bars using @UI.selectionField",
+        "Set title and description header metadata"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "ui-lineitem-annotations",
+        "ui-selectionfields-annotations"
+      ],
+      "prerequisites": [
+        "fiori-elements-paradigm",
+        "cds-annotations-catalog"
+      ],
+      "practice_types": [
+        "annotation_coding_drill"
+      ],
+      "assessment_types": [
+        "data_modeling"
+      ]
+    },
+    {
+      "day_number": 62,
+      "phase_number": 5,
+      "slug": "fiori-elements-list-report-object-page",
+      "title": "Fiori Elements Floorplans: List Report & Object Page",
+      "description": "Constructing standard enterprise apps: List Report for searching/filtering + Object Page for detail viewing.",
+      "objectives": [
+        "Assemble standard List Report application",
+        "Build Object Page with header facets and sections",
+        "Configure responsive table navigation"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "list-report-floorplan",
+        "object-page-floorplan",
+        "facet-navigation"
+      ],
+      "prerequisites": [
+        "ui-annotations-lineitem-selection"
+      ],
+      "practice_types": [
+        "lrop_app_assembly"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 63,
+      "phase_number": 5,
+      "slug": "overview-page-ovp",
+      "title": "Overview Pages (OVP) & Analytical Cards",
+      "description": "Configuring executive dashboards: List cards, Table cards, Bar chart cards, and KPI tag cards.",
+      "objectives": [
+        "Architect executive Overview Pages",
+        "Configure analytic cards driven by analytical CDS views",
+        "Setup target mapping navigation from cards"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "overview-page-ovp",
+        "analytical-cards-ovp"
+      ],
+      "prerequisites": [
+        "fiori-elements-list-report-object-page",
+        "cds-embedded-analytics-cubes"
+      ],
+      "practice_types": [
+        "ovp_card_designer"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 64,
+      "phase_number": 5,
+      "slug": "fiori-enterprise-ux-capstone",
+      "title": "Enterprise UX Capstone & Security Audit",
+      "description": "Phase 5 benchmark: building and deploying a secure, responsive Fiori Elements app on custom CDS entity.",
+      "objectives": [
+        "Deploy production Fiori Elements app with DCL security",
+        "Publish app to custom Fiori Launchpad Space & Page",
+        "Pass Phase 5 UX and frontend benchmark"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "fiori-ux-synthesis"
+      ],
+      "prerequisites": [
+        "fiori-elements-list-report-object-page",
+        "flp-spaces-and-pages",
+        "dcl-access-control"
+      ],
+      "practice_types": [
+        "fiori_capstone_deployment"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 65,
+      "phase_number": 6,
+      "slug": "s4hana-cloud-flavors",
+      "title": "S/4HANA Cloud: Public vs Private Architecture",
+      "description": "Multi-tenant SaaS (Public Cloud) vs Single-tenant IaaS (Private Cloud), upgrade cycles, and governance.",
+      "objectives": [
+        "Contrast Public Cloud SaaS with Private Cloud Edition",
+        "Evaluate release cycle impacts on customization",
+        "Analyze total cost of ownership tradeoffs"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "s4hana-cloud-editions",
+        "cloud-governance-models"
+      ],
+      "prerequisites": [
+        "s4hana-value-drivers"
+      ],
+      "practice_types": [
+        "cloud_flavor_selection"
+      ],
+      "assessment_types": [
+        "decision_matrix"
+      ]
+    },
+    {
+      "day_number": 66,
+      "phase_number": 6,
+      "slug": "clean-core-philosophy",
+      "title": "The Clean Core Philosophy & Principles",
+      "description": "Zero modifications in standard code, strictly decoupled extensions, upgrade safety, and lifecycle independence.",
+      "objectives": [
+        "Articulate core tenets of Clean Core",
+        "Identify technical debt in legacy custom modifications",
+        "Formulate Clean Core compliance guardrails"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "clean-core-philosophy",
+        "upgrade-safety-principles"
+      ],
+      "prerequisites": [
+        "s4hana-cloud-editions"
+      ],
+      "practice_types": [
+        "clean_core_compliance_audit"
+      ],
+      "assessment_types": [
+        "mcq",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 67,
+      "phase_number": 6,
+      "slug": "sap-activate-methodology",
+      "title": "SAP Activate Methodology & Quality Gates",
+      "description": "Discover, Prepare, Explore, Realize, Deploy, Run; agile governance, deliverables, and Q-Gates.",
+      "objectives": [
+        "Navigate 6 phases of SAP Activate",
+        "Manage Quality Gates (Q-Gate 1\u20134) approval criteria",
+        "Execute agile sprints for S/4HANA deployment"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "sap-activate-methodology",
+        "activate-quality-gates"
+      ],
+      "prerequisites": [
+        "s4hana-cloud-editions"
+      ],
+      "practice_types": [
+        "qgate_checklist_builder"
+      ],
+      "assessment_types": [
+        "process_ordering"
+      ]
+    },
+    {
+      "day_number": 68,
+      "phase_number": 6,
+      "slug": "fit-to-standard-workshops",
+      "title": "Fit-to-Standard Workshops & Scope Items",
+      "description": "Running Fit-to-Standard discovery: SAP Best Practices scope items, delta identification, and gap cataloging.",
+      "objectives": [
+        "Conduct Fit-to-Standard review of Best Practices",
+        "Document functional deltas without custom modifications",
+        "Prioritize backlog items using MoSCoW methodology"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "fit-to-standard-approach",
+        "best-practices-scope-items"
+      ],
+      "prerequisites": [
+        "sap-activate-methodology"
+      ],
+      "practice_types": [
+        "scope_delta_workshop_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 69,
+      "phase_number": 6,
+      "slug": "central-business-configuration",
+      "title": "Central Business Configuration (CBC)",
+      "description": "Scope definition, organizational structure creation, and fine-tuning deployment via SAP CBC.",
+      "objectives": [
+        "Manage business scope assignment in CBC",
+        "Deploy enterprise structures across tenant environments",
+        "Execute configuration activities"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cbc-configuration",
+        "scoping-and-fine-tuning"
+      ],
+      "prerequisites": [
+        "fit-to-standard-workshops",
+        "org-structure-company-code"
+      ],
+      "practice_types": [
+        "cbc_scoping_drill"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 70,
+      "phase_number": 6,
+      "slug": "key-user-extensibility",
+      "title": "Key-User Extensibility (In-App)",
+      "description": "Custom Fields and Logic app, UI field adaptations, custom business logic with restricted ABAP, and email templates.",
+      "objectives": [
+        "Add custom fields to standard applications without coding",
+        "Write restricted ABAP validation logic in cloud apps",
+        "Adapt standard Fiori screen layouts at runtime"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "key-user-extensibility",
+        "custom-fields-and-logic",
+        "restricted-abap-cloud"
+      ],
+      "prerequisites": [
+        "clean-core-philosophy",
+        "fiori-design-principles"
+      ],
+      "practice_types": [
+        "key_user_field_extension"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 71,
+      "phase_number": 6,
+      "slug": "developer-extensibility-on-stack",
+      "title": "Developer Extensibility (On-Stack ABAP Cloud)",
+      "description": "Embedded ABAP Cloud in S/4HANA: using ADT, released APIs (C1 contract), and restricted ABAP language version.",
+      "objectives": [
+        "Understand on-stack developer extensibility boundaries",
+        "Enforce ABAP Language Version (ABAP Cloud)",
+        "Work exclusively with released SAP APIs"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "developer-extensibility-on-stack",
+        "abap-cloud-language-version",
+        "released-apis-c1"
+      ],
+      "prerequisites": [
+        "clean-core-philosophy"
+      ],
+      "practice_types": [
+        "on_stack_project_setup"
+      ],
+      "assessment_types": [
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 72,
+      "phase_number": 6,
+      "slug": "side-by-side-extensibility-btp",
+      "title": "Side-by-Side Extensibility on SAP BTP",
+      "description": "Decoupling custom apps from core ERP: calling public APIs, handling events, and independent lifecycle management.",
+      "objectives": [
+        "Architect side-by-side decoupled extensions",
+        "Consume S/4HANA OData APIs from external applications",
+        "Ensure zero ERP downtime during extension updates"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "side-by-side-extensibility",
+        "btp-extension-architecture"
+      ],
+      "prerequisites": [
+        "clean-core-philosophy",
+        "developer-extensibility-on-stack"
+      ],
+      "practice_types": [
+        "side_by_side_pattern_eval"
+      ],
+      "assessment_types": [
+        "decision_matrix"
+      ]
+    },
+    {
+      "day_number": 73,
+      "phase_number": 6,
+      "slug": "data-migration-cockpit-ltmc",
+      "title": "Data Migration Cockpit (Migrate Your Data)",
+      "description": "Staging tables, pre-delivered migration objects, data mapping rules, simulation runs, and delta migration.",
+      "objectives": [
+        "Populate migration staging tables",
+        "Validate and simulate master data loading",
+        "Execute automated reconciliation of migrated records"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "data-migration-cockpit",
+        "migration-staging-tables"
+      ],
+      "prerequisites": [
+        "master-data-concept",
+        "business-partner-cvi"
+      ],
+      "practice_types": [
+        "migration_simulation_drill"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 74,
+      "phase_number": 6,
+      "slug": "cloud-testing-quality-assurance",
+      "title": "Cloud Testing & Regression Automation",
+      "description": "Test Automation Tool for S/4HANA Cloud, quarterly release regression management, and test plan execution.",
+      "objectives": [
+        "Record automated business process test scripts",
+        "Execute regression test suites ahead of quarterly upgrades",
+        "Manage defect resolution workflows"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cloud-test-automation",
+        "upgrade-regression-testing"
+      ],
+      "prerequisites": [
+        "sap-activate-methodology"
+      ],
+      "practice_types": [
+        "test_plan_authoring"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 75,
+      "phase_number": 6,
+      "slug": "cutover-operational-readiness",
+      "title": "Cutover Strategy & Operational Readiness",
+      "description": "Cutover checklists, technical downtime management, blackout windows, and Hypercare stabilization.",
+      "objectives": [
+        "Build minute-by-minute cutover task schedules",
+        "Plan blackout windows and transactional cutover sequences",
+        "Structure Hypercare support and incident response"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "cutover-strategy",
+        "hypercare-operations"
+      ],
+      "prerequisites": [
+        "data-migration-cockpit-ltmc"
+      ],
+      "practice_types": [
+        "cutover_schedule_builder"
+      ],
+      "assessment_types": [
+        "process_ordering"
+      ]
+    },
+    {
+      "day_number": 76,
+      "phase_number": 6,
+      "slug": "cloud-clean-core-capstone",
+      "title": "S/4HANA Cloud & Clean Core Assessment",
+      "description": "Phase 6 benchmark: auditing custom code portfolio and designing a Clean Core migration roadmap.",
+      "objectives": [
+        "Classify legacy custom code into In-App, On-Stack, and Side-by-Side tiers",
+        "Formulate Activate methodology governance plan",
+        "Pass Phase 6 Clean Core benchmark exam"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "clean-core-roadmap-synthesis"
+      ],
+      "prerequisites": [
+        "clean-core-philosophy",
+        "key-user-extensibility",
+        "developer-extensibility-on-stack",
+        "side-by-side-extensibility-btp"
+      ],
+      "practice_types": [
+        "clean_core_roadmap_defense"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 77,
+      "phase_number": 7,
+      "slug": "abap-cloud-paradigm",
+      "title": "ABAP Cloud Paradigm & Rules",
+      "description": "Modern ABAP language scope, elimination of obsolete statements, C1 release contract, and zero direct table modifications.",
+      "objectives": [
+        "Enforce ABAP Cloud language restrictions",
+        "Identify prohibited legacy statements (CALL TRANSACTION, TABLES)",
+        "Verify released API contracts in ADT"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "abap-cloud-paradigm",
+        "released-apis-c1",
+        "forbidden-legacy-abap"
+      ],
+      "prerequisites": [
+        "developer-extensibility-on-stack"
+      ],
+      "practice_types": [
+        "abap_cloud_syntax_audit"
+      ],
+      "assessment_types": [
+        "abap_challenge"
+      ]
+    },
+    {
+      "day_number": 78,
+      "phase_number": 7,
+      "slug": "modern-abap-oo-unit-test",
+      "title": "Modern ABAP Objects & ABAP Unit",
+      "description": "Modern syntax (inline declarations, constructor expressions, value operators), OO design, and automated ABAP Unit testing.",
+      "objectives": [
+        "Write modern clean ABAP OO classes",
+        "Use VALUE, CORRESPONDING, and COND expressions",
+        "Build automated unit test suites with ABAP Unit"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "modern-abap-syntax",
+        "abap-unit-testing"
+      ],
+      "prerequisites": [
+        "abap-cloud-paradigm"
+      ],
+      "practice_types": [
+        "abap_unit_test_authoring"
+      ],
+      "assessment_types": [
+        "abap_challenge"
+      ]
+    },
+    {
+      "day_number": 79,
+      "phase_number": 7,
+      "slug": "rap-architecture-big-picture",
+      "title": "RAP Architecture: The Big Picture",
+      "description": "ABAP RESTful Application Programming Model: Data Model (CDS), Behavior Definition (BDEF), and Service Exposure.",
+      "objectives": [
+        "Map the three architectural tiers of RAP",
+        "Understand stateful vs stateless RAP runtime operations",
+        "Distinguish managed vs unmanaged implementation types"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-architecture-overview",
+        "bdef-and-behavior-implementation"
+      ],
+      "prerequisites": [
+        "cds-fundamentals",
+        "abap-cloud-paradigm"
+      ],
+      "practice_types": [
+        "rap_tier_mapping"
+      ],
+      "assessment_types": [
+        "mcq"
+      ]
+    },
+    {
+      "day_number": 80,
+      "phase_number": 7,
+      "slug": "rap-bo-modeling-composition",
+      "title": "RAP Business Object Modeling & Composition",
+      "description": "Root entities, child entities, COMPOSITION OF, and ASSOCIATION TO PARENT relationships.",
+      "objectives": [
+        "Model header-item business objects using CDS view entities",
+        "Define compositions for transactional integrity",
+        "Establish parent-child navigation paths"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-business-object-modeling",
+        "composition-hierarchies"
+      ],
+      "prerequisites": [
+        "rap-architecture-big-picture",
+        "cds-hierarchies"
+      ],
+      "practice_types": [
+        "rap_bo_cds_definition"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 81,
+      "phase_number": 7,
+      "slug": "rap-bdef-managed-vs-unmanaged",
+      "title": "Behavior Definition (BDEF): Managed vs Unmanaged",
+      "description": "Defining behaviors, standard CRUD operations (create, update, delete), and choosing Managed vs Unmanaged scenarios.",
+      "objectives": [
+        "Write declarative BDEF syntax",
+        "Choose Managed RAP for greenfield data models",
+        "Choose Unmanaged RAP when wrapping legacy BAPIs"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "bdef-syntax",
+        "managed-vs-unmanaged-rap"
+      ],
+      "prerequisites": [
+        "rap-bo-modeling-composition"
+      ],
+      "practice_types": [
+        "bdef_definition_exercise"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 82,
+      "phase_number": 7,
+      "slug": "rap-transactional-save-sequence",
+      "title": "RAP Transactional Buffer & Save Sequence",
+      "description": "Interaction phase vs Save Sequence: finalize, check_before_save, adjust_numbers, save, and cleanup phases.",
+      "objectives": [
+        "Trace lifecycle phases of the RAP transactional engine",
+        "Implement validations and determinations at the correct phase",
+        "Enforce transactional integrity during the save sequence"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-save-sequence",
+        "interaction-vs-save-phase"
+      ],
+      "prerequisites": [
+        "rap-bdef-managed-vs-unmanaged"
+      ],
+      "practice_types": [
+        "save_sequence_debugger"
+      ],
+      "assessment_types": [
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 83,
+      "phase_number": 7,
+      "slug": "rap-determinations",
+      "title": "RAP Determinations: on modify vs on save",
+      "description": "Automating business logic: triggering determinations on modify or save to calculate totals, statuses, and keys.",
+      "objectives": [
+        "Implement determinations in behavior implementation classes (BIL)",
+        "Configure trigger conditions (field update, creation)",
+        "Derive calculated fields automatically"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-determinations",
+        "determination-triggers"
+      ],
+      "prerequisites": [
+        "rap-transactional-save-sequence"
+      ],
+      "practice_types": [
+        "determination_coding"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 84,
+      "phase_number": 7,
+      "slug": "rap-validations-error-handling",
+      "title": "RAP Validations & Message Handling",
+      "description": "Semantic data validation, populating FAILED and REPORTED structures with %tky target keys and state messages.",
+      "objectives": [
+        "Implement business validations with custom error messages",
+        "Populate FAILED and REPORTED response parameters",
+        "Bind error messages directly to UI fields"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-validations",
+        "failed-reported-structures"
+      ],
+      "prerequisites": [
+        "rap-transactional-save-sequence"
+      ],
+      "practice_types": [
+        "validation_coding"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 85,
+      "phase_number": 7,
+      "slug": "rap-actions-instance-static",
+      "title": "RAP Actions: Instance, Static & Factory",
+      "description": "Custom business operations: approving documents, releasing orders, and instantiating factory objects via EML.",
+      "objectives": [
+        "Declare custom actions in BDEF with parameter/result signatures",
+        "Implement action logic in ABAP behavior pools",
+        "Invoke actions via Entity Manipulation Language (EML)"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-actions",
+        "entity-manipulation-language-eml"
+      ],
+      "prerequisites": [
+        "rap-validations-error-handling"
+      ],
+      "practice_types": [
+        "action_implementation"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 86,
+      "phase_number": 7,
+      "slug": "rap-draft-handling",
+      "title": "Draft Handling in RAP",
+      "description": "Draft tables, auto-save state, prepare action, edit drafts, and activating draft records to active tables.",
+      "objectives": [
+        "Enable draft capabilities with 'with draft' in BDEF",
+        "Manage draft table lifecycle (creation, editing, discarding)",
+        "Implement the PREPARE action for activation validation"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-draft-handling",
+        "draft-activation-lifecycle"
+      ],
+      "prerequisites": [
+        "rap-actions-instance-static"
+      ],
+      "practice_types": [
+        "draft_enablement_exercise"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 87,
+      "phase_number": 7,
+      "slug": "rap-concurrency-etags",
+      "title": "Concurrency Control & Optimistic Locking",
+      "description": "Optimistic locking using ETags (total vs local ETag fields) to prevent concurrent update overwrites.",
+      "objectives": [
+        "Configure @Semantics.systemDateTime.localInstanceLastChangedAt",
+        "Implement ETag checks in RAP behavior definitions",
+        "Handle lock conflicts gracefully"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-concurrency-control",
+        "optimistic-locking-etag"
+      ],
+      "prerequisites": [
+        "rap-draft-handling"
+      ],
+      "practice_types": [
+        "etag_conflict_simulation"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 88,
+      "phase_number": 7,
+      "slug": "rap-numbering-authorization",
+      "title": "Number Ranges & Authorization Control",
+      "description": "Early vs Late Numbering (adjust_numbers) and Global vs Instance authorization checks in RAP.",
+      "objectives": [
+        "Implement Late Numbering using number range objects",
+        "Configure Global Authorizations for tenant-level checks",
+        "Enforce Instance Authorizations per document status"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-numbering-strategies",
+        "rap-authorization-control"
+      ],
+      "prerequisites": [
+        "rap-transactional-save-sequence",
+        "dcl-access-control"
+      ],
+      "practice_types": [
+        "numbering_auth_coding"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 89,
+      "phase_number": 7,
+      "slug": "abap-cloud-rap-capstone",
+      "title": "ABAP Cloud & RAP Capstone Assessment",
+      "description": "Phase 7 benchmark: building a full Managed RAP Business Object with Draft, Actions, Validations, and OData V4 exposure.",
+      "objectives": [
+        "Implement production-ready RAP Business Object from scratch",
+        "Test complete CRUD and Action workflows using OData V4 test tools",
+        "Pass Phase 7 benchmark assessment"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "rap-full-stack-synthesis"
+      ],
+      "prerequisites": [
+        "rap-determinations",
+        "rap-validations-error-handling",
+        "rap-actions-instance-static",
+        "rap-draft-handling",
+        "rap-numbering-authorization"
+      ],
+      "practice_types": [
+        "rap_capstone_project"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 90,
+      "phase_number": 8,
+      "slug": "btp-architecture-environments",
+      "title": "SAP BTP Architecture & Runtimes",
+      "description": "Global Accounts, Subaccounts, Entitlements, Cloud Foundry, Kyma (Kubernetes), and BTP Destinations.",
+      "objectives": [
+        "Navigate SAP BTP account hierarchies",
+        "Compare Cloud Foundry vs Kyma container runtimes",
+        "Configure secure BTP HTTP/RFC Destinations"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "btp-architecture-overview",
+        "cloud-foundry-vs-kyma",
+        "btp-destinations"
+      ],
+      "prerequisites": [
+        "side-by-side-extensibility-btp"
+      ],
+      "practice_types": [
+        "btp_subaccount_setup"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 91,
+      "phase_number": 8,
+      "slug": "integration-suite-cpi-overview",
+      "title": "Integration Patterns & SAP Integration Suite",
+      "description": "Synchronous vs asynchronous integration patterns, Cloud Integration (CPI), and iFlow architecture.",
+      "objectives": [
+        "Distinguish synchronous and asynchronous integration patterns",
+        "Design message processing flows in Cloud Integration",
+        "Configure SOAP, OData, and HTTP adapters"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "sap-integration-suite",
+        "cloud-integration-cpi",
+        "iflow-design",
+        "sync-vs-async-integration"
+      ],
+      "prerequisites": [
+        "odata-v2-v4-fundamentals",
+        "btp-destinations"
+      ],
+      "practice_types": [
+        "iflow_design_drill"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 92,
+      "phase_number": 8,
+      "slug": "iflow-transformations-groovy",
+      "title": "iFlow Mappings & Groovy Scripting",
+      "description": "Message Mapping, Content Enricher, Splitter, Aggregator, and custom Groovy scripting in iFlows.",
+      "objectives": [
+        "Write Groovy scripts for dynamic header and payload manipulation",
+        "Configure Content Enrichers to look up master data",
+        "Implement error handling sub-processes"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "iflow-groovy-scripting",
+        "content-enricher-pattern"
+      ],
+      "prerequisites": [
+        "integration-suite-cpi-overview"
+      ],
+      "practice_types": [
+        "groovy_scripting_exercise"
+      ],
+      "assessment_types": [
+        "abap_challenge"
+      ]
+    },
+    {
+      "day_number": 93,
+      "phase_number": 8,
+      "slug": "sap-event-mesh-eda",
+      "title": "Event-Driven Architecture with SAP Event Mesh",
+      "description": "Asynchronous messaging, Pub/Sub patterns, queues, topics, webhook subscriptions, and CloudEvents standard.",
+      "objectives": [
+        "Understand event-driven architecture benefits in ERP",
+        "Configure queues and topics in SAP Event Mesh",
+        "Consume CNCF CloudEvents asynchronously"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "event-driven-architecture",
+        "sap-event-mesh",
+        "cloudevents-standard"
+      ],
+      "prerequisites": [
+        "btp-architecture-environments"
+      ],
+      "practice_types": [
+        "event_mesh_queue_setup"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 94,
+      "phase_number": 8,
+      "slug": "s4hana-business-events-integration",
+      "title": "Secure Connectivity & S/4HANA Event Integration",
+      "description": "SAP Cloud Connector, Destinations, Principal Propagation, and S/4HANA Outbound Events to Event Mesh.",
+      "objectives": [
+        "Configure SAP Cloud Connector for secure hybrid network tunneling",
+        "Bind transactional events to BTP Event Mesh topics",
+        "Enforce Principal Propagation and destination authentication"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "s4hana-business-events",
+        "event-enablement-binding",
+        "cloud-connector"
+      ],
+      "prerequisites": [
+        "sap-event-mesh-eda",
+        "o2c-sales-order-processing",
+        "btp-destinations"
+      ],
+      "practice_types": [
+        "event_publishing_test"
+      ],
+      "assessment_types": [
+        "technical_audit"
+      ]
+    },
+    {
+      "day_number": 95,
+      "phase_number": 8,
+      "slug": "btp-integration-capstone",
+      "title": "Enterprise Integration Capstone & Challenge",
+      "description": "Phase 8 benchmark: building an event-driven integration pipeline between S/4HANA, Event Mesh, and external webhooks.",
+      "objectives": [
+        "Construct complete event-driven iFlow consuming S/4HANA events",
+        "Implement exception routing and retry logic",
+        "Pass Phase 8 integration benchmark assessment"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "enterprise-integration-synthesis"
+      ],
+      "prerequisites": [
+        "iflow-transformations-groovy",
+        "sap-event-mesh-eda",
+        "s4hana-business-events-integration"
+      ],
+      "practice_types": [
+        "integration_pipeline_builder"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 96,
+      "phase_number": 9,
+      "slug": "capstone-discovery-process-design",
+      "title": "Capstone: Discovery & Process Architecture",
+      "description": "Capstone Part 1: Fit-to-Standard scoping, enterprise scenario definition, and architectural blueprinting.",
+      "objectives": [
+        "Formulate enterprise scenario problem statement",
+        "Design cross-functional process flow covering S/4HANA, RAP, and BTP",
+        "Author solution design document"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "capstone-process-architecture"
+      ],
+      "prerequisites": [
+        "fit-to-standard-workshops",
+        "e2e-process-integration-synthesis"
+      ],
+      "practice_types": [
+        "process_blueprint_authoring"
+      ],
+      "assessment_types": [
+        "rubric_based"
+      ]
+    },
+    {
+      "day_number": 97,
+      "phase_number": 9,
+      "slug": "capstone-cds-data-semantics",
+      "title": "Capstone: Data Semantics & CDS Modeling",
+      "description": "Capstone Part 2: Building the data model layer: VDM Interface views, composite associations, and DCL security.",
+      "objectives": [
+        "Build multi-tier Core Data Services data model",
+        "Apply DCL row-level security policies",
+        "Validate analytical measures and query performance"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "hana_cds",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "capstone-data-semantics"
+      ],
+      "prerequisites": [
+        "cds-vdm-synthesis",
+        "dcl-access-control"
+      ],
+      "practice_types": [
+        "capstone_cds_implementation"
+      ],
+      "assessment_types": [
+        "cds_challenge"
+      ]
+    },
+    {
+      "day_number": 98,
+      "phase_number": 9,
+      "slug": "capstone-rap-implementation",
+      "title": "Capstone: ABAP Cloud & RAP Implementation",
+      "description": "Capstone Part 3: Implementing Managed RAP Business Object with Determinations, Validations, and Actions.",
+      "objectives": [
+        "Implement complete RAP transactional business object",
+        "Integrate business logic validations and derivations",
+        "Expose service via OData V4 binding"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "eclipse_adt_abap_cloud",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "capstone-rap-implementation"
+      ],
+      "prerequisites": [
+        "rap-full-stack-synthesis"
+      ],
+      "practice_types": [
+        "capstone_rap_coding"
+      ],
+      "assessment_types": [
+        "rap_challenge"
+      ]
+    },
+    {
+      "day_number": 99,
+      "phase_number": 9,
+      "slug": "capstone-fiori-btp-audit",
+      "title": "Capstone: Fiori UX, BTP Integration & Clean Core Audit",
+      "description": "Capstone Part 4: Fiori Elements frontend deployment, Event Mesh integration, and Clean Core compliance check.",
+      "objectives": [
+        "Deploy responsive Fiori Elements user interface",
+        "Wire event emission to BTP integration flow",
+        "Execute automated Clean Core compliance audit"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "btp",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "capstone-fiori-btp-integration"
+      ],
+      "prerequisites": [
+        "fiori-ux-synthesis",
+        "enterprise-integration-synthesis",
+        "clean-core-philosophy"
+      ],
+      "practice_types": [
+        "capstone_system_assembly"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
+      "day_number": 100,
+      "phase_number": 9,
+      "slug": "capstone-architecture-defense",
+      "title": "Capstone: Architectural Defense & Final Assessment",
+      "description": "Capstone Part 5: Final architecture defense, troubleshooting simulated production issues, and graduation exam.",
+      "objectives": [
+        "Defend end-to-end architectural decisions against enterprise rubric",
+        "Troubleshoot multi-tier production simulation failures",
+        "Complete comprehensive 100-Day S/4HANA certification assessment"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "browser",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "capstone-final-defense"
+      ],
+      "prerequisites": [
+        "capstone-process-architecture",
+        "capstone-data-semantics",
+        "capstone-rap-implementation",
+        "capstone-fiori-btp-integration"
+      ],
+      "practice_types": [
+        "final_defense_submission"
+      ],
+      "assessment_types": [
+        "capstone_quiz",
+        "rubric_based"
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "slug": "erp-evolution",
+      "name": "Evolution of ERP Systems",
+      "category": "Architecture",
+      "difficulty": 1
+    },
+    {
+      "slug": "cross-functional-flows",
+      "name": "Cross-Functional Enterprise Document Flows",
+      "category": "Processes",
+      "difficulty": 1
+    },
+    {
+      "slug": "sap-portfolio-overview",
+      "name": "SAP Product Portfolio & Innovations",
+      "category": "Architecture",
+      "difficulty": 1
+    },
+    {
+      "slug": "btp-positioning",
+      "name": "SAP BTP Extension & Platform Positioning",
+      "category": "Cloud",
+      "difficulty": 1
+    },
+    {
+      "slug": "deployment-models-intro",
+      "name": "S/4HANA Deployment Options (Cloud vs On-Prem)",
+      "category": "Architecture",
+      "difficulty": 1
+    },
+    {
+      "slug": "master-data-concept",
+      "name": "Master Data Principles & Lifecycles",
+      "category": "MasterData",
+      "difficulty": 1
+    },
+    {
+      "slug": "business-partner-foundations",
+      "name": "Business Partner Architectural Foundations",
+      "category": "MasterData",
+      "difficulty": 1
+    },
+    {
+      "slug": "material-master-basics",
+      "name": "Material Master Views & Valuation Foundations",
+      "category": "MasterData",
+      "difficulty": 1
+    },
+    {
+      "slug": "org-structure-client",
+      "name": "Client & Multitenancy Concepts",
+      "category": "OrgStructure",
+      "difficulty": 1
+    },
+    {
+      "slug": "org-structure-company-code",
+      "name": "Company Code & Financial Entity Modeling",
+      "category": "OrgStructure",
+      "difficulty": 1
+    },
+    {
+      "slug": "org-structure-plant",
+      "name": "Plant & Logistical Entity Modeling",
+      "category": "OrgStructure",
+      "difficulty": 1
+    },
+    {
+      "slug": "org-structure-logistics",
+      "name": "Sales Org, Purchasing Org & Storage Locations",
+      "category": "OrgStructure",
+      "difficulty": 1
+    },
+    {
+      "slug": "module-interconnectivity",
+      "name": "Module Interconnectivity (FI/CO/MM/SD/PP)",
+      "category": "Processes",
+      "difficulty": 1
+    },
+    {
+      "slug": "automatic-account-determination",
+      "name": "Automatic Account Determination & Posting",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "three-tier-architecture",
+      "name": "Three-Tier Client-Server Architecture",
+      "category": "Architecture",
+      "difficulty": 1
+    },
+    {
+      "slug": "abap-work-processes",
+      "name": "ABAP Work Processes & Dispatching",
+      "category": "Technical",
+      "difficulty": 2
+    },
+    {
+      "slug": "sap-gateway-concept",
+      "name": "SAP Gateway & OData Communication Layer",
+      "category": "Technical",
+      "difficulty": 2
+    },
+    {
+      "slug": "sap-gui-navigation",
+      "name": "SAP GUI Navigation & Classical Transaction Codes",
+      "category": "UX",
+      "difficulty": 1
+    },
+    {
+      "slug": "fiori-launchpad-overview",
+      "name": "SAP Fiori Launchpad & Role-Based Concept",
+      "category": "UX",
+      "difficulty": 1
+    },
+    {
+      "slug": "erp-foundations-synthesis",
+      "name": "ERP Architectural Foundations Synthesis",
+      "category": "Architecture",
+      "difficulty": 2
+    },
+    {
+      "slug": "s4hana-value-drivers",
+      "name": "S/4HANA Digital Core Value Drivers",
+      "category": "Architecture",
+      "difficulty": 2
+    },
+    {
+      "slug": "real-time-enterprise",
+      "name": "Real-Time In-Memory Processing Paradigms",
+      "category": "Architecture",
+      "difficulty": 2
+    },
+    {
+      "slug": "ecc-simplification-items",
+      "name": "ECC to S/4HANA Simplification List Items",
+      "category": "DataModel",
+      "difficulty": 2
+    },
+    {
+      "slug": "compatibility-views-concept",
+      "name": "Compatibility Views & Read Redirection",
+      "category": "DataModel",
+      "difficulty": 2
+    },
+    {
+      "slug": "in-memory-computing",
+      "name": "In-Memory Computing Principles",
+      "category": "HANA",
+      "difficulty": 2
+    },
+    {
+      "slug": "columnar-database-engine",
+      "name": "HANA Columnar Storage & Vector Operations",
+      "category": "HANA",
+      "difficulty": 2
+    },
+    {
+      "slug": "delta-merge-architecture",
+      "name": "Delta Storage & Delta Merge Mechanism",
+      "category": "HANA",
+      "difficulty": 2
+    },
+    {
+      "slug": "double-entry-accounting",
+      "name": "Double Entry Accounting Principles",
+      "category": "Finance",
+      "difficulty": 1
+    },
+    {
+      "slug": "subledger-vs-gl",
+      "name": "Subledger vs General Ledger Reconciliation",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "universal-journal-concept",
+      "name": "Universal Journal Architecture",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "fi-co-unification",
+      "name": "FI and CO Data Unification",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "acdoca-table-architecture",
+      "name": "Table ACDOCA Schema & Multidimensional Accounting",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "parallel-ledgers",
+      "name": "Parallel Accounting & Multi-GAAP Ledgers",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "multi-currency-accounting",
+      "name": "Multi-Currency & Ledger Valuations",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "matdoc-table-architecture",
+      "name": "Table MATDOC & High-Speed Material Movements",
+      "category": "Logistics",
+      "difficulty": 2
+    },
+    {
+      "slug": "simplified-inventory-valuation",
+      "name": "Simplified Inventory Valuation in S/4HANA",
+      "category": "Logistics",
+      "difficulty": 2
+    },
+    {
+      "slug": "business-partner-cvi",
+      "name": "Business Partner & Customer-Vendor Integration",
+      "category": "MasterData",
+      "difficulty": 2
+    },
+    {
+      "slug": "customer-vendor-synchronization",
+      "name": "CVI Synchronization Engine & Postings",
+      "category": "MasterData",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-fundamentals",
+      "name": "ABAP Core Data Services (CDS) Fundamentals",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "code-pushdown-philosophy",
+      "name": "Code Pushdown & Code-to-Data Philosophy",
+      "category": "HANA",
+      "difficulty": 2
+    },
+    {
+      "slug": "view-entity-syntax",
+      "name": "CDS Define View Entity Syntax & Best Practices",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "system-landscapes-3tier",
+      "name": "DEV-QAS-PRD System Landscape Governance",
+      "category": "DevOps",
+      "difficulty": 2
+    },
+    {
+      "slug": "transport-management-cts",
+      "name": "CTS Transport Management & Release Control",
+      "category": "DevOps",
+      "difficulty": 2
+    },
+    {
+      "slug": "central-business-configuration",
+      "name": "Central Business Configuration (CBC) Engine",
+      "category": "Cloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "cloud-3-system-landscape",
+      "name": "S/4HANA Cloud 3-System Landscape (3SL)",
+      "category": "Cloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "identity-access-management",
+      "name": "IAM & Role Authorization Concepts",
+      "category": "Security",
+      "difficulty": 2
+    },
+    {
+      "slug": "pfcg-authorizations",
+      "name": "PFCG Authorization Objects & Profiles",
+      "category": "Security",
+      "difficulty": 2
+    },
+    {
+      "slug": "fiori-role-assignment",
+      "name": "Fiori Business Catalogs & Role Mapping",
+      "category": "Security",
+      "difficulty": 2
+    },
+    {
+      "slug": "embedded-analytics-foundations",
+      "name": "S/4HANA Embedded Analytics Foundations",
+      "category": "Analytics",
+      "difficulty": 2
+    },
+    {
+      "slug": "operational-reporting-vdm",
+      "name": "Operational Reporting via Virtual Data Model",
+      "category": "Analytics",
+      "difficulty": 2
+    },
+    {
+      "slug": "document-flow-continuity",
+      "name": "Cross-Document Flow & Transaction Statuses",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "s4hana-integrated-scenario",
+      "name": "Cross-Module Integrated Transaction Scenario",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "transactional-audit-trail",
+      "name": "Transactional Audit Trails & Compliance",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "s4hana-architecture-synthesis",
+      "name": "S/4HANA Core Architecture Synthesis",
+      "category": "Architecture",
+      "difficulty": 3
+    },
+    {
+      "slug": "p2p-pr-creation",
+      "name": "Procure-to-Pay: Requisition & Line Allocation",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "account-assignment-categories",
+      "name": "Account Assignment Categories (Cost Center, Order)",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "p2p-sourcing-rfq",
+      "name": "Sourcing, RFQs & Vendor Comparison",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "source-determination",
+      "name": "Automated Source Determination Rules",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "p2p-po-processing",
+      "name": "Purchase Order Creation & Tracking",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "flexible-workflow",
+      "name": "S/4HANA Flexible Workflow for Documents",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "p2p-goods-receipt-migo",
+      "name": "Goods Receipt Posting via MIGO",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "gr-ir-clearing-account",
+      "name": "GR/IR Interim Clearing Account Mechanics",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "p2p-invoice-verification-miro",
+      "name": "Logistics Invoice Verification (MIRO)",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "three-way-matching",
+      "name": "Three-Way Matching & Variance Tolerances",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "p2p-f110-payment-run",
+      "name": "Automatic Payment Program (F110)",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "payment-block-exceptions",
+      "name": "Payment Block Resolutions & Credit Memos",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "o2c-pricing-procedure",
+      "name": "Sales Pricing Procedure & Waterfall",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "condition-technique",
+      "name": "Condition Technique & Access Sequences",
+      "category": "Processes",
+      "difficulty": 3
+    },
+    {
+      "slug": "o2c-sales-order-creation",
+      "name": "Sales Order Creation & Partner Determination",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "credit-management",
+      "name": "Credit Checks & Credit Segment Management",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "advanced-atp-s4",
+      "name": "Advanced Available-to-Promise (aATP)",
+      "category": "Processes",
+      "difficulty": 3
+    },
+    {
+      "slug": "product-allocation",
+      "name": "Product Allocation (PAL) & Alternative Confirmation",
+      "category": "Processes",
+      "difficulty": 3
+    },
+    {
+      "slug": "backorder-processing",
+      "name": "Backorder Processing (BOP) Strategies",
+      "category": "Processes",
+      "difficulty": 3
+    },
+    {
+      "slug": "o2c-outbound-delivery",
+      "name": "Outbound Delivery Creation & Picking",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "shipping-point-determination",
+      "name": "Shipping Point & Storage Location Determination",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "o2c-post-goods-issue",
+      "name": "Post Goods Issue (PGI) Processing",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "cogs-accounting-split",
+      "name": "COGS Financial Posting & Split in ACDOCA",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "o2c-billing-creation",
+      "name": "Billing Document Processing (VF01)",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "revenue-recognition-posting",
+      "name": "Revenue Accounting & Reporting (RAR)",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "o2c-customer-incoming-payment",
+      "name": "Customer Incoming Payment & Cash Application",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "dunning-procedures",
+      "name": "Customer Dunning Runs & Dispute Management",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "o2c-returns-processing",
+      "name": "Customer Returns, Credit Memos & Restocking",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "credit-memo-requests",
+      "name": "Credit & Debit Memo Request Lifecycles",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "gl-journal-entry",
+      "name": "General Ledger Direct Postings (FB50)",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "field-status-groups",
+      "name": "Field Status Groups & Posting Keys Control",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "posting-keys",
+      "name": "Posting Keys & Debit/Credit Determinations",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "ap-ar-subledger-operations",
+      "name": "AP/AR Subledger Reconciliation & Open Items",
+      "category": "Finance",
+      "difficulty": 2
+    },
+    {
+      "slug": "special-gl-indicators",
+      "name": "Special G/L Indicators (Down Payments)",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "period-end-closing",
+      "name": "Financial Closing Cockpit & Period End",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "foreign-currency-valuation",
+      "name": "Foreign Currency Revaluation Engine",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "asset-depreciation-afab",
+      "name": "Asset Accounting & Depreciation Run (AFAB)",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "mfg-bom-master",
+      "name": "Production Bills of Material (BOM) Setup",
+      "category": "Manufacturing",
+      "difficulty": 2
+    },
+    {
+      "slug": "mfg-work-centers-routing",
+      "name": "Work Centers, Capacities & Routings",
+      "category": "Manufacturing",
+      "difficulty": 2
+    },
+    {
+      "slug": "production-order-lifecycle",
+      "name": "Production Order Creation, Staging & Release",
+      "category": "Manufacturing",
+      "difficulty": 2
+    },
+    {
+      "slug": "capacity-requirements-planning",
+      "name": "Capacity Requirements Planning & Leveling",
+      "category": "Manufacturing",
+      "difficulty": 3
+    },
+    {
+      "slug": "production-order-confirmation",
+      "name": "Production Time & Yield Confirmation",
+      "category": "Manufacturing",
+      "difficulty": 2
+    },
+    {
+      "slug": "component-backflushing",
+      "name": "Component Backflushing Goods Consumption",
+      "category": "Manufacturing",
+      "difficulty": 2
+    },
+    {
+      "slug": "production-order-settlement",
+      "name": "Production Order Settlement to Cost Objects",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "wip-variance-calculation",
+      "name": "Work-in-Process (WIP) & Variance Derivations",
+      "category": "Finance",
+      "difficulty": 3
+    },
+    {
+      "slug": "e2e-process-integration-synthesis",
+      "name": "Cross-Functional E2E Process Synthesis",
+      "category": "Processes",
+      "difficulty": 3
+    },
+    {
+      "slug": "relational-modeling",
+      "name": "Relational Data Modeling & Cardinality",
+      "category": "Database",
+      "difficulty": 1
+    },
+    {
+      "slug": "sql-joins-foundations",
+      "name": "SQL Inner, Outer & Cross Joins",
+      "category": "Database",
+      "difficulty": 2
+    },
+    {
+      "slug": "hana-calc-engine",
+      "name": "HANA Calculation Engine & Execution Plans",
+      "category": "HANA",
+      "difficulty": 3
+    },
+    {
+      "slug": "planviz-analysis",
+      "name": "Plan Visualizer (PlanViz) Deep Dive",
+      "category": "HANA",
+      "difficulty": 3
+    },
+    {
+      "slug": "sql-optimizer-pushdown",
+      "name": "HANA Cost-Based SQL Optimizer Pushdown",
+      "category": "HANA",
+      "difficulty": 3
+    },
+    {
+      "slug": "vdm-architecture-tiers",
+      "name": "SAP VDM: Basic, Composite & Consumption Tiers",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "interface-vs-consumption-views",
+      "name": "Interface Views (I_) vs Consumption Views (C_)",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-syntax-expressions",
+      "name": "CDS Expressions, Built-in Functions and Case Logic",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "partner-determination",
+      "name": "Partner Determination Procedures in SD and MM",
+      "category": "Processes",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-advanced-expressions",
+      "name": "Advanced Expressions & Conversions in CDS",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-case-statements",
+      "name": "Conditional Logic & CASE Statements in CDS",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-associations-concept",
+      "name": "CDS Associations & Join-on-Demand",
+      "category": "CDS",
+      "difficulty": 3
+    },
+    {
+      "slug": "cardinality-rules",
+      "name": "Association Cardinality ([1..1], [1..*], [0..1])",
+      "category": "CDS",
+      "difficulty": 3
+    },
+    {
+      "slug": "path-expressions",
+      "name": "Path Expressions & Association Navigation",
+      "category": "CDS",
+      "difficulty": 3
+    },
+    {
+      "slug": "cds-parameters",
+      "name": "Parameterized CDS View Entities",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-session-variables",
+      "name": "Session Variables ($session.user, $session.client)",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-annotations-framework",
+      "name": "CDS Annotations Metadata Governance",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "semantics-annotations",
+      "name": "@Semantics Framework (Currencies, Amounts)",
+      "category": "CDS",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-hierarchies",
+      "name": "Hierarchical Data Modeling in CDS",
+      "category": "CDS",
+      "difficulty": 3
+    },
+    {
+      "slug": "cds-compositions",
+      "name": "Composition of Entities for Transactional Nodes",
+      "category": "CDS",
+      "difficulty": 3
+    },
+    {
+      "slug": "cds-analytical-cubes",
+      "name": "Analytical Cubes & Measure Aggregations (#SUM)",
+      "category": "Analytics",
+      "difficulty": 3
+    },
+    {
+      "slug": "multidimensional-queries",
+      "name": "Analytical Queries (@Analytics.query: true)",
+      "category": "Analytics",
+      "difficulty": 3
+    },
+    {
+      "slug": "dcl-access-control",
+      "name": "Data Control Language (DCL) DEFINE ROLE",
+      "category": "Security",
+      "difficulty": 3
+    },
+    {
+      "slug": "row-level-security",
+      "name": "Row-Level Filtering via DCL Authorization Checks",
+      "category": "Security",
+      "difficulty": 3
+    },
+    {
+      "slug": "pfcg-authorization-aspects",
+      "name": "PFCG Aspect Authorization Mappings",
+      "category": "Security",
+      "difficulty": 3
+    },
+    {
+      "slug": "cds-vdm-synthesis",
+      "name": "Enterprise VDM Architectural Synthesis",
+      "category": "CDS",
+      "difficulty": 3
+    },
+    {
+      "slug": "fiori-design-principles",
+      "name": "SAP Fiori 5 Core Design Principles",
+      "category": "UX",
+      "difficulty": 1
+    },
+    {
+      "slug": "fiori-app-types",
+      "name": "Transactional vs Analytical vs Factsheet Apps",
+      "category": "UX",
+      "difficulty": 2
+    },
+    {
+      "slug": "flp-spaces-and-pages",
+      "name": "FLP Configuration: Spaces, Pages & Sections",
+      "category": "UX",
+      "difficulty": 2
+    },
+    {
+      "slug": "business-catalogs-groups",
+      "name": "Business Catalogs, Groups & Target Mappings",
+      "category": "UX",
+      "difficulty": 2
+    },
+    {
+      "slug": "sapui5-mvc-architecture",
+      "name": "SAPUI5 Model-View-Controller Framework",
+      "category": "UI5",
+      "difficulty": 2
+    },
+    {
+      "slug": "ui5-data-binding",
+      "name": "One-Way, Two-Way & Property Data Binding",
+      "category": "UI5",
+      "difficulty": 2
+    },
+    {
+      "slug": "odata-protocol-fundamentals",
+      "name": "OData REST Protocol & Entity Data Models",
+      "category": "OData",
+      "difficulty": 2
+    },
+    {
+      "slug": "odata-v2-vs-v4",
+      "name": "OData V2 vs OData V4 Comparison & Features",
+      "category": "OData",
+      "difficulty": 2
+    },
+    {
+      "slug": "cds-odata-exposure",
+      "name": "Exposing CDS via Service Definitions & Bindings",
+      "category": "OData",
+      "difficulty": 2
+    },
+    {
+      "slug": "sap-gateway-registration",
+      "name": "SAP Gateway Service Activation & Testing",
+      "category": "OData",
+      "difficulty": 2
+    },
+    {
+      "slug": "fiori-elements-paradigm",
+      "name": "Fiori Elements Metadata-Driven Paradigm",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "ui-annotations-framework",
+      "name": "UI Annotations Schema (@UI.lineItem, etc.)",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "ui-lineitem-annotations",
+      "name": "@UI.lineItem Table Column Configuration",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "ui-selectionfields-annotations",
+      "name": "@UI.selectionField Search Bar Configuration",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "list-report-floorplan",
+      "name": "List Report Application Floorplan",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "object-page-floorplan",
+      "name": "Object Page Header Facets & Sections Floorplan",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "facet-navigation",
+      "name": "Line Item to Detail Navigation & Routing",
+      "category": "FioriElements",
+      "difficulty": 2
+    },
+    {
+      "slug": "overview-page-ovp",
+      "name": "Overview Page (OVP) Assembly",
+      "category": "FioriElements",
+      "difficulty": 3
+    },
+    {
+      "slug": "analytical-cards-ovp",
+      "name": "Analytical KPI & Chart Cards in OVP",
+      "category": "FioriElements",
+      "difficulty": 3
+    },
+    {
+      "slug": "fiori-ux-synthesis",
+      "name": "Enterprise Fiori Application Deployment Synthesis",
+      "category": "UX",
+      "difficulty": 3
+    },
+    {
+      "slug": "s4hana-cloud-editions",
+      "name": "Public Cloud vs Private Cloud Architecture",
+      "category": "Cloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "cloud-governance-models",
+      "name": "Cloud Governance & SLA Frameworks",
+      "category": "Cloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "clean-core-philosophy",
+      "name": "Clean Core Strategy & Modification-Free Mandate",
+      "category": "CleanCore",
+      "difficulty": 2
+    },
+    {
+      "slug": "upgrade-safety-principles",
+      "name": "Zero-Downtime Upgrade Safety & Decoupling",
+      "category": "CleanCore",
+      "difficulty": 2
+    },
+    {
+      "slug": "sap-activate-methodology",
+      "name": "SAP Activate Methodology & Phases",
+      "category": "Methodology",
+      "difficulty": 2
+    },
+    {
+      "slug": "activate-quality-gates",
+      "name": "Quality Gates (Q-Gate 1 to 4) Governance",
+      "category": "Methodology",
+      "difficulty": 2
+    },
+    {
+      "slug": "fit-to-standard-approach",
+      "name": "Fit-to-Standard Discovery Workshops",
+      "category": "Methodology",
+      "difficulty": 2
+    },
+    {
+      "slug": "best-practices-scope-items",
+      "name": "SAP Best Practices Scope Items & Accelerators",
+      "category": "Methodology",
+      "difficulty": 2
+    },
+    {
+      "slug": "cbc-configuration",
+      "name": "Central Business Configuration (CBC) Scoping",
+      "category": "Cloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "scoping-and-fine-tuning",
+      "name": "Scope Activation & Org Fine-Tuning in CBC",
+      "category": "Cloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "key-user-extensibility",
+      "name": "Key User Extensibility (In-App Extensions)",
+      "category": "Extensibility",
+      "difficulty": 2
+    },
+    {
+      "slug": "custom-fields-and-logic",
+      "name": "Custom Fields and Logic App Usage",
+      "category": "Extensibility",
+      "difficulty": 2
+    },
+    {
+      "slug": "restricted-abap-cloud",
+      "name": "Restricted ABAP Cloud for Key User Rules",
+      "category": "Extensibility",
+      "difficulty": 2
+    },
+    {
+      "slug": "developer-extensibility-on-stack",
+      "name": "Developer Extensibility (Embedded ABAP Cloud)",
+      "category": "Extensibility",
+      "difficulty": 3
+    },
+    {
+      "slug": "abap-cloud-language-version",
+      "name": "ABAP Language Version 5 (ABAP Cloud)",
+      "category": "ABAPCloud",
+      "difficulty": 3
+    },
+    {
+      "slug": "released-apis-c1",
+      "name": "Released SAP APIs & C1 Release Contracts",
+      "category": "ABAPCloud",
+      "difficulty": 3
+    },
+    {
+      "slug": "side-by-side-extensibility",
+      "name": "Side-by-Side Extensibility on SAP BTP",
+      "category": "Extensibility",
+      "difficulty": 3
+    },
+    {
+      "slug": "btp-extension-architecture",
+      "name": "BTP Extension Architecture & Decoupling",
+      "category": "BTP",
+      "difficulty": 3
+    },
+    {
+      "slug": "data-migration-cockpit",
+      "name": "Data Migration Cockpit (Migrate Your Data)",
+      "category": "Migration",
+      "difficulty": 2
+    },
+    {
+      "slug": "migration-staging-tables",
+      "name": "Staging Tables & Migration Object Modeler",
+      "category": "Migration",
+      "difficulty": 2
+    },
+    {
+      "slug": "cloud-test-automation",
+      "name": "Cloud Test Automation Tool Configuration",
+      "category": "DevOps",
+      "difficulty": 2
+    },
+    {
+      "slug": "upgrade-regression-testing",
+      "name": "Quarterly Release Regression Testing",
+      "category": "DevOps",
+      "difficulty": 2
+    },
+    {
+      "slug": "cutover-strategy",
+      "name": "Production Cutover Governance & Blackout Planning",
+      "category": "DevOps",
+      "difficulty": 3
+    },
+    {
+      "slug": "hypercare-operations",
+      "name": "Hypercare Stabilization & Incident Resolution",
+      "category": "DevOps",
+      "difficulty": 2
+    },
+    {
+      "slug": "clean-core-roadmap-synthesis",
+      "name": "Clean Core Transformation Roadmap Synthesis",
+      "category": "CleanCore",
+      "difficulty": 3
+    },
+    {
+      "slug": "abap-cloud-paradigm",
+      "name": "ABAP Cloud Strict Paradigm & Guidelines",
+      "category": "ABAPCloud",
+      "difficulty": 3
+    },
+    {
+      "slug": "forbidden-legacy-abap",
+      "name": "Prohibited Obsolete ABAP Statements",
+      "category": "ABAPCloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "modern-abap-syntax",
+      "name": "Modern ABAP OO Syntax & Value Operators",
+      "category": "ABAPCloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "abap-unit-testing",
+      "name": "ABAP Unit Test Classes & Test Doubles",
+      "category": "ABAPCloud",
+      "difficulty": 2
+    },
+    {
+      "slug": "oop-fundamentals",
+      "name": "Object-Oriented Programming & Event Lifecycles",
+      "category": "ABAPCloud",
+      "difficulty": 1
+    },
+    {
+      "slug": "rap-architecture-overview",
+      "name": "RAP Three-Tier Architectural Overview",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "bdef-and-behavior-implementation",
+      "name": "Behavior Definition & Behavior Pool Classes",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-business-object-modeling",
+      "name": "RAP Business Object Modeling (Header-Item)",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "composition-hierarchies",
+      "name": "Composition of Entities in RAP Models",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "bdef-syntax",
+      "name": "BDEF Grammar & Standard Operations Mapping",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "managed-vs-unmanaged-rap",
+      "name": "Managed vs Unmanaged RAP Scenarios",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "transactional-lifecycle",
+      "name": "Transactional Lifecycle & Save Sequences",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-save-sequence",
+      "name": "RAP Phased Save Sequence Execution",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "interaction-vs-save-phase",
+      "name": "Interaction Phase vs Save Phase Isolation",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-determinations",
+      "name": "RAP Determinations (on modify vs on save)",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "determination-triggers",
+      "name": "Field and Operation Determination Triggers",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-validations",
+      "name": "RAP Validations & Business Rule Enforcement",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "failed-reported-structures",
+      "name": "FAILED and REPORTED Parameter Handling (%tky)",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-actions",
+      "name": "RAP Custom Actions & State Transformations",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "entity-manipulation-language-eml",
+      "name": "Entity Manipulation Language (EML) Syntax",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-draft-handling",
+      "name": "Draft Enablement & Draft Table Mechanics",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "draft-activation-lifecycle",
+      "name": "Draft Edit, Discard, and Prepare Activation",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-concurrency-control",
+      "name": "Concurrency Control & Optimistic Locking",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "optimistic-locking-etag",
+      "name": "Total and Local ETag Configurations",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-numbering-strategies",
+      "name": "Early vs Late Numbering (adjust_numbers)",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-authorization-control",
+      "name": "Global vs Instance Authorization in RAP",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "rap-full-stack-synthesis",
+      "name": "Full-Stack Managed RAP BO Synthesis",
+      "category": "RAP",
+      "difficulty": 3
+    },
+    {
+      "slug": "btp-architecture-overview",
+      "name": "SAP BTP Global Accounts & Subaccounts",
+      "category": "BTP",
+      "difficulty": 2
+    },
+    {
+      "slug": "cloud-foundry-vs-kyma",
+      "name": "Cloud Foundry vs Kyma Container Runtimes",
+      "category": "BTP",
+      "difficulty": 2
+    },
+    {
+      "slug": "btp-destinations",
+      "name": "BTP Destinations & Principal Propagation",
+      "category": "BTP",
+      "difficulty": 3
+    },
+    {
+      "slug": "cloud-connector",
+      "name": "SAP Cloud Connector & Secure Network Tunneling",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "sync-vs-async-integration",
+      "name": "Synchronous vs Asynchronous Integration",
+      "category": "Integration",
+      "difficulty": 2
+    },
+    {
+      "slug": "api-oauth2-fundamentals",
+      "name": "REST, OAuth2 & API Security Fundamentals",
+      "category": "Integration",
+      "difficulty": 2
+    },
+    {
+      "slug": "sap-integration-suite",
+      "name": "SAP Integration Suite Portfolio",
+      "category": "Integration",
+      "difficulty": 2
+    },
+    {
+      "slug": "cloud-integration-cpi",
+      "name": "Cloud Integration (CPI) Flow Architecture",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "iflow-design",
+      "name": "iFlow Adapters (HTTPS, OData, SOAP, SFTP)",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "iflow-groovy-scripting",
+      "name": "Message Mapping & Groovy Scripting in iFlows",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "content-enricher-pattern",
+      "name": "Content Enricher, Splitter & Aggregator Patterns",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "event-driven-architecture",
+      "name": "Event-Driven Architecture (EDA) Concepts",
+      "category": "Integration",
+      "difficulty": 2
+    },
+    {
+      "slug": "message-queues-pubsub",
+      "name": "Message Queues, Topics & Pub/Sub Systems",
+      "category": "Integration",
+      "difficulty": 2
+    },
+    {
+      "slug": "sap-event-mesh",
+      "name": "SAP Event Mesh Architecture & Queues",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "cloudevents-standard",
+      "name": "CNCF CloudEvents Payload Specification",
+      "category": "Integration",
+      "difficulty": 2
+    },
+    {
+      "slug": "s4hana-business-events",
+      "name": "S/4HANA Standard Business Events Catalog",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "event-enablement-binding",
+      "name": "Enterprise Event Enablement & Webhooks",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "enterprise-integration-synthesis",
+      "name": "Enterprise Event-Driven Pipeline Synthesis",
+      "category": "Integration",
+      "difficulty": 3
+    },
+    {
+      "slug": "capstone-process-architecture",
+      "name": "Capstone: Enterprise Process Design",
+      "category": "Capstone",
+      "difficulty": 3
+    },
+    {
+      "slug": "capstone-data-semantics",
+      "name": "Capstone: VDM Data Model Implementation",
+      "category": "Capstone",
+      "difficulty": 3
+    },
+    {
+      "slug": "capstone-rap-implementation",
+      "name": "Capstone: RAP Business Object Implementation",
+      "category": "Capstone",
+      "difficulty": 3
+    },
+    {
+      "slug": "capstone-fiori-btp-integration",
+      "name": "Capstone: Fiori UX & BTP Integration Pipeline",
+      "category": "Capstone",
+      "difficulty": 3
+    },
+    {
+      "slug": "capstone-final-defense",
+      "name": "Capstone: Final Architecture Defense & Review",
+      "category": "Capstone",
+      "difficulty": 3
+    }
+  ],
+  "prerequisites": [
+    {
+      "prerequisite_slug": "erp-evolution",
+      "target_slug": "three-tier-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "erp-evolution",
+      "target_slug": "cross-functional-flows",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "erp-evolution",
+      "target_slug": "sap-portfolio-overview",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-portfolio-overview",
+      "target_slug": "btp-positioning",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-portfolio-overview",
+      "target_slug": "deployment-models-intro",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "master-data-concept",
+      "target_slug": "business-partner-foundations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "master-data-concept",
+      "target_slug": "material-master-basics",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "org-structure-client",
+      "target_slug": "org-structure-company-code",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "org-structure-company-code",
+      "target_slug": "org-structure-plant",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "org-structure-plant",
+      "target_slug": "org-structure-logistics",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "org-structure-company-code",
+      "target_slug": "automatic-account-determination",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cross-functional-flows",
+      "target_slug": "module-interconnectivity",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "three-tier-architecture",
+      "target_slug": "abap-work-processes",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "three-tier-architecture",
+      "target_slug": "sap-gateway-concept",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "three-tier-architecture",
+      "target_slug": "sap-gui-navigation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-gui-navigation",
+      "target_slug": "fiori-launchpad-overview",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "module-interconnectivity",
+      "target_slug": "erp-foundations-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "org-structure-logistics",
+      "target_slug": "erp-foundations-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "three-tier-architecture",
+      "target_slug": "in-memory-computing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "erp-evolution",
+      "target_slug": "s4hana-value-drivers",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "deployment-models-intro",
+      "target_slug": "cloud-3-system-landscape",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "master-data-concept",
+      "target_slug": "business-partner-cvi",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "abap-work-processes",
+      "target_slug": "system-landscapes-3tier",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fiori-launchpad-overview",
+      "target_slug": "fiori-role-assignment",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "in-memory-computing",
+      "target_slug": "real-time-enterprise",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "in-memory-computing",
+      "target_slug": "columnar-database-engine",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "columnar-database-engine",
+      "target_slug": "delta-merge-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "columnar-database-engine",
+      "target_slug": "cds-fundamentals",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "s4hana-value-drivers",
+      "target_slug": "ecc-simplification-items",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ecc-simplification-items",
+      "target_slug": "compatibility-views-concept",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "business-partner-cvi",
+      "target_slug": "customer-vendor-synchronization",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "system-landscapes-3tier",
+      "target_slug": "transport-management-cts",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "transport-management-cts",
+      "target_slug": "central-business-configuration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "identity-access-management",
+      "target_slug": "pfcg-authorizations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "pfcg-authorizations",
+      "target_slug": "fiori-role-assignment",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "columnar-database-engine",
+      "target_slug": "embedded-analytics-foundations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "embedded-analytics-foundations",
+      "target_slug": "operational-reporting-vdm",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cross-functional-flows",
+      "target_slug": "document-flow-continuity",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "document-flow-continuity",
+      "target_slug": "transactional-audit-trail",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "document-flow-continuity",
+      "target_slug": "s4hana-integrated-scenario",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "s4hana-integrated-scenario",
+      "target_slug": "s4hana-architecture-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "delta-merge-architecture",
+      "target_slug": "s4hana-architecture-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "compatibility-views-concept",
+      "target_slug": "s4hana-architecture-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "double-entry-accounting",
+      "target_slug": "subledger-vs-gl",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "subledger-vs-gl",
+      "target_slug": "universal-journal-concept",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fi-co-unification",
+      "target_slug": "universal-journal-concept",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "universal-journal-concept",
+      "target_slug": "acdoca-table-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "columnar-database-engine",
+      "target_slug": "acdoca-table-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "acdoca-table-architecture",
+      "target_slug": "parallel-ledgers",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "acdoca-table-architecture",
+      "target_slug": "multi-currency-accounting",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "acdoca-table-architecture",
+      "target_slug": "s4hana-integrated-scenario",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "material-master-basics",
+      "target_slug": "simplified-inventory-valuation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "simplified-inventory-valuation",
+      "target_slug": "matdoc-table-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "columnar-database-engine",
+      "target_slug": "matdoc-table-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "matdoc-table-architecture",
+      "target_slug": "s4hana-integrated-scenario",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "acdoca-table-architecture",
+      "target_slug": "gl-journal-entry",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "acdoca-table-architecture",
+      "target_slug": "ap-ar-subledger-operations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "acdoca-table-architecture",
+      "target_slug": "cogs-accounting-split",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "matdoc-table-architecture",
+      "target_slug": "p2p-goods-receipt-migo",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "matdoc-table-architecture",
+      "target_slug": "component-backflushing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "customer-vendor-synchronization",
+      "target_slug": "p2p-sourcing-rfq",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "org-structure-company-code",
+      "target_slug": "p2p-pr-creation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-pr-creation",
+      "target_slug": "account-assignment-categories",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-pr-creation",
+      "target_slug": "p2p-sourcing-rfq",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-sourcing-rfq",
+      "target_slug": "source-determination",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-sourcing-rfq",
+      "target_slug": "p2p-po-processing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-po-processing",
+      "target_slug": "flexible-workflow",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-po-processing",
+      "target_slug": "p2p-goods-receipt-migo",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-goods-receipt-migo",
+      "target_slug": "gr-ir-clearing-account",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-goods-receipt-migo",
+      "target_slug": "p2p-invoice-verification-miro",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-invoice-verification-miro",
+      "target_slug": "three-way-matching",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-invoice-verification-miro",
+      "target_slug": "p2p-f110-payment-run",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-f110-payment-run",
+      "target_slug": "payment-block-exceptions",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-pricing-procedure",
+      "target_slug": "condition-technique",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "condition-technique",
+      "target_slug": "o2c-sales-order-creation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "customer-vendor-synchronization",
+      "target_slug": "partner-determination",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "partner-determination",
+      "target_slug": "o2c-sales-order-creation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-sales-order-creation",
+      "target_slug": "credit-management",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-sales-order-creation",
+      "target_slug": "advanced-atp-s4",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "advanced-atp-s4",
+      "target_slug": "product-allocation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "advanced-atp-s4",
+      "target_slug": "backorder-processing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "advanced-atp-s4",
+      "target_slug": "o2c-outbound-delivery",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-outbound-delivery",
+      "target_slug": "shipping-point-determination",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-outbound-delivery",
+      "target_slug": "o2c-post-goods-issue",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-post-goods-issue",
+      "target_slug": "cogs-accounting-split",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-post-goods-issue",
+      "target_slug": "o2c-billing-creation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-billing-creation",
+      "target_slug": "revenue-recognition-posting",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-billing-creation",
+      "target_slug": "o2c-customer-incoming-payment",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-customer-incoming-payment",
+      "target_slug": "dunning-procedures",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-billing-creation",
+      "target_slug": "o2c-returns-processing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-returns-processing",
+      "target_slug": "credit-memo-requests",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "gl-journal-entry",
+      "target_slug": "field-status-groups",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "gl-journal-entry",
+      "target_slug": "posting-keys",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "posting-keys",
+      "target_slug": "ap-ar-subledger-operations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ap-ar-subledger-operations",
+      "target_slug": "special-gl-indicators",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ap-ar-subledger-operations",
+      "target_slug": "period-end-closing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "period-end-closing",
+      "target_slug": "foreign-currency-valuation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "period-end-closing",
+      "target_slug": "asset-depreciation-afab",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "material-master-basics",
+      "target_slug": "mfg-bom-master",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "mfg-bom-master",
+      "target_slug": "mfg-work-centers-routing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "mfg-work-centers-routing",
+      "target_slug": "production-order-lifecycle",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "production-order-lifecycle",
+      "target_slug": "capacity-requirements-planning",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "production-order-lifecycle",
+      "target_slug": "production-order-confirmation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "production-order-confirmation",
+      "target_slug": "component-backflushing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "production-order-confirmation",
+      "target_slug": "production-order-settlement",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "production-order-settlement",
+      "target_slug": "wip-variance-calculation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "p2p-f110-payment-run",
+      "target_slug": "e2e-process-integration-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "o2c-customer-incoming-payment",
+      "target_slug": "e2e-process-integration-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "production-order-settlement",
+      "target_slug": "e2e-process-integration-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "automatic-account-determination",
+      "target_slug": "sql-joins-foundations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ap-ar-subledger-operations",
+      "target_slug": "vdm-architecture-tiers",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "e2e-process-integration-synthesis",
+      "target_slug": "cds-vdm-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "relational-modeling",
+      "target_slug": "cardinality-rules",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "relational-modeling",
+      "target_slug": "sql-joins-foundations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "in-memory-computing",
+      "target_slug": "hana-calc-engine",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "hana-calc-engine",
+      "target_slug": "planviz-analysis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "hana-calc-engine",
+      "target_slug": "sql-optimizer-pushdown",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "columnar-database-engine",
+      "target_slug": "code-pushdown-philosophy",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "code-pushdown-philosophy",
+      "target_slug": "cds-fundamentals",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-fundamentals",
+      "target_slug": "view-entity-syntax",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "view-entity-syntax",
+      "target_slug": "cds-syntax-expressions",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-syntax-expressions",
+      "target_slug": "cds-case-statements",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-syntax-expressions",
+      "target_slug": "cds-advanced-expressions",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sql-joins-foundations",
+      "target_slug": "cds-associations-concept",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cardinality-rules",
+      "target_slug": "cds-associations-concept",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-associations-concept",
+      "target_slug": "path-expressions",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-syntax-expressions",
+      "target_slug": "cds-parameters",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-parameters",
+      "target_slug": "cds-session-variables",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-fundamentals",
+      "target_slug": "cds-annotations-framework",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-annotations-framework",
+      "target_slug": "semantics-annotations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "path-expressions",
+      "target_slug": "cds-hierarchies",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "path-expressions",
+      "target_slug": "cds-compositions",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "path-expressions",
+      "target_slug": "vdm-architecture-tiers",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "vdm-architecture-tiers",
+      "target_slug": "interface-vs-consumption-views",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "interface-vs-consumption-views",
+      "target_slug": "cds-analytical-cubes",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-analytical-cubes",
+      "target_slug": "multidimensional-queries",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "pfcg-authorizations",
+      "target_slug": "dcl-access-control",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "dcl-access-control",
+      "target_slug": "row-level-security",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "dcl-access-control",
+      "target_slug": "pfcg-authorization-aspects",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "interface-vs-consumption-views",
+      "target_slug": "cds-vdm-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "row-level-security",
+      "target_slug": "cds-vdm-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-vdm-synthesis",
+      "target_slug": "cds-odata-exposure",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-annotations-framework",
+      "target_slug": "ui-annotations-framework",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "dcl-access-control",
+      "target_slug": "fiori-role-assignment",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fiori-design-principles",
+      "target_slug": "fiori-app-types",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fiori-design-principles",
+      "target_slug": "flp-spaces-and-pages",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "flp-spaces-and-pages",
+      "target_slug": "business-catalogs-groups",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fiori-design-principles",
+      "target_slug": "sapui5-mvc-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sapui5-mvc-architecture",
+      "target_slug": "ui5-data-binding",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sapui5-mvc-architecture",
+      "target_slug": "odata-protocol-fundamentals",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "odata-protocol-fundamentals",
+      "target_slug": "odata-v2-vs-v4",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "odata-v2-vs-v4",
+      "target_slug": "cds-odata-exposure",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-odata-exposure",
+      "target_slug": "sap-gateway-registration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-odata-exposure",
+      "target_slug": "fiori-elements-paradigm",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ui-annotations-framework",
+      "target_slug": "ui-lineitem-annotations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ui-annotations-framework",
+      "target_slug": "ui-selectionfields-annotations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ui-lineitem-annotations",
+      "target_slug": "list-report-floorplan",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "ui-selectionfields-annotations",
+      "target_slug": "list-report-floorplan",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "list-report-floorplan",
+      "target_slug": "object-page-floorplan",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "object-page-floorplan",
+      "target_slug": "facet-navigation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "list-report-floorplan",
+      "target_slug": "overview-page-ovp",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "multidimensional-queries",
+      "target_slug": "analytical-cards-ovp",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "overview-page-ovp",
+      "target_slug": "analytical-cards-ovp",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "object-page-floorplan",
+      "target_slug": "fiori-ux-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "overview-page-ovp",
+      "target_slug": "fiori-ux-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fiori-elements-paradigm",
+      "target_slug": "key-user-extensibility",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "flp-spaces-and-pages",
+      "target_slug": "cbc-configuration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "business-catalogs-groups",
+      "target_slug": "cloud-governance-models",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "s4hana-cloud-editions",
+      "target_slug": "cloud-governance-models",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "s4hana-cloud-editions",
+      "target_slug": "clean-core-philosophy",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "clean-core-philosophy",
+      "target_slug": "upgrade-safety-principles",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "clean-core-philosophy",
+      "target_slug": "sap-activate-methodology",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-activate-methodology",
+      "target_slug": "activate-quality-gates",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-activate-methodology",
+      "target_slug": "fit-to-standard-approach",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fit-to-standard-approach",
+      "target_slug": "best-practices-scope-items",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "central-business-configuration",
+      "target_slug": "cbc-configuration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cbc-configuration",
+      "target_slug": "scoping-and-fine-tuning",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "clean-core-philosophy",
+      "target_slug": "key-user-extensibility",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "key-user-extensibility",
+      "target_slug": "custom-fields-and-logic",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "key-user-extensibility",
+      "target_slug": "restricted-abap-cloud",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "clean-core-philosophy",
+      "target_slug": "developer-extensibility-on-stack",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "developer-extensibility-on-stack",
+      "target_slug": "abap-cloud-language-version",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "developer-extensibility-on-stack",
+      "target_slug": "released-apis-c1",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "clean-core-philosophy",
+      "target_slug": "side-by-side-extensibility",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "side-by-side-extensibility",
+      "target_slug": "btp-extension-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "master-data-concept",
+      "target_slug": "data-migration-cockpit",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "data-migration-cockpit",
+      "target_slug": "migration-staging-tables",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "upgrade-safety-principles",
+      "target_slug": "cloud-test-automation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cloud-test-automation",
+      "target_slug": "upgrade-regression-testing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "activate-quality-gates",
+      "target_slug": "cutover-strategy",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cutover-strategy",
+      "target_slug": "hypercare-operations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "developer-extensibility-on-stack",
+      "target_slug": "clean-core-roadmap-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "side-by-side-extensibility",
+      "target_slug": "clean-core-roadmap-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "abap-cloud-language-version",
+      "target_slug": "abap-cloud-paradigm",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "abap-cloud-paradigm",
+      "target_slug": "forbidden-legacy-abap",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "developer-extensibility-on-stack",
+      "target_slug": "modern-abap-syntax",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-vdm-synthesis",
+      "target_slug": "rap-business-object-modeling",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "oop-fundamentals",
+      "target_slug": "modern-abap-syntax",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "modern-abap-syntax",
+      "target_slug": "abap-unit-testing",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "modern-abap-syntax",
+      "target_slug": "abap-cloud-paradigm",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "abap-cloud-paradigm",
+      "target_slug": "rap-architecture-overview",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-architecture-overview",
+      "target_slug": "bdef-and-behavior-implementation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-architecture-overview",
+      "target_slug": "rap-business-object-modeling",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-compositions",
+      "target_slug": "composition-hierarchies",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "composition-hierarchies",
+      "target_slug": "rap-business-object-modeling",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-business-object-modeling",
+      "target_slug": "bdef-syntax",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "managed-vs-unmanaged-rap",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "transactional-lifecycle",
+      "target_slug": "interaction-vs-save-phase",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "interaction-vs-save-phase",
+      "target_slug": "rap-save-sequence",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "managed-vs-unmanaged-rap",
+      "target_slug": "rap-save-sequence",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "rap-determinations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-determinations",
+      "target_slug": "determination-triggers",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "rap-validations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-validations",
+      "target_slug": "failed-reported-structures",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "rap-actions",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-actions",
+      "target_slug": "entity-manipulation-language-eml",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "rap-draft-handling",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-draft-handling",
+      "target_slug": "draft-activation-lifecycle",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "rap-concurrency-control",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-concurrency-control",
+      "target_slug": "optimistic-locking-etag",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-save-sequence",
+      "target_slug": "rap-numbering-strategies",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "dcl-access-control",
+      "target_slug": "rap-authorization-control",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "draft-activation-lifecycle",
+      "target_slug": "rap-full-stack-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "entity-manipulation-language-eml",
+      "target_slug": "rap-full-stack-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-architecture-overview",
+      "target_slug": "sync-vs-async-integration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "entity-manipulation-language-eml",
+      "target_slug": "s4hana-business-events",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "bdef-syntax",
+      "target_slug": "btp-destinations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "btp-positioning",
+      "target_slug": "btp-architecture-overview",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "btp-architecture-overview",
+      "target_slug": "cloud-foundry-vs-kyma",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "btp-architecture-overview",
+      "target_slug": "btp-destinations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cloud-connector",
+      "target_slug": "btp-destinations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sync-vs-async-integration",
+      "target_slug": "api-oauth2-fundamentals",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "api-oauth2-fundamentals",
+      "target_slug": "btp-destinations",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "btp-architecture-overview",
+      "target_slug": "sap-integration-suite",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-integration-suite",
+      "target_slug": "cloud-integration-cpi",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cloud-integration-cpi",
+      "target_slug": "iflow-design",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "iflow-design",
+      "target_slug": "iflow-groovy-scripting",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "iflow-design",
+      "target_slug": "content-enricher-pattern",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sync-vs-async-integration",
+      "target_slug": "event-driven-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "event-driven-architecture",
+      "target_slug": "message-queues-pubsub",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "message-queues-pubsub",
+      "target_slug": "sap-event-mesh",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cloudevents-standard",
+      "target_slug": "sap-event-mesh",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "s4hana-business-events",
+      "target_slug": "event-enablement-binding",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "sap-event-mesh",
+      "target_slug": "event-enablement-binding",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "content-enricher-pattern",
+      "target_slug": "enterprise-integration-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "event-enablement-binding",
+      "target_slug": "enterprise-integration-synthesis",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "e2e-process-integration-synthesis",
+      "target_slug": "capstone-process-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fit-to-standard-approach",
+      "target_slug": "capstone-process-architecture",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "cds-vdm-synthesis",
+      "target_slug": "capstone-data-semantics",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "rap-full-stack-synthesis",
+      "target_slug": "capstone-rap-implementation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "fiori-ux-synthesis",
+      "target_slug": "capstone-fiori-btp-integration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "enterprise-integration-synthesis",
+      "target_slug": "capstone-fiori-btp-integration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "capstone-process-architecture",
+      "target_slug": "capstone-data-semantics",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "capstone-data-semantics",
+      "target_slug": "capstone-rap-implementation",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "capstone-rap-implementation",
+      "target_slug": "capstone-fiori-btp-integration",
+      "relation_type": "REQUIRED"
+    },
+    {
+      "prerequisite_slug": "capstone-fiori-btp-integration",
+      "target_slug": "capstone-final-defense",
+      "relation_type": "REQUIRED"
+    }
+  ],
+  "remediation_capsules": [
+    {
+      "slug": "remediation-acdoca",
+      "target_concept_slug": "acdoca-table-architecture",
+      "title": "Remediation Capsule: ACDOCA & Universal Journal Foundations",
+      "deficiency_triggers": [
+        "Failed multi-ledger journal entry",
+        "Confusion between subledger reconciliation and ACDOCA line items",
+        "Missing debit/credit balance principle"
+      ],
+      "prerequisite_deficiencies": [
+        "double-entry-accounting",
+        "subledger-vs-gl",
+        "universal-journal-concept"
+      ],
+      "remediation_content_md": "# Remediation: Understanding ACDOCA\n\nIn S/4HANA, the Universal Journal (`ACDOCA`) combines General Ledger (`BKPF`/`BSEG`), Controlling (`COEP`), Asset Accounting (`ANEP`), and Material Ledger (`MLIT`) into a single table with 350+ dimensions.\n\n### Key Invariants:\n1. **Zero Reconciliation Needed**: FI and CO are posted simultaneously.\n2. **Multi-GAAP**: Leading ledger `0L` reflects group accounting, non-leading ledgers reflect local GAAP.\n3. **Real-Time Derivation**: Profit centers and segments are inherited automatically.",
+      "recovery_assessment_slug": "acdoca-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-matdoc",
+      "target_concept_slug": "matdoc-table-architecture",
+      "title": "Remediation Capsule: MATDOC & Simplified Inventory",
+      "deficiency_triggers": [
+        "Attempting to query legacy MKPF/MSEG aggregate tables",
+        "Confusion over stock locking during goods movement",
+        "Failure to understand valuation price variance"
+      ],
+      "prerequisite_deficiencies": [
+        "material-master-basics",
+        "simplified-inventory-valuation"
+      ],
+      "remediation_content_md": "# Remediation: Understanding MATDOC\n\nIn classical ERP, goods movements recorded headers in `MKPF` and line items in `MSEG`, with hybrid locking across material valuation tables.\n\nIn S/4HANA, `MATDOC` replaces this architecture with high-speed insert-only columnar records, eliminating lock contention.",
+      "recovery_assessment_slug": "matdoc-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-cds",
+      "target_concept_slug": "cds-associations-concept",
+      "title": "Remediation Capsule: CDS Associations & Path Expressions",
+      "deficiency_triggers": [
+        "Using eager SQL joins instead of on-demand associations",
+        "Incorrect cardinality definition causing duplicated aggregation",
+        "Syntax errors in path expression traversal"
+      ],
+      "prerequisite_deficiencies": [
+        "relational-modeling",
+        "cardinality-rules",
+        "sql-joins-foundations"
+      ],
+      "remediation_content_md": "# Remediation: CDS Associations vs Joins\n\nUnlike SQL `LEFT OUTER JOIN` which always evaluates eagerly, a CDS **association** is a lazy, on-demand relationship.\n\nOnly when an associated element is selected via a path expression (e.g. `_Customer.Country`) is the SQL join generated at runtime by the HANA database engine.",
+      "recovery_assessment_slug": "cds-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-rap",
+      "target_concept_slug": "rap-save-sequence",
+      "title": "Remediation Capsule: RAP Transactional Save Sequence",
+      "deficiency_triggers": [
+        "Executing direct database commits (COMMIT WORK) in RAP handlers",
+        "Performing side-effects during validations or determinations",
+        "Confusion between interaction phase and save sequence"
+      ],
+      "prerequisite_deficiencies": [
+        "oop-fundamentals",
+        "transactional-lifecycle",
+        "managed-vs-unmanaged-rap"
+      ],
+      "remediation_content_md": "# Remediation: The RAP Save Sequence\n\nIn RAP, the runtime is strictly split into two phases:\n\n1. **Interaction Phase**: Determinations and Validations run on modify. Changes live in the transactional buffer. NO direct DB writes allowed.\n2. **Save Sequence**: Controlled strictly by the RAP framework (`FINALIZE` -> `CHECK_BEFORE_SAVE` -> `ADJUST_NUMBERS` -> `SAVE` -> `CLEANUP`). Never issue a manual `COMMIT WORK`.",
+      "recovery_assessment_slug": "rap-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-btp",
+      "target_concept_slug": "sap-event-mesh",
+      "title": "Remediation Capsule: Event-Driven BTP Architecture",
+      "deficiency_triggers": [
+        "Using synchronous point-to-point HTTP calls for high-volume decoupled integrations",
+        "Missing dead-letter queue or retry handling",
+        "Confusion between queues and topic subscriptions"
+      ],
+      "prerequisite_deficiencies": [
+        "sync-vs-async-integration",
+        "api-oauth2-fundamentals",
+        "event-driven-architecture",
+        "message-queues-pubsub"
+      ],
+      "remediation_content_md": "# Remediation: SAP Event Mesh & Decoupled Integration\n\nSynchronous REST calls introduce tight coupling and cascading failure risk between ERP and external systems.\n\nWith **SAP Event Mesh**, S/4HANA emits a lightweight `CloudEvent` message to a Topic. BTP Queues subscribe to the Topic, guaranteeing at-least-once delivery with store-and-forward reliability.",
+      "recovery_assessment_slug": "btp-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-org-structure",
+      "target_concept_slug": "org-structure-company-code",
+      "title": "Remediation Capsule: Organizational Hierarchy & Company Codes",
+      "deficiency_triggers": [
+        "Assigning plants directly to Client instead of Company Code",
+        "Confusion between financial entities (Company Code) and logistical entities (Plants)",
+        "Misunderstanding centralized vs decentralized Purchasing Organizations"
+      ],
+      "prerequisite_deficiencies": [
+        "erp-evolution",
+        "org-structure-client"
+      ],
+      "remediation_content_md": "# Remediation: Organizational Structure Foundations\n\nIn SAP S/4HANA, the **Client** is the highest organizational unit (a self-contained legal/system environment).\n\n- **Company Code (e.g. NM01)**: The smallest organizational unit for which an independent, complete set of financial accounts (Balance Sheet, P&L) is produced.\n- **Plant (e.g. PL01, PL02)**: An operational location for manufacturing, storage, or distribution. Plants must ALWAYS belong to a Company Code.\n- **Purchasing Organization (e.g. PO01)**: Negotiates procurement terms. Can be assigned across multiple plants for centralized purchasing.",
+      "recovery_assessment_slug": "org-structure-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-master-data",
+      "target_concept_slug": "master-data-concept",
+      "title": "Remediation Capsule: Master Data vs Transactional Data",
+      "deficiency_triggers": [
+        "Classifying Purchase Orders or Sales Orders as master data",
+        "Modifying transactional records directly without document flow audit trail",
+        "Confusion over central Business Partner (BP) data sharing across roles"
+      ],
+      "prerequisite_deficiencies": [
+        "cross-functional-flows",
+        "erp-evolution"
+      ],
+      "remediation_content_md": "# Remediation: Master Data Architecture\n\n- **Master Data**: Static, long-lived records shared across all modules (Business Partners, Customers, Suppliers, Material Masters, Bills of Materials, General Ledger accounts).\n- **Transactional Data**: Ephemeral, event-driven records created during business transactions (Purchase Requisitions, Purchase Orders, Goods Receipts, Invoices, Sales Orders).\n\nMaster data ensures transactional consistency across the entire supply chain.",
+      "recovery_assessment_slug": "master-data-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-module-interconnectivity",
+      "target_concept_slug": "module-interconnectivity",
+      "title": "Remediation Capsule: Cross-Module Integration & Automatic Postings",
+      "deficiency_triggers": [
+        "Failure to recognize that Goods Movement (MIGO) in MM triggers synchronous FI accounting lines",
+        "Assuming SD billing requires manual journal entries into General Ledger",
+        "Confusion regarding the Goods Receipt / Invoice Receipt (GR/IR) clearing account"
+      ],
+      "prerequisite_deficiencies": [
+        "org-structure-company-code",
+        "org-structure-logistics",
+        "double-entry-accounting"
+      ],
+      "remediation_content_md": "# Remediation: Cross-Module Document Flow\n\nIn S/4HANA, ERP modules do not operate in silos:\n\n1. **Procurement (MM -> FI)**: When a Goods Receipt is recorded (MIGO), inventory is credited/debited and a GR/IR clearing line is posted synchronously to General Ledger.\n2. **Sales (SD -> FI)**: When outbound delivery goods issue is posted, inventory decreases and cost of goods sold (COGS) is posted. Billing (VF01) automatically creates accounts receivable in FI.\n\nAll integration points rely on **Automatic Account Determination**.",
+      "recovery_assessment_slug": "module-interconnect-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-three-tier",
+      "target_concept_slug": "three-tier-architecture",
+      "title": "Remediation Capsule: SAP Three-Tier Client-Server Architecture",
+      "deficiency_triggers": [
+        "Confusing UI presentation layer rendering with application server business logic",
+        "Assuming database server executes ABAP business programs directly",
+        "Misunderstanding the role of work processes (DIA, BGD, UPD, SPO)"
+      ],
+      "prerequisite_deficiencies": [
+        "erp-evolution"
+      ],
+      "remediation_content_md": "# Remediation: SAP Three-Tier Architecture\n\nSAP S/4HANA separates concerns into three distinct layers:\n\n1. **Presentation Layer**: SAP Fiori (browser/mobile) or SAP GUI (desktop). Handles user input, screen rendering, and presentation logic.\n2. **Application Layer**: AS ABAP (Application Server ABAP). Executes business rules, orchestrates work processes (Dialog, Background, Update, Spool), and manages transactional buffers.\n3. **Database Layer**: SAP HANA In-Memory Database. Stores columnar tables, executes code-pushdown algorithms (CDS views, SQLScript), and ensures ACID persistence.",
+      "recovery_assessment_slug": "three-tier-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-sap-portfolio",
+      "target_concept_slug": "sap-portfolio-overview",
+      "title": "Remediation Capsule: Modern SAP Product Portfolio",
+      "deficiency_triggers": [
+        "Confusing BTP with the core S/4HANA ERP engine",
+        "Not knowing when to use Signavio vs S/4HANA",
+        "Confusion between Public Cloud (SaaS) and Private Cloud (IaaS/customizable)"
+      ],
+      "prerequisite_deficiencies": [
+        "erp-evolution"
+      ],
+      "remediation_content_md": "# Remediation: Modern SAP Product Landscape\n\n- **SAP S/4HANA**: The digital core ERP system (Finance, Logistics, Manufacturing, Sales).\n- **SAP BTP (Business Technology Platform)**: The innovation and extensibility platform (side-by-side apps, integration suite, AI, analytics).\n- **SAP Signavio**: Business Process Intelligence (mining, modeling, journey mapping, process simulation).\n- **Public Cloud**: Turnkey SaaS with strict standard processes and automatic continuous upgrades.\n- **Private Cloud**: Dedicated cloud environment with greater customizing flexibility and legacy code migration paths.",
+      "recovery_assessment_slug": "sap-portfolio-recovery-diagnostic"
+    }
+  ]
+}
