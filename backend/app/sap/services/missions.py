@@ -29,6 +29,7 @@ from app.models.sap_models import (
 from app.sap.services.enterprise import SAPEnterpriseService
 from app.sap.services.mastery import SAPMasteryService
 from app.sap.services.phase2_missions import PHASE_2_SEED_MISSIONS
+from app.sap.services.phase3_missions import PHASE_3_SEED_MISSIONS
 
 
 # =============================================================================
@@ -593,8 +594,8 @@ SEED_MISSIONS: list[dict[str, Any]] = [
     },
 ]
 
-# Merge Phase 2 missions into SEED_MISSIONS (placing them before Day 23 mission)
-SEED_MISSIONS = SEED_MISSIONS[:5] + PHASE_2_SEED_MISSIONS + SEED_MISSIONS[5:]
+# Merge Phase 2 and Phase 3 missions into SEED_MISSIONS
+SEED_MISSIONS = SEED_MISSIONS[:5] + PHASE_2_SEED_MISSIONS + PHASE_3_SEED_MISSIONS
 
 
 class SAPMissionService:

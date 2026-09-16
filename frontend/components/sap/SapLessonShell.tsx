@@ -20,6 +20,15 @@ import { CDSConceptMapper } from "./CDSConceptMapper";
 import { LandscapeFlow } from "./LandscapeFlow";
 import { AccessRoleMapper } from "./AccessRoleMapper";
 import { DocumentFlowTracer } from "./DocumentFlowTracer";
+import { P2PFlow } from "./P2PFlow";
+import { InvoiceMatchVisualizer } from "./InvoiceMatchVisualizer";
+import { O2CFlow } from "./O2CFlow";
+import { ATPVisualizer } from "./ATPVisualizer";
+import { DeliveryPGITracer } from "./DeliveryPGITracer";
+import { BillingAccountingFlow } from "./BillingAccountingFlow";
+import { InventoryMovementMapper } from "./InventoryMovementMapper";
+import { ProductionOrderFlow } from "./ProductionOrderFlow";
+import { CostSettlementVisualizer } from "./CostSettlementVisualizer";
 
 interface SapLessonShellProps {
   lesson: SapLessonDetail;
@@ -97,7 +106,8 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
     const questions = currentStep.questions || [];
     const payloadAnswers: Record<string, string> = {};
     questions.forEach((q: any) => {
-      payloadAnswers[q.question_id] = assessmentAnswers[q.question_id] || "";
+      const qKey = q.question_id || q.id;
+      payloadAnswers[qKey] = assessmentAnswers[qKey] || "";
     });
 
     try {
@@ -179,6 +189,24 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
         return <AccessRoleMapper title={step.title || undefined} instruction={step.instruction || undefined} />;
       case "DocumentFlowTracer":
         return <DocumentFlowTracer flowNodes={step.flow_nodes || []} title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "P2PFlow":
+        return <P2PFlow title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "InvoiceMatchVisualizer":
+        return <InvoiceMatchVisualizer title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "O2CFlow":
+        return <O2CFlow title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "ATPVisualizer":
+        return <ATPVisualizer title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "DeliveryPGITracer":
+        return <DeliveryPGITracer title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "BillingAccountingFlow":
+        return <BillingAccountingFlow title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "InventoryMovementMapper":
+        return <InventoryMovementMapper title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "ProductionOrderFlow":
+        return <ProductionOrderFlow title={step.title || undefined} instruction={step.instruction || undefined} />;
+      case "CostSettlementVisualizer":
+        return <CostSettlementVisualizer title={step.title || undefined} instruction={step.instruction || undefined} />;
       default:
         return (
           <div className="border-2 border-ink bg-surface-raised p-4 text-xs font-mono">
@@ -407,10 +435,11 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
             {/* Questions List */}
             <div className="space-y-5">
               {(currentStep.questions || []).map((q: any, qIdx: number) => {
-                const selectedVal = assessmentAnswers[q.question_id];
+                const qKey = q.question_id || q.id;
+                const selectedVal = assessmentAnswers[qKey];
                 return (
                   <fieldset
-                    key={q.question_id}
+                    key={qKey}
                     className="border-2 border-ink bg-surface-raised p-4"
                   >
                     <legend className="sr-only">
@@ -443,13 +472,13 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
                           >
                             <input
                               type="radio"
-                              name={q.question_id}
+                              name={qKey}
                               value={opt.id}
                               checked={isChosen}
                               onChange={() =>
                                 setAssessmentAnswers((prev) => ({
                                   ...prev,
-                                  [q.question_id]: opt.id,
+                                  [qKey]: opt.id,
                                 }))
                               }
                               className="mt-0.5 accent-purple-600 focus:ring-0"

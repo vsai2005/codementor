@@ -763,13 +763,13 @@
     {
       "day_number": 23,
       "phase_number": 3,
-      "slug": "p2p-purchase-requisition",
-      "title": "Procure-to-Pay: Purchase Requisitions",
-      "description": "Demand capture, purchase requisition (PR) creation, account assignment, and approval workflows.",
+      "slug": "p2p-overview",
+      "title": "Procure-to-Pay: P2P Overview",
+      "description": "End-to-end procurement lifecycle from requisition to invoice clearing across MM, Inventory, and FI.",
       "objectives": [
-        "Create PR with Material/Account Assignment categories",
-        "Configure approval workflows",
-        "Understand commitment accounting"
+        "Understand the 6-stage P2P lifecycle",
+        "Map procurement organizational units (Client, CC, Plant, Purchasing Org)",
+        "Track document flow across EBAN, EKKO, MATDOC, RBKP, ACDOCA"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -793,13 +793,13 @@
     {
       "day_number": 24,
       "phase_number": 3,
-      "slug": "p2p-operational-sourcing",
-      "title": "Procure-to-Pay: Operational Sourcing & RFQ",
-      "description": "Source determination, Requests for Quotation (RFQ), supplier comparison, and contract scheduling.",
+      "slug": "p2p-requisition-sourcing",
+      "title": "Procure-to-Pay: Purchase Requisition & Sourcing",
+      "description": "Demand capture, account assignment categories, source determination, and RFQ quotation analysis.",
       "objectives": [
-        "Run automated source determination",
-        "Compare supplier price quotations",
-        "Generate outline agreements"
+        "Create PR with Material/Account Assignment categories",
+        "Execute operational sourcing and supplier RFQs",
+        "Analyze effective landed price factoring in Incoterms and discounts"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -823,11 +823,11 @@
     {
       "day_number": 25,
       "phase_number": 3,
-      "slug": "p2p-purchase-order",
-      "title": "Procure-to-Pay: Purchase Order Creation & Release",
-      "description": "PO generation, flexible workflow approval steps, item conditions, and purchase order tracking.",
+      "slug": "p2p-purchase-orders",
+      "title": "Procure-to-Pay: Purchase Orders",
+      "description": "Purchase order processing, item categories, pricing condition records, and Flexible Workflow approvals.",
       "objectives": [
-        "Generate Purchase Orders from approved PRs",
+        "Generate Purchase Orders from approved requisitions",
         "Configure multi-level flexible workflows",
         "Inspect pricing conditions and tax codes"
       ],
@@ -853,11 +853,11 @@
       "day_number": 26,
       "phase_number": 3,
       "slug": "p2p-goods-receipt",
-      "title": "Procure-to-Pay: Goods Receipt (MIGO)",
-      "description": "Goods receipt posting, inventory valuation impact, MATDOC generation, and GR/IR clearing account entry.",
+      "title": "Procure-to-Pay: Goods Receipt",
+      "description": "Goods receipt posting (MIGO / Mov 101), stock types, MATDOC updates, and GR/IR clearing entries.",
       "objectives": [
         "Execute MIGO goods receipt against PO",
-        "Inspect MATDOC stock updates",
+        "Inspect MATDOC stock updates across stock categories",
         "Verify GR/IR clearing balance in ACDOCA"
       ],
       "estimated_minutes": 75,
@@ -884,12 +884,12 @@
       "day_number": 27,
       "phase_number": 3,
       "slug": "p2p-invoice-verification",
-      "title": "Procure-to-Pay: Invoice Verification (MIRO)",
-      "description": "Logistics Invoice Verification (LIV), 3-way matching (PO, GR, Invoice), and tolerance limits.",
+      "title": "Procure-to-Pay: Invoice Verification / 3-Way Match",
+      "description": "Logistics Invoice Verification (MIRO), 3-way matching (PO, GR, Invoice), and tolerance limit checks.",
       "objectives": [
         "Perform 3-way match in MIRO",
-        "Process price/quantity variance tolerances",
-        "Clear GR/IR interim accounts into Accounts Payable"
+        "Process price/quantity variance tolerances (PP/DQ)",
+        "Investigate Payment Block R and release via MRBR"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -912,21 +912,21 @@
     {
       "day_number": 28,
       "phase_number": 3,
-      "slug": "p2p-payment-exceptions",
-      "title": "Procure-to-Pay: Payment Run & Exception Handling",
-      "description": "Automatic Payment Program (F110), blocked invoices, credit memos, and down payment processing.",
+      "slug": "p2p-exceptions-troubleshooting",
+      "title": "Procure-to-Pay: P2P Exceptions & Troubleshooting",
+      "description": "Resolving procurement discrepancies, blocked invoices, returns to vendor (Mov 122), and clearing accounts.",
       "objectives": [
-        "Execute F110 automated payment runs",
-        "Investigate price discrepancy blocks",
-        "Process vendor credit memos"
+        "Resolve invoice price/quantity discrepancy blocks",
+        "Process vendor return deliveries and credit memos",
+        "Execute GR/IR clearing account maintenance (MR11)"
       ],
       "estimated_minutes": 75,
       "tier": 2,
       "env_tier": "simulated_sap_gui_fiori",
       "env_prerequisites": {},
       "atomic_concepts": [
-        "p2p-f110-payment-run",
-        "payment-block-exceptions"
+        "payment-block-exceptions",
+        "p2p-f110-payment-run"
       ],
       "prerequisites": [
         "p2p-invoice-verification-miro"
@@ -941,13 +941,13 @@
     {
       "day_number": 29,
       "phase_number": 3,
-      "slug": "o2c-sales-inquiry-quotation",
-      "title": "Order-to-Cash: Inquiries, Quotes & Pricing",
-      "description": "Sales inquiry, quotation management, condition technique, and pricing procedures.",
+      "slug": "o2c-overview",
+      "title": "Order-to-Cash: O2C Overview",
+      "description": "End-to-end sales fulfillment lifecycle, inquiries, quotations, and condition technique pricing.",
       "objectives": [
-        "Configure condition technique (access sequences, condition types)",
-        "Generate valid customer quotations",
-        "Calculate discounts, freight, and taxes"
+        "Understand the 6-stage O2C lifecycle",
+        "Configure condition technique (access sequences, condition types, PR00)",
+        "Trace commercial demand to physical delivery"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -971,12 +971,12 @@
     {
       "day_number": 30,
       "phase_number": 3,
-      "slug": "o2c-sales-order-processing",
-      "title": "Order-to-Cash: Sales Order Creation",
-      "description": "Standard sales order creation (VA01), partner determination, credit limits, and incompletion logs.",
+      "slug": "o2c-sales-orders",
+      "title": "Order-to-Cash: Sales Orders",
+      "description": "Standard sales order creation (VA01), partner determination (SP/BP/PY/SH), and credit management checks.",
       "objectives": [
         "Create sales orders with line item schedules",
-        "Execute customer credit checks",
+        "Execute FSCM customer credit limit checks",
         "Resolve incompletion log flags"
       ],
       "estimated_minutes": 75,
@@ -1001,13 +1001,13 @@
     {
       "day_number": 31,
       "phase_number": 3,
-      "slug": "o2c-available-to-promise",
-      "title": "Order-to-Cash: Advanced ATP (aATP)",
-      "description": "Product allocation (PAL), Alternative-Based Confirmation (ABC), and backorder processing (BOP).",
+      "slug": "o2c-atp-check",
+      "title": "Order-to-Cash: ATP / aATP",
+      "description": "Available-to-Promise check, Product Allocation (PAL), Alternative-Based Confirmation (ABC), and backorder processing.",
       "objectives": [
         "Configure advanced ATP confirmation rules",
-        "Run backorder prioritization strategies",
-        "Resolve allocation conflicts"
+        "Run Alternative-Based Confirmation across multi-plant networks",
+        "Resolve backorder allocation conflicts"
       ],
       "estimated_minutes": 90,
       "tier": 3,
@@ -1031,13 +1031,13 @@
     {
       "day_number": 32,
       "phase_number": 3,
-      "slug": "o2c-outbound-delivery",
-      "title": "Order-to-Cash: Outbound Delivery & Picking",
-      "description": "Delivery document generation (VL01N), shipping points, warehouse picking, and packing.",
+      "slug": "o2c-delivery-picking-pgi",
+      "title": "Order-to-Cash: Delivery, Picking & PGI",
+      "description": "Outbound Delivery (VL01N), shipping point determination, warehouse picking (KOSTA), and Post Goods Issue (Mov 601 / COGS).",
       "objectives": [
-        "Create outbound delivery batches",
-        "Confirm picking and packing quantities",
-        "Verify handling units"
+        "Create outbound delivery with automated Shipping Point determination",
+        "Confirm warehouse picking and packing status",
+        "Post Goods Issue (Mov 601) and analyze COGS inventory reduction"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1045,10 +1045,13 @@
       "env_prerequisites": {},
       "atomic_concepts": [
         "o2c-outbound-delivery",
-        "shipping-point-determination"
+        "shipping-point-determination",
+        "o2c-post-goods-issue",
+        "cogs-accounting-split"
       ],
       "prerequisites": [
-        "o2c-sales-order-creation"
+        "o2c-sales-order-creation",
+        "matdoc-table-architecture"
       ],
       "practice_types": [
         "delivery_processing_sim"
@@ -1060,44 +1063,13 @@
     {
       "day_number": 33,
       "phase_number": 3,
-      "slug": "o2c-post-goods-issue",
-      "title": "Order-to-Cash: Post Goods Issue (PGI)",
-      "description": "PGI execution, inventory reduction in MATDOC, and COGS financial posting in ACDOCA.",
+      "slug": "o2c-billing-fi-integration",
+      "title": "Order-to-Cash: Billing + FI Integration",
+      "description": "Customer billing (VF01), VKOA revenue account determination, output taxes, and Accounts Receivable updates.",
       "objectives": [
-        "Post goods issue for delivery",
-        "Trace inventory decrease in MATDOC",
-        "Analyze Cost of Goods Sold (COGS) split in ACDOCA"
-      ],
-      "estimated_minutes": 75,
-      "tier": 2,
-      "env_tier": "simulated_sap_gui_fiori",
-      "env_prerequisites": {},
-      "atomic_concepts": [
-        "o2c-post-goods-issue",
-        "cogs-accounting-split"
-      ],
-      "prerequisites": [
-        "o2c-outbound-delivery",
-        "matdoc-table-architecture",
-        "acdoca-table-architecture"
-      ],
-      "practice_types": [
-        "pgi_posting_sim"
-      ],
-      "assessment_types": [
-        "simulation"
-      ]
-    },
-    {
-      "day_number": 34,
-      "phase_number": 3,
-      "slug": "o2c-billing-revenue-accounting",
-      "title": "Order-to-Cash: Billing Document & AR",
-      "description": "Billing creation (VF01), revenue recognition, account assignment, and Accounts Receivable updates.",
-      "objectives": [
-        "Generate customer billing documents",
-        "Trace revenue and sales tax account postings",
-        "Analyze open item customer receivables"
+        "Generate customer billing documents from deliveries",
+        "Configure VKOA account determination for Account Key ERL",
+        "Post revenue and sales tax journals to ACDOCA"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1118,44 +1090,15 @@
       ]
     },
     {
-      "day_number": 35,
+      "day_number": 34,
       "phase_number": 3,
-      "slug": "o2c-incoming-payment-dunning",
-      "title": "Order-to-Cash: Incoming Payments & Dunning",
-      "description": "Cash receipt clearing, bank reconciliation, dispute cases, and automated dunning runs.",
+      "slug": "o2c-exceptions-troubleshooting",
+      "title": "Order-to-Cash: O2C Exceptions & Troubleshooting",
+      "description": "Resolving sales fulfillment exceptions, customer returns (RE), credit memos (CR), and billing release blocks (VFX3).",
       "objectives": [
-        "Post incoming customer payments",
-        "Reconcile open AR items",
-        "Configure multi-level dunning notices"
-      ],
-      "estimated_minutes": 75,
-      "tier": 2,
-      "env_tier": "simulated_sap_gui_fiori",
-      "env_prerequisites": {},
-      "atomic_concepts": [
-        "o2c-customer-incoming-payment",
-        "dunning-procedures"
-      ],
-      "prerequisites": [
-        "o2c-billing-revenue-accounting"
-      ],
-      "practice_types": [
-        "payment_clearing_sim"
-      ],
-      "assessment_types": [
-        "troubleshooting"
-      ]
-    },
-    {
-      "day_number": 36,
-      "phase_number": 3,
-      "slug": "o2c-returns-credit-memo",
-      "title": "Order-to-Cash: Returns & Credit Memos",
-      "description": "Customer return order, return delivery, inspection stock, and credit memo processing.",
-      "objectives": [
-        "Process returns with inspection outcomes",
-        "Issue credit memos against billing documents",
-        "Verify reversal accounting entries"
+        "Diagnose VF051 billing accounting posting blocks in VFX3",
+        "Process customer returns and return deliveries (Mov 651/653)",
+        "Issue credit memos against billing documents"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1166,7 +1109,7 @@
         "credit-memo-requests"
       ],
       "prerequisites": [
-        "o2c-billing-revenue-accounting"
+        "o2c-billing-creation"
       ],
       "practice_types": [
         "returns_workflow_sim"
@@ -1176,15 +1119,15 @@
       ]
     },
     {
-      "day_number": 37,
+      "day_number": 35,
       "phase_number": 3,
-      "slug": "finance-general-ledger-journal",
-      "title": "Finance: General Ledger Journal Entry",
-      "description": "Manual and automated journal entries (FB50/F-02), document types, posting keys, and field status groups.",
+      "slug": "finance-general-ledger",
+      "title": "Finance: General Ledger",
+      "description": "S/4HANA Universal Journal (ACDOCA), journal entries (FB50), posting keys (40/50), and field status groups.",
       "objectives": [
         "Post multi-line general ledger journal vouchers",
-        "Control input field statuses via Field Status Groups",
-        "Verify balance sheet & P&L classification"
+        "Control line item field statuses via Field Status Groups",
+        "Verify balance sheet and P&L account classifications in ACDOCA"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1206,15 +1149,15 @@
       ]
     },
     {
-      "day_number": 38,
+      "day_number": 36,
       "phase_number": 3,
-      "slug": "finance-ap-ar-management",
-      "title": "Finance: AP & AR Subledger Operations",
-      "description": "Vendor & customer line item displays (FBL1N, FBL5N), open item clearing, and down payments.",
+      "slug": "finance-accounts-payable",
+      "title": "Finance: Accounts Payable",
+      "description": "Vendor subledger management, line item display (FBL1N), Special G/L indicators, and Automatic Payment Program (F110).",
       "objectives": [
-        "Manage vendor open invoices and payment proposals",
-        "Perform manual open-item clearing",
-        "Post special GL transactions (down payments)"
+        "Manage vendor subledger open items and reconciliation accounts",
+        "Post down payments using Special G/L Indicator A",
+        "Execute F110 automated payment runs and generate ISO 20022 XML files"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1225,7 +1168,7 @@
         "special-gl-indicators"
       ],
       "prerequisites": [
-        "finance-general-ledger-journal",
+        "gl-journal-entry",
         "business-partner-cvi"
       ],
       "practice_types": [
@@ -1236,15 +1179,45 @@
       ]
     },
     {
-      "day_number": 39,
+      "day_number": 37,
       "phase_number": 3,
-      "slug": "finance-period-end-closing",
-      "title": "Finance: Period End Closing & Reporting",
-      "description": "Foreign currency valuation, accruals/deferrals, depreciation runs (AFAB), and financial statements.",
+      "slug": "finance-accounts-receivable",
+      "title": "Finance: Accounts Receivable",
+      "description": "Customer subledger management, incoming payments (F-28), bank clearing, and automated dunning runs (F150).",
       "objectives": [
-        "Run automated foreign currency revaluations",
-        "Execute Asset Accounting depreciation runs",
-        "Generate Balance Sheet and P&L financial reports"
+        "Post incoming customer payments against open receivables",
+        "Clear open customer invoices in ACDOCA",
+        "Execute automated multi-level dunning runs in F150"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "o2c-customer-incoming-payment",
+        "dunning-procedures"
+      ],
+      "prerequisites": [
+        "gl-journal-entry",
+        "business-partner-cvi"
+      ],
+      "practice_types": [
+        "payment_clearing_sim"
+      ],
+      "assessment_types": [
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 38,
+      "phase_number": 3,
+      "slug": "finance-financial-close",
+      "title": "Finance: Financial Close",
+      "description": "Period-end financial close sequence: depreciation (AFAB), foreign currency valuation (FAGL_FCV), and period locks (OB52).",
+      "objectives": [
+        "Run automated asset depreciation posting runs (AFAB)",
+        "Execute foreign currency open-item revaluation (FAGL_FCV)",
+        "Lock closing periods and open future periods in OB52"
       ],
       "estimated_minutes": 90,
       "tier": 3,
@@ -1256,7 +1229,7 @@
         "asset-depreciation-afab"
       ],
       "prerequisites": [
-        "finance-general-ledger-journal"
+        "gl-journal-entry"
       ],
       "practice_types": [
         "closing_cockpit_sim"
@@ -1266,15 +1239,44 @@
       ]
     },
     {
+      "day_number": 39,
+      "phase_number": 3,
+      "slug": "inventory-management",
+      "title": "Inventory Management",
+      "description": "Warehouse movement types (101, 102, 122, 261, 311, 301, 551), single-table MATDOC architecture, and physical inventory.",
+      "objectives": [
+        "Execute SLoc-to-SLoc (311) and Plant-to-Plant (301) stock transfers",
+        "Process physical inventory counts, differences, and write-offs",
+        "Analyze stock valuation and movement history in MATDOC"
+      ],
+      "estimated_minutes": 75,
+      "tier": 2,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "p2p-goods-receipt-migo",
+        "gr-ir-clearing-account"
+      ],
+      "prerequisites": [
+        "matdoc-table-architecture"
+      ],
+      "practice_types": [
+        "stock_transfer_sim"
+      ],
+      "assessment_types": [
+        "simulation"
+      ]
+    },
+    {
       "day_number": 40,
       "phase_number": 3,
-      "slug": "mfg-bom-routing-work-centers",
-      "title": "Manufacturing: Master Data (BOM, Routing, Work Center)",
-      "description": "Production master data: Bills of Material, Work Centers, Routings, and Standard Costing.",
+      "slug": "manufacturing-fundamentals",
+      "title": "Manufacturing Fundamentals",
+      "description": "Production master data architecture: Bills of Material (CS01), Work Centers (CR01), Routings (CA01), and costing.",
       "objectives": [
-        "Construct multi-level production BOMs",
-        "Define Work Centers with capacity and cost centers",
-        "Establish Routings with standard activity times"
+        "Construct multi-level production BOMs for assemblies",
+        "Define Work Centers with capacity and cost center assignments",
+        "Establish Routings with standard labor and machine activity times"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1298,13 +1300,13 @@
     {
       "day_number": 41,
       "phase_number": 3,
-      "slug": "mfg-production-order-lifecycle",
-      "title": "Manufacturing: Production Order Execution",
-      "description": "Production order creation, capacity availability check, order release, and component staging.",
+      "slug": "manufacturing-production-execution",
+      "title": "Production Execution",
+      "description": "Production order lifecycle (CO01), release, component backflushing (Mov 261), confirmations (CO11N), and FG receipt (Mov 101).",
       "objectives": [
-        "Create production orders from planned orders",
-        "Perform capacity leveling across work centers",
-        "Release production orders and stage components"
+        "Create and release production orders from planned orders",
+        "Stage components and trigger consumption backflushing (Mov 261)",
+        "Confirm operational times (CO11N) and receive finished goods (Mov 101)"
       ],
       "estimated_minutes": 75,
       "tier": 2,
@@ -1312,10 +1314,12 @@
       "env_prerequisites": {},
       "atomic_concepts": [
         "production-order-lifecycle",
-        "capacity-requirements-planning"
+        "capacity-requirements-planning",
+        "production-order-confirmation",
+        "component-backflushing"
       ],
       "prerequisites": [
-        "mfg-bom-routing-work-centers"
+        "mfg-bom-master"
       ],
       "practice_types": [
         "prod_order_release_sim"
@@ -1327,43 +1331,13 @@
     {
       "day_number": 42,
       "phase_number": 3,
-      "slug": "mfg-execution-confirmation",
-      "title": "Manufacturing: Confirmation & Goods Receipt",
-      "description": "Time confirmation, scrap recording, backflushing goods issue, and finished goods receipt (MIGO).",
+      "slug": "manufacturing-cost-settlement",
+      "title": "WIP / Variance / Cost Settlement",
+      "description": "Period-end production cost accounting: Work-in-Process (WIP) calculation, variance analysis, and order settlement (KO88).",
       "objectives": [
-        "Enter operational labor/machine confirmations",
-        "Trigger backflushing component consumption",
-        "Receive finished goods into stock (101 movement)"
-      ],
-      "estimated_minutes": 75,
-      "tier": 2,
-      "env_tier": "simulated_sap_gui_fiori",
-      "env_prerequisites": {},
-      "atomic_concepts": [
-        "production-order-confirmation",
-        "component-backflushing"
-      ],
-      "prerequisites": [
-        "mfg-production-order-lifecycle",
-        "matdoc-table-architecture"
-      ],
-      "practice_types": [
-        "confirmation_run_sim"
-      ],
-      "assessment_types": [
-        "simulation"
-      ]
-    },
-    {
-      "day_number": 43,
-      "phase_number": 3,
-      "slug": "mfg-cost-settlement",
-      "title": "Manufacturing: WIP & Production Order Settlement",
-      "description": "Work-in-Process (WIP) calculation, variance calculation, and production order settlement to CO-PA.",
-      "objectives": [
-        "Calculate WIP for uncompleted production orders",
-        "Compute price and usage variances",
-        "Settle production variances to Cost Object Controlling"
+        "Calculate WIP for uncompleted production orders at period close",
+        "Compute input price, quantity, and resource usage variances",
+        "Execute order settlement (KO88) posting price differences to ACDOCA"
       ],
       "estimated_minutes": 90,
       "tier": 3,
@@ -1374,7 +1348,7 @@
         "wip-variance-calculation"
       ],
       "prerequisites": [
-        "mfg-execution-confirmation",
+        "production-order-lifecycle",
         "acdoca-table-architecture"
       ],
       "practice_types": [
@@ -1385,15 +1359,15 @@
       ]
     },
     {
-      "day_number": 44,
+      "day_number": 43,
       "phase_number": 3,
-      "slug": "e2e-processes-capstone-assessment",
-      "title": "Core Business Processes Capstone & Assessment",
-      "description": "End-to-end integration: executing an integrated customer order triggering production, procurement, and settlement.",
+      "slug": "cross-module-enterprise-case",
+      "title": "Integrated Cross-Module Enterprise Case",
+      "description": "End-to-end continuous business case: Procurement -> Inventory -> Manufacturing -> Sales -> Finance for Nova Manufacturing.",
       "objectives": [
-        "Run cross-module business simulation from Quote to Cash and Procurement",
-        "Resolve integration posting errors across P2P, O2C, and Manufacturing",
-        "Pass Phase 3 benchmark evaluation"
+        "Trace complete enterprise chain from PR/PO to finished production and customer billing",
+        "Audit financial postings across GR/IR, inventory, COGS, revenue, and settlement",
+        "Resolve cross-functional handoff discrepancies across MM, PP, SD, and FI"
       ],
       "estimated_minutes": 90,
       "tier": 3,
@@ -1403,12 +1377,43 @@
         "e2e-process-integration-synthesis"
       ],
       "prerequisites": [
-        "p2p-payment-exceptions",
-        "o2c-billing-revenue-accounting",
-        "mfg-cost-settlement"
+        "p2p-po-processing",
+        "o2c-sales-order-creation",
+        "production-order-settlement"
       ],
       "practice_types": [
-        "e2e_business_case"
+        "e2e_enterprise_case"
+      ],
+      "assessment_types": [
+        "simulation",
+        "troubleshooting"
+      ]
+    },
+    {
+      "day_number": 44,
+      "phase_number": 3,
+      "slug": "practical-multi-concept-capstone",
+      "title": "Practical Multi-Concept Capstone",
+      "description": "Multi-dimensional benchmark evaluation rigorously testing 18-20 distinct core business process concepts.",
+      "objectives": [
+        "Demonstrate end-to-end cross-module mastery across P2P, O2C, FI, and Manufacturing",
+        "Diagnose enterprise process, posting, and configuration exceptions independently",
+        "Pass Phase 3 comprehensive capstone evaluation"
+      ],
+      "estimated_minutes": 90,
+      "tier": 3,
+      "env_tier": "simulated_sap_gui_fiori",
+      "env_prerequisites": {},
+      "atomic_concepts": [
+        "e2e-process-integration-synthesis"
+      ],
+      "prerequisites": [
+        "p2p-exceptions-troubleshooting",
+        "o2c-exceptions-troubleshooting",
+        "cross-module-enterprise-case"
+      ],
+      "practice_types": [
+        "capstone_defense"
       ],
       "assessment_types": [
         "capstone_quiz",
