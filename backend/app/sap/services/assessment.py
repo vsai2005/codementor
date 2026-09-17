@@ -13,7 +13,9 @@ from app.models.sap_models import (
     SAPAssessment,
     SAPAssessmentAttempt,
     SAPAssessmentAttemptType,
+    SAPDayStatus,
     SAPUserDayState,
+    SAPUserState,
 )
 from app.sap.services.mastery import SAPMasteryService
 
@@ -49,8 +51,10 @@ class SAPAssessmentService:
 
         concept_results: dict[str, float] = {}
 
-        if questions and "answers" in submission_payload:
-            answers = submission_payload.get("answers", {})  # {q_id: selected_id}
+        if questions and ("answers" in submission_payload or any(isinstance(v, (str, int)) for v in submission_payload.values())):
+            answers = submission_payload.get("answers")
+            if not isinstance(answers, dict):
+                answers = submission_payload
             correct_count = 0
             concept_totals: dict[str, dict[str, int]] = {}
 
@@ -191,7 +195,12 @@ class SAPAssessmentService:
         remediation_required = len(remediation_capsules_triggered) > 0
         primary_remediation = remediation_capsules_triggered[0] if remediation_capsules_triggered else None
 
-        # 5. If passed, update day state
+        day_completed = False
+        unlocked_next_day = False
+        current_day = day_number
+        next_day_number = min(100, day_number + 1) if day_number < 100 else None
+
+        # 5. If passed, update day state & macro user state
         if passed:
             day_state = db.execute(
                 select(SAPUserDayState).where(
@@ -204,6 +213,7 @@ class SAPAssessmentService:
                 day_state = SAPUserDayState(
                     user_id=user_id,
                     day_number=day_number,
+                    status=SAPDayStatus.IN_PROGRESS.value,
                     assessment_passed=True,
                     assessment_passed_at=now,
                 )
@@ -211,9 +221,36 @@ class SAPAssessmentService:
             else:
                 day_state.assessment_passed = True
                 day_state.assessment_passed_at = now
-                if day_state.lesson_completed:
+                if day_state.lesson_completed and not day_state.completed and day_state.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
                     day_state.completed = True
                     day_state.completed_at = now
+                    day_state.status = SAPDayStatus.COMPLETED.value
+                    day_completed = True
+                elif not day_state.completed and day_state.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
+                    day_state.status = SAPDayStatus.IN_PROGRESS.value
+
+            if day_state.completed:
+                day_completed = True
+                user_state = db.execute(
+                    select(SAPUserState).where(SAPUserState.user_id == user_id)
+                ).scalar_one_or_none()
+                if user_state is None:
+                    user_state = SAPUserState(
+                        user_id=user_id,
+                        current_recommended_day=min(100, day_number + 1),
+                        completed_days_count=1,
+                        last_active_at=now,
+                    )
+                    db.add(user_state)
+                    unlocked_next_day = day_number < 100
+                    current_day = min(100, day_number + 1)
+                else:
+                    user_state.last_active_at = now
+                    if day_number == user_state.current_recommended_day:
+                        user_state.current_recommended_day = min(100, day_number + 1)
+                        user_state.completed_days_count += 1
+                        unlocked_next_day = day_number < 100
+                    current_day = user_state.current_recommended_day
 
         db.commit()
 
@@ -228,6 +265,10 @@ class SAPAssessmentService:
             "remediation_required": remediation_required,
             "remediation_capsule": primary_remediation,
             "all_remediations": remediation_capsules_triggered,
+            "day_completed": day_completed,
+            "unlocked_next_day": unlocked_next_day,
+            "current_day": current_day,
+            "next_day_number": next_day_number,
         }
 
     @staticmethod

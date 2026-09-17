@@ -1,29 +1,17 @@
-# Render blueprint for dev_backend/server.py — the actual app being shipped
-# (adaptive difficulty, spaced repetition, AI-generated problems, momentum/XP,
-# misconceptions, username/password auth). Zero Python deps (stdlib only), so
-# no Docker/requirements.txt needed — Render's native Python runtime runs it
-# directly. Data lives in Upstash (not on Render's disk), so the free plan's
-# ephemeral filesystem is fine — nothing durable is stored on the container.
-#
-# Before deploying, set these in the Render dashboard (Environment tab):
-#   AUTH_SECRET               -> `python -c "import secrets; print(secrets.token_hex(32))"`
-#   ALLOWED_ORIGINS            -> your Vercel URL, e.g. https://your-app.vercel.app
-#   UPSTASH_REDIS_REST_URL     -> from your Upstash database's REST API section
-#   UPSTASH_REDIS_REST_TOKEN   -> from the same section
-#   NVIDIA_API_KEY / NVIDIA_MODEL           -> primary LLM provider
-#   GEMINI_API_KEY / GEMINI_API_KEYS / GEMINI_MODEL -> backup LLM provider
-#   XAI_API_KEY / XAI_MODEL                 -> optional extra fallback
+# Render blueprint for CodeMentor production backend (FastAPI + SQLAlchemy + SAP Learning Engine)
+# Serves /health, /api/sap/*, /api/problems/*, /api/learning/*, /api/submissions/*, /api/progress/*
+
 services:
   - type: web
-    name: codementor-dev-backend
+    name: codementor-backend
     runtime: python
     plan: free
-    buildCommand: "echo 'no dependencies to install — stdlib only'"
-    startCommand: "python dev_backend/server.py"
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT"
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.12"
       - key: ENVIRONMENT
         value: production
       - key: AUTH_SECRET

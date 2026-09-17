@@ -1591,5 +1591,37 @@ try:
 except ImportError:
     pass
 
+# Merge Phase 5 (Days 55–64)
+try:
+    from app.data.sap_lessons_phase5 import PHASE_5_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_5_DAYS_CONTENT)
+except ImportError:
+    pass
 
+# Merge Phase 6 (Days 65–76)
+try:
+    from app.data.sap_lessons_phase6 import PHASE_6_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_6_DAYS_CONTENT)
+except ImportError:
+    pass
 
+# Merge Phase 7 (Days 77–89)
+try:
+    from app.data.sap_lessons_phase7 import PHASE_7_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_7_DAYS_CONTENT)
+except ImportError:
+    pass
+
+# Merge Phase 8 (Days 90–95)
+try:
+    from app.data.sap_lessons_phase8 import PHASE_8_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_8_DAYS_CONTENT)
+except ImportError:
+    pass
+
+# Merge Phase 9 (Days 96–100)
+try:
+    from app.data.sap_lessons_phase9 import PHASE_9_DAYS_CONTENT
+    SAP_DAYS_CONTENT.update(PHASE_9_DAYS_CONTENT)
+except ImportError:
+    pass

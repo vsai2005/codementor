@@ -11,24 +11,42 @@ export default function SapLearningPage() {
   const [progress, setProgress] = useState<SapProgressResponse | null>(null);
   const [activePhase, setActivePhase] = useState<number>(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      sapApi.getCurriculum().catch(() => null),
-      sapApi.getProgress().catch(() => null),
-    ]).then(([curData, progData]) => {
-      if (curData) setCurriculum(curData);
-      if (progData) {
-        setProgress(progData);
-        // Find active phase from current day
-        const curDay = progData.current_day;
-        const matchingPhase = curData?.phases.find(
-          (p) => curDay >= p.day_start && curDay <= p.day_end
-        );
-        if (matchingPhase) setActivePhase(matchingPhase.phase_number);
+  const loadData = () => {
+    setLoading(true);
+    setError(null);
+
+    Promise.allSettled([
+      sapApi.getCurriculum(),
+      sapApi.getProgress(),
+    ]).then(([curResult, progResult]) => {
+      if (curResult.status === "fulfilled") {
+        const curData = curResult.value;
+        setCurriculum(curData);
+        if (progResult.status === "fulfilled") {
+          const progData = progResult.value;
+          setProgress(progData);
+          const curDay = progData.current_day;
+          const matchingPhase = curData?.phases.find(
+            (p) => curDay >= p.day_start && curDay <= p.day_end
+          );
+          if (matchingPhase) setActivePhase(matchingPhase.phase_number);
+        }
+      } else {
+        const reason = curResult.reason;
+        const msg =
+          reason instanceof Error
+            ? reason.message
+            : "Could not retrieve the SAP curriculum. Verify that backend is running.";
+        setError(msg);
       }
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const getDayStatusBadge = (dayNumber: number) => {
@@ -109,6 +127,23 @@ export default function SapLearningPage() {
             </Link>
           </div>
         </div>
+
+        {/* Error State Banner */}
+        {error && (
+          <div className="border-3 border-ink bg-red-50 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">⚠️</span>
+              <h3 className="text-base font-black text-red-900 uppercase">Unable to Load SAP Learning Journey</h3>
+            </div>
+            <p className="text-sm text-red-800 mb-4 font-mono">{error}</p>
+            <button
+              onClick={() => loadData()}
+              className="border-2 border-ink bg-emerald-400 px-4 py-2 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 transition-all"
+            >
+              Retry Loading
+            </button>
+          </div>
+        )}
 
         {/* Phase Navigator Tabs */}
         <div className="mb-8 flex gap-2 overflow-x-auto border-b-2 border-ink pb-3 scrollbar-thin">

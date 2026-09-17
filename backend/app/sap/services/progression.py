@@ -185,3 +185,44 @@ class SAPProgressionService:
             "current_day": updated["current_day"],
             "day_state": updated["day_states"][str(day_number)],
         }
+
+    @classmethod
+    def record_practice_completed(cls, db: Session, user_id: uuid.UUID, day_number: int) -> dict:
+        """Records interactive practice completion for an unlocked day."""
+        progress = cls.compute_user_progress(db, user_id)
+        day_info = progress["day_states"].get(str(day_number))
+
+        if not day_info or not day_info["unlocked"]:
+            raise ValueError(f"SAP Day {day_number} is locked. Complete Day {day_number - 1} or diagnostic placement first.")
+
+        r = db.execute(
+            select(SAPUserDayState).where(
+                SAPUserDayState.user_id == user_id,
+                SAPUserDayState.day_number == day_number,
+            )
+        ).scalar_one_or_none()
+
+        now = datetime.now(timezone.utc)
+        if r is None:
+            r = SAPUserDayState(
+                user_id=user_id,
+                day_number=day_number,
+                status=SAPDayStatus.IN_PROGRESS.value,
+                lesson_started=True,
+                lesson_started_at=now,
+                practice_completed=True,
+                practice_completed_at=now,
+            )
+            db.add(r)
+        else:
+            r.practice_completed = True
+            r.practice_completed_at = now
+            if not r.completed and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
+                r.status = SAPDayStatus.IN_PROGRESS.value
+
+        db.commit()
+        db.refresh(r)
+        return {
+            "day_number": day_number,
+            "practice_completed": True,
+        }

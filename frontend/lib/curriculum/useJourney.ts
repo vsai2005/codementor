@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { CURRICULUM_SECTIONS, TOTAL_CURRICULUM_DAYS } from "./curriculumData";
 import { DayStatus, LearningJourneyProgress, DayProgressRecord, CurriculumDay, CurriculumSection } from "./types";
-import { api, getToken } from "@/lib/api";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 const STORAGE_KEY = "codementor.learning.progress";
 
@@ -17,7 +18,42 @@ const DEFAULT_PROGRESS: LearningJourneyProgress = {
   last_activity_timestamp: Date.now(),
 };
 
+/**
+ * Validates and sanitizes cached local progress.
+ * For a day to be considered completed in guest/offline mode:
+ * BOTH lesson_completed and practice_passed must be strictly true.
+ * Days unlock strictly in sequential order (Day 1 -> Day 2 -> ...).
+ */
+function sanitizeLocalProgress(parsed: Partial<LearningJourneyProgress>): LearningJourneyProgress {
+  const day_records: Record<number, DayProgressRecord> = parsed.day_records || {};
+
+  // Find consecutive completed days starting from Day 1
+  const validCompleted: number[] = [];
+  for (let d = 1; d <= TOTAL_CURRICULUM_DAYS; d++) {
+    const rec = day_records[d];
+    if (rec && rec.lesson_completed && rec.practice_passed) {
+      validCompleted.push(d);
+    } else {
+      // Progression chain breaks at the first incomplete day
+      break;
+    }
+  }
+
+  const current_day = Math.min(
+    STAGE_MAX_ACCESSIBLE_DAY,
+    validCompleted.length + 1
+  );
+
+  return {
+    current_day,
+    completed_days: validCompleted,
+    day_records,
+    last_activity_timestamp: Number(parsed.last_activity_timestamp) || Date.now(),
+  };
+}
+
 export function useJourney() {
+  const { user } = useAuth();
   const [progress, setProgress] = useState<LearningJourneyProgress>(DEFAULT_PROGRESS);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -33,36 +69,54 @@ export function useJourney() {
     });
   }, []);
 
-  // Initialize and sanitize from localStorage after client hydration, then sync with server
+  // Server synchronization: authoritative server state REPLACES local state (no union, no Math.max)
+  const syncWithServer = useCallback(async () => {
+    try {
+      const res = await api.learningProgress();
+      if (res && Array.isArray(res.completed_days)) {
+        saveProgress(() => {
+          const serverCompleted = [...res.completed_days].sort((a: number, b: number) => a - b);
+          const serverCurrent = res.current_day || 1;
+          const dayRecords: Record<number, DayProgressRecord> = {};
+          if (res.day_states) {
+            for (const [dStr, st] of Object.entries(res.day_states)) {
+              const d = Number(dStr);
+              dayRecords[d] = {
+                day_number: st.day_number,
+                lesson_completed: st.lesson_completed,
+                lesson_completed_at: st.lesson_completed_at,
+                practice_passed: st.practice_passed,
+                practice_passed_at: st.practice_passed_at,
+                completed: st.completed,
+                completed_at: st.completed_at,
+                unlocked: st.unlocked,
+                status: st.status as DayStatus,
+                practice_problem_slug: st.practice_problem_slug,
+              };
+            }
+          }
+          return {
+            current_day: serverCurrent,
+            completed_days: serverCompleted,
+            day_records: dayRecords,
+            last_activity_timestamp: Date.now(),
+          };
+        });
+      }
+    } catch {
+      // Unauthenticated or offline: preserve sanitized local state
+    }
+  }, [saveProgress]);
+
+  // Initialize and sanitize from localStorage on mount, then sync with server
   useEffect(() => {
-    let currentLocal = DEFAULT_PROGRESS;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as Partial<LearningJourneyProgress>;
         if (parsed && typeof parsed === "object") {
-          const rawDay = Number(parsed.current_day);
-          const current_day = Number.isInteger(rawDay)
-            ? Math.max(1, Math.min(STAGE_MAX_ACCESSIBLE_DAY, rawDay))
-            : 1;
-
-          const completed_days = Array.isArray(parsed.completed_days)
-            ? Array.from(
-                new Set(
-                  parsed.completed_days
-                    .map(Number)
-                    .filter((n) => Number.isInteger(n) && n >= 1 && n <= TOTAL_CURRICULUM_DAYS)
-                )
-              ).sort((a, b) => a - b)
-            : [];
-
-          currentLocal = {
-            current_day,
-            completed_days,
-            day_records: parsed.day_records || {},
-            last_activity_timestamp: Number(parsed.last_activity_timestamp) || Date.now(),
-          };
-          setProgress(currentLocal);
+          const sanitized = sanitizeLocalProgress(parsed);
+          setProgress(sanitized);
         }
       }
     } catch {
@@ -71,50 +125,15 @@ export function useJourney() {
       setIsLoaded(true);
     }
 
-    // Authoritative server synchronization when authenticated
-    const token = getToken();
-    if (token) {
-      api.learningProgress()
-        .then((res) => {
-          if (res && Array.isArray(res.completed_days)) {
-            saveProgress((prev) => {
-              const mergedCompleted = Array.from(
-                new Set([...prev.completed_days, ...res.completed_days])
-              ).sort((a, b) => a - b);
-              const serverCurrent = res.current_day || 1;
-              const nextCurrent = Math.max(prev.current_day, serverCurrent);
-              const dayRecords: Record<number, DayProgressRecord> = { ...(prev.day_records || {}) };
-              if (res.day_states) {
-                for (const [dStr, st] of Object.entries(res.day_states)) {
-                  const d = Number(dStr);
-                  dayRecords[d] = {
-                    day_number: st.day_number,
-                    lesson_completed: st.lesson_completed,
-                    lesson_completed_at: st.lesson_completed_at,
-                    practice_passed: st.practice_passed,
-                    practice_passed_at: st.practice_passed_at,
-                    completed: st.completed,
-                    completed_at: st.completed_at,
-                    unlocked: st.unlocked,
-                    status: st.status as DayStatus,
-                    practice_problem_slug: st.practice_problem_slug,
-                  };
-                }
-              }
-              return {
-                current_day: nextCurrent,
-                completed_days: mergedCompleted,
-                day_records: dayRecords,
-                last_activity_timestamp: Date.now(),
-              };
-            });
-          }
-        })
-        .catch(() => {
-          // If offline or network issue, rely gracefully on localStorage cache
-        });
+    syncWithServer();
+  }, [syncWithServer]);
+
+  // Re-sync authoritative server state whenever user login changes
+  useEffect(() => {
+    if (user) {
+      syncWithServer();
     }
-  }, [saveProgress]);
+  }, [user, syncWithServer]);
 
   const completedSet = useMemo(() => new Set(progress.completed_days), [progress.completed_days]);
 
@@ -142,6 +161,12 @@ export function useJourney() {
     [completedSet, progress.current_day, progress.day_records]
   );
 
+  /**
+   * Marks a lesson complete.
+   * Completing a lesson strictly sets lesson_completed = true.
+   * It NEVER sets practice_passed = true or completed = true on its own.
+   * The day only becomes completed if practice_passed is already true.
+   */
   const markLessonComplete = useCallback(
     async (dayNumber: number) => {
       saveProgress((prev) => {
@@ -152,111 +177,124 @@ export function useJourney() {
           practice_passed: false,
           completed: false,
         };
+        const lesson_completed = true;
+        const practice_passed = Boolean(existing.practice_passed);
+        const completed = lesson_completed && practice_passed;
+
         records[dayNumber] = {
           ...existing,
           lesson_completed: true,
           lesson_completed_at: existing.lesson_completed_at || new Date().toISOString(),
+          practice_passed,
+          completed,
+          completed_at: completed ? (existing.completed_at || new Date().toISOString()) : null,
         };
+
+        const nextCompletedSet = new Set(prev.completed_days);
+        if (completed) {
+          nextCompletedSet.add(dayNumber);
+        } else {
+          nextCompletedSet.delete(dayNumber);
+        }
+
+        // Recalculate current day sequentially
+        let nextCurrent = 1;
+        while (nextCompletedSet.has(nextCurrent) && nextCurrent < TOTAL_CURRICULUM_DAYS) {
+          nextCurrent++;
+        }
+
         return {
           ...prev,
+          current_day: nextCurrent,
+          completed_days: Array.from(nextCompletedSet).sort((a, b) => a - b),
           day_records: records,
           last_activity_timestamp: Date.now(),
         };
       });
 
       try {
-        const token = getToken();
-        if (token) {
-          await api.completeLesson(dayNumber);
-        }
+        await api.completeLesson(dayNumber);
+        await syncWithServer();
       } catch {
-        // Continue gracefully
+        // Offline or unauthenticated guest fallback
       }
     },
-    [saveProgress]
+    [saveProgress, syncWithServer]
   );
 
-  const markDayComplete = useCallback(
-    (dayNumber: number) => {
+  /**
+   * Records that practice was passed.
+   * Practice submission is the single canonical pathway that sets practice_passed = true.
+   * The day only becomes completed if lesson_completed is already true.
+   */
+  const recordPracticePassed = useCallback(
+    async (dayNumber: number) => {
       saveProgress((prev) => {
-        const nextSet = new Set(prev.completed_days);
-        nextSet.add(dayNumber);
-        const candidateNext = Math.max(prev.current_day, dayNumber + 1);
-        const nextDay = Math.min(STAGE_MAX_ACCESSIBLE_DAY, candidateNext);
         const records = { ...(prev.day_records || {}) };
         const existing = records[dayNumber] || {
           day_number: dayNumber,
-          lesson_completed: true,
+          lesson_completed: false,
           practice_passed: false,
           completed: false,
         };
+        const lesson_completed = Boolean(existing.lesson_completed);
+        const practice_passed = true;
+        const completed = lesson_completed && practice_passed;
+
         records[dayNumber] = {
           ...existing,
-          lesson_completed: true,
+          lesson_completed,
           practice_passed: true,
-          completed: true,
-          completed_at: existing.completed_at || new Date().toISOString(),
+          practice_passed_at: existing.practice_passed_at || new Date().toISOString(),
+          completed,
+          completed_at: completed ? (existing.completed_at || new Date().toISOString()) : null,
         };
+
+        const nextCompletedSet = new Set(prev.completed_days);
+        if (completed) {
+          nextCompletedSet.add(dayNumber);
+        } else {
+          nextCompletedSet.delete(dayNumber);
+        }
+
+        let nextCurrent = 1;
+        while (nextCompletedSet.has(nextCurrent) && nextCurrent < TOTAL_CURRICULUM_DAYS) {
+          nextCurrent++;
+        }
+
         return {
-          current_day: nextDay,
-          completed_days: Array.from(nextSet).sort((a, b) => a - b),
+          ...prev,
+          current_day: nextCurrent,
+          completed_days: Array.from(nextCompletedSet).sort((a, b) => a - b),
           day_records: records,
           last_activity_timestamp: Date.now(),
         };
       });
+
+      try {
+        await syncWithServer();
+      } catch {
+        // Offline or unauthenticated guest fallback
+      }
     },
-    [saveProgress]
+    [saveProgress, syncWithServer]
   );
 
   // Cross-component and cross-tab listener for practice submission pass events
   useEffect(() => {
-    const handleDayEvent = (e: Event) => {
+    const handlePracticeEvent = (e: Event) => {
       const customEvent = e as CustomEvent<{ day_number: number }>;
       if (customEvent.detail?.day_number) {
-        markDayComplete(customEvent.detail.day_number);
+        recordPracticePassed(customEvent.detail.day_number);
       }
     };
-    window.addEventListener("codementor:day-completed", handleDayEvent);
+    window.addEventListener("codementor:practice-passed", handlePracticeEvent);
+    window.addEventListener("codementor:day-completed", handlePracticeEvent);
     return () => {
-      window.removeEventListener("codementor:day-completed", handleDayEvent);
+      window.removeEventListener("codementor:practice-passed", handlePracticeEvent);
+      window.removeEventListener("codementor:day-completed", handlePracticeEvent);
     };
-  }, [markDayComplete]);
-
-  const unmarkDayComplete = useCallback(
-    (dayNumber: number) => {
-      saveProgress((prev) => {
-        const nextCompleted = prev.completed_days.filter((d) => d !== dayNumber);
-        const nextDay = Math.min(prev.current_day, dayNumber);
-        const records = { ...(prev.day_records || {}) };
-        if (records[dayNumber]) {
-          records[dayNumber] = {
-            ...records[dayNumber],
-            practice_passed: false,
-            completed: false,
-            completed_at: null,
-          };
-        }
-        return {
-          current_day: nextDay,
-          completed_days: nextCompleted,
-          day_records: records,
-          last_activity_timestamp: Date.now(),
-        };
-      });
-    },
-    [saveProgress]
-  );
-
-  const toggleDayComplete = useCallback(
-    (dayNumber: number) => {
-      if (completedSet.has(dayNumber)) {
-        unmarkDayComplete(dayNumber);
-      } else {
-        markDayComplete(dayNumber);
-      }
-    },
-    [completedSet, markDayComplete, unmarkDayComplete]
-  );
+  }, [recordPracticePassed]);
 
   const setCurrentDay = useCallback(
     (dayNumber: number) => {
@@ -314,9 +352,7 @@ export function useJourney() {
     isLoaded,
     getDayStatus,
     markLessonComplete,
-    markDayComplete,
-    unmarkDayComplete,
-    toggleDayComplete,
+    recordPracticePassed,
     setCurrentDay,
     resetProgress,
     currentDayData,

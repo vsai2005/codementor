@@ -57,8 +57,9 @@ export function PracticeScreen({
   const effectiveDay =
     propDayNumber ?? (parsedQueryDay && !isNaN(parsedQueryDay) ? parsedQueryDay : undefined);
 
-  const { markDayComplete } = useJourney();
-  const [showDayCompleteModal, setShowDayCompleteModal] = useState(false);
+  const { recordPracticePassed, progress } = useJourney();
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [isFullyComplete, setIsFullyComplete] = useState(false);
 
   const starter = problem.starter_code["python"] ?? "";
   const [code, setCode] = useState(starter);
@@ -147,14 +148,23 @@ export function PracticeScreen({
       if (result.tests.all_passed) {
         setSolved(true);
         if (effectiveDay) {
-          markDayComplete(effectiveDay);
-          setShowDayCompleteModal(true);
+          recordPracticePassed(effectiveDay);
+          const wasLessonDone = Boolean(progress.day_records?.[effectiveDay]?.lesson_completed);
+          setIsFullyComplete(wasLessonDone);
+          setShowCompletionModal(true);
           if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent("codementor:day-completed", {
+              new CustomEvent("codementor:practice-passed", {
                 detail: { day_number: effectiveDay },
               })
             );
+            if (wasLessonDone) {
+              window.dispatchEvent(
+                new CustomEvent("codementor:day-completed", {
+                  detail: { day_number: effectiveDay },
+                })
+              );
+            }
           }
         } else {
           // Standard independent practice: fetch next recommended problem
@@ -176,7 +186,7 @@ export function PracticeScreen({
     } finally {
       inFlight.current = false;
     }
-  }, [code, problem.id, plan, effectiveDay, markDayComplete]);
+  }, [code, problem.id, plan, effectiveDay, recordPracticePassed, progress.day_records]);
 
 
   const columnClass = (id: MobileTab) =>
@@ -331,8 +341,8 @@ export function PracticeScreen({
         </section>
       </div>
 
-      {/* Day Completion Celebration Modal */}
-      {showDayCompleteModal && effectiveDay && (
+      {/* Day Completion Celebration / Practice Passed Modal */}
+      {showCompletionModal && effectiveDay && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           role="dialog"
@@ -340,36 +350,52 @@ export function PracticeScreen({
         >
           <div className="card w-full max-w-md bg-surface p-6 sm:p-8 shadow-hard border-2 border-accent-2 space-y-5 text-center">
             <div className="mx-auto w-16 h-16 rounded-full border-2 border-ink bg-accent-2/20 flex items-center justify-center text-3xl shadow-hard-sm">
-              🎉
+              {isFullyComplete ? "🎉" : "🎯"}
             </div>
 
             <div className="space-y-2">
               <span className="bg-accent-2 text-white font-mono text-xs font-bold uppercase px-2.5 py-1 border border-ink">
-                DAY {String(effectiveDay).padStart(3, "0")} COMPLETE
+                {isFullyComplete ? `DAY ${String(effectiveDay).padStart(3, "0")} COMPLETE` : `DAY ${String(effectiveDay).padStart(3, "0")} PRACTICE PASSED`}
               </span>
               <h3 className="font-display text-2xl sm:text-3xl font-bold text-ink">
-                {effectiveDay < 160 ? `Day ${effectiveDay + 1} Unlocked!` : "Curriculum Completed!"}
+                {isFullyComplete
+                  ? effectiveDay < 160
+                    ? `Day ${effectiveDay + 1} Unlocked!`
+                    : "Curriculum Completed!"
+                  : `Lesson Still Required`}
               </h3>
               <p className="font-body text-xs sm:text-sm text-ink/80 leading-relaxed">
-                All test cases passed! Day {effectiveDay} practice is verified and recorded on the curriculum roadmap.
+                {isFullyComplete
+                  ? `All test cases passed and lesson completed! Day ${effectiveDay} is fully verified and recorded on the curriculum roadmap.`
+                  : `All test cases passed! However, Day ${effectiveDay < 160 ? effectiveDay + 1 : effectiveDay} remains locked until you also complete the Day ${effectiveDay} interactive lesson.`}
               </p>
             </div>
 
             <div className="space-y-3 pt-2">
-              {effectiveDay < 160 ? (
-                <Link
-                  href={`/learning/day/${effectiveDay + 1}`}
-                  className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
-                >
-                  <span>Continue to Day {effectiveDay + 1}</span>
-                  <span>→</span>
-                </Link>
+              {isFullyComplete ? (
+                effectiveDay < 160 ? (
+                  <Link
+                    href={`/learning/day/${effectiveDay + 1}`}
+                    className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
+                  >
+                    <span>Continue to Day {effectiveDay + 1}</span>
+                    <span>→</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/learning"
+                    className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
+                  >
+                    <span>🏆 View 160-Day Completed Roadmap</span>
+                    <span>→</span>
+                  </Link>
+                )
               ) : (
                 <Link
-                  href="/learning"
+                  href={`/learning/day/${effectiveDay}`}
                   className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
                 >
-                  <span>🏆 View 160-Day Completed Roadmap</span>
+                  <span>Complete Day {effectiveDay} Lesson</span>
                   <span>→</span>
                 </Link>
               )}
@@ -377,7 +403,7 @@ export function PracticeScreen({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowDayCompleteModal(false)}
+                  onClick={() => setShowCompletionModal(false)}
                   className="btn flex-1 py-2 text-xs font-semibold hover:border-ink"
                 >
                   Review Solution & Debrief

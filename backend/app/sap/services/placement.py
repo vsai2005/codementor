@@ -22,6 +22,7 @@ from app.models.sap_models import (
     SAPUserDayState,
     SAPUserState,
 )
+from app.sap.data.placement_questions import evaluate_assessment_answers
 from app.sap.services.mastery import SAPMasteryService
 
 
@@ -41,54 +42,22 @@ class SAPPlacementService:
         },
         "functional_user": {
             "title": "Functional SAP User / Business Analyst",
-            "default_start_day": 45,
-            "max_waivable_days": list(range(1, 45)),
-            "rationale": "Demonstrated core business processes (P2P/O2C/GL). Accelerated past standard workflows to S/4HANA CDS and Data Semantics (Day 45).",
+            "default_start_day": 23,
+            "max_waivable_days": list(range(1, 23)),
+            "rationale": "Demonstrated core business processes (P2P/O2C/GL). Accelerated past standard workflows to S/4HANA End-to-End Business Processes (Day 23).",
         },
         "ecc_developer": {
             "title": "ECC Consultant / Classic ABAP Developer",
             "default_start_day": 45,
             "max_waivable_days": list(range(1, 45)),
-            "rationale": "Classic ECC/ABAP verified. Fast-tracked to S/4HANA Core Data Services and Code Pushdown (Day 45) or ABAP Cloud (Day 77).",
+            "rationale": "Classic ECC/ABAP verified. Fast-tracked to S/4HANA Core Data Services and Code Pushdown (Day 45).",
         },
         "experienced_s4hana": {
             "title": "Experienced S/4HANA Developer / Solution Architect",
-            "default_start_day": 84,
-            "max_waivable_days": list(range(1, 90)),
-            "rationale": "High proficiency in S/4HANA CDS and transactional RAP modeling. Routed to Advanced RAP (Day 84) or BTP Integration (Day 90).",
+            "default_start_day": 77,
+            "max_waivable_days": list(range(1, 77)),
+            "rationale": "High proficiency in S/4HANA CDS and transactional RAP modeling. Routed to ABAP Cloud & RAP (Day 77).",
         },
-    }
-
-    # Core concept benchmarks mapping to diagnostic domains
-    DOMAIN_TESTED_CONCEPTS = {
-        "erp_basics": [
-            "erp-evolution", "three-tier-architecture", "master-data-concept",
-            "org-structure-company-code", "sap-gui-navigation",
-        ],
-        "business_processes": [
-            "p2p-pr-creation", "p2p-po-processing", "p2p-goods-receipt-migo",
-            "o2c-sales-order-creation", "o2c-billing-creation", "gl-journal-entry",
-        ],
-        "s4hana_delta": [
-            "s4hana-value-drivers", "universal-journal-concept", "acdoca-table-architecture",
-            "matdoc-table-architecture", "business-partner-cvi",
-        ],
-        "classic_abap_ddic": [
-            "relational-modeling", "sql-joins-foundations", "cardinality-rules",
-            "oop-fundamentals", "pfcg-authorizations",
-        ],
-        "modern_abap_cds": [
-            "cds-fundamentals", "cds-syntax-expressions", "cds-associations-concept",
-            "vdm-architecture-tiers", "modern-abap-syntax",
-        ],
-        "rap_foundations": [
-            "abap-cloud-paradigm", "rap-architecture-overview", "bdef-syntax",
-            "managed-vs-unmanaged-rap", "rap-save-sequence",
-        ],
-        "btp_integration": [
-            "sync-vs-async-integration", "api-oauth2-fundamentals",
-            "cloud-integration-cpi", "sap-event-mesh",
-        ],
     }
 
     @classmethod
@@ -96,111 +65,182 @@ class SAPPlacementService:
         cls,
         db: Session,
         user_id: uuid.UUID,
-        domain_scores: dict[str, float],
+        experience_level: str | None = None,
+        answers: dict[str, str] | None = None,
+        domain_scores: dict[str, float] | None = None,
         experience_years: float = 0.0,
         persona_self_select: str | None = None,
         concept_responses: dict[str, float] | None = None,
     ) -> SAPPlacementProfile:
-        """Evaluates concept evidence and prerequisite mastery to compute starting day and waived days."""
-        erp = float(domain_scores.get("erp_basics", domain_scores.get("fundamentals", 0.0)))
-        proc = float(domain_scores.get("business_processes", erp))
-        delta = float(domain_scores.get("s4hana_delta", domain_scores.get("ddic_and_sql", 0.0)))
-        abap = float(domain_scores.get("classic_abap", domain_scores.get("classic_abap_ddic", 0.0)))
-        cds = float(domain_scores.get("modern_abap_cds", domain_scores.get("modern_s4hana_rap", 0.0)))
-        rap = float(domain_scores.get("rap_foundations", domain_scores.get("modern_s4hana_rap", 0.0)))
-        btp = float(domain_scores.get("btp_integration", 0.0))
+        """Evaluates concept evidence and prerequisite mastery to compute starting day and waived days.
 
-        overall_score = round(
-            (erp * 0.15) + (proc * 0.15) + (delta * 0.15) + (abap * 0.20) + (rap * 0.20) + (btp * 0.15), 1
-        )
+        Never fabricates scores:
+        - 'fresher' -> No assessment required, places at Day 1.
+        - 'experienced' -> Graded against 10 technical questions; evaluated on overall score + topic scores + prerequisite mastery.
+        - 'not_sure' -> Graded against 6 fundamental questions; evaluated on foundational grasp.
+        """
+        level = (experience_level or persona_self_select or "fresher").strip().lower()
+        if level in ("fresher", "beginner_fresher"):
+            level = "fresher"
 
-        resolved_persona = "fresher"
-        starting_day = 1
-        waived_days: list[int] = []
-        rationale: str = ""
+        answers = answers or {}
+        demonstrated_concepts: list[str] = []
+        gap_concepts: list[str] = []
+        evaluated_domain_scores: dict[str, float] = {}
+        topic_breakdown: list[dict[str, Any]] = []
 
-        # Evidence-based decision routing
-        if persona_self_select == "fresher":
-            resolved_persona = "fresher"
+        # 1. Evaluate according to track
+        if level == "fresher":
+            overall_score = 0.0
             starting_day = 1
+            resolved_persona = "fresher"
             waived_days = []
-            rationale = "Fresher track selected. Full 100-day guided roadmap starting at Day 1."
+            rationale = "Fresher track selected. You will build comprehensive foundational mastery starting at Day 1: Enterprise Systems & Cross-Functional Flows."
+            evaluated_domain_scores = {
+                "enterprise_architecture": 0.0,
+                "s4hana_inmemory": 0.0,
+                "business_processes": 0.0,
+                "cds_data_semantics": 0.0,
+                "abap_cloud_rap": 0.0,
+            }
 
-        elif persona_self_select == "experienced_s4hana" or (rap >= 75.0 and cds >= 75.0):
-            resolved_persona = "experienced_s4hana"
-            if rap >= 85.0 and btp >= 75.0:
-                starting_day = 90  # Route to BTP & Enterprise Integration
-                waived_days = list(range(1, 90))
-                rationale = "Demonstrated mastery of S/4HANA CDS, VDM, and Full-Stack RAP. Accelerated to SAP BTP Integration Suite (Day 90)."
-            else:
-                starting_day = 84  # Route to Advanced RAP (Draft, Numbering, Concurrency)
-                waived_days = list(range(1, 84))
-                rationale = "Demonstrated core RAP transactional architecture. Fast-tracked to Advanced RAP Draft & Concurrency patterns (Day 84)."
+        elif level == "experienced":
+            overall_score, evaluated_domain_scores, demonstrated_concepts, gap_concepts = evaluate_assessment_answers(
+                "experienced", answers
+            )
 
-        elif persona_self_select == "ecc_developer" or (abap >= 70.0 and (delta >= 60.0 or erp >= 70.0)):
-            resolved_persona = "ecc_developer"
-            if cds >= 75.0 and rap >= 65.0:
-                starting_day = 77  # Accelerated directly to ABAP Cloud & RAP
+            arch_score = evaluated_domain_scores.get("enterprise_architecture", 0.0)
+            org_score = evaluated_domain_scores.get("org_structure", 0.0)
+            inmemory_score = evaluated_domain_scores.get("s4hana_inmemory", 0.0)
+            proc_score = evaluated_domain_scores.get("business_processes", 0.0)
+            cds_score = evaluated_domain_scores.get("cds_data_semantics", 0.0)
+            rap_score = evaluated_domain_scores.get("abap_cloud_rap", 0.0)
+
+            # Check prerequisite mastery:
+            has_arch_prereq = "three-tier-architecture" in demonstrated_concepts or arch_score >= 50.0
+            has_inmemory_prereq = "acdoca-table-architecture" in demonstrated_concepts or inmemory_score >= 50.0
+            has_cds_prereq = "cds-associations-concept" in demonstrated_concepts or cds_score >= 50.0
+            has_rap_prereq = "abap-cloud-paradigm" in demonstrated_concepts or rap_score >= 50.0
+
+            # Prerequisite-aware decision tree:
+            # Tier 4: Day 77 (ABAP Cloud & RAP)
+            if overall_score >= 80.0 and has_arch_prereq and has_inmemory_prereq and cds_score >= 80.0 and rap_score >= 80.0:
+                starting_day = 77
+                resolved_persona = "experienced_s4hana"
                 waived_days = list(range(1, 77))
-                rationale = "Demonstrated classic ABAP mastery and S/4HANA CDS VDM concepts. Fast-tracked to ABAP Cloud & RAP (Day 77)."
-            else:
-                starting_day = 45  # Routed to Phase 4: CDS & Code Pushdown
-                waived_days = list(range(1, 45))
-                rationale = "Strong classic ABAP/DDIC foundations verified. Fast-tracked to S/4HANA In-Memory CDS, VDM, and Code Pushdown (Day 45)."
+                rationale = "Exceptional performance across enterprise data modeling, CDS VDM, and RAP transactional architecture. Fast-tracked directly to Phase 7: ABAP Cloud & RAP (Day 77)."
 
-        elif persona_self_select == "functional_user" or (proc >= 70.0 and erp >= 65.0):
-            resolved_persona = "functional_user"
-            if delta >= 65.0:
-                starting_day = 45  # Business processes + Universal Journal delta verified
+            # Tier 3: Day 45 (HANA Engine & CDS)
+            elif overall_score >= 60.0 and has_arch_prereq and (has_inmemory_prereq or cds_score >= 50.0 or proc_score >= 50.0):
+                starting_day = 45
+                resolved_persona = "ecc_developer"
                 waived_days = list(range(1, 45))
-                rationale = "Strong mastery of E2E business processes (P2P/O2C/GL) and Universal Journal. Routed to CDS Data Semantics (Day 45)."
-            else:
-                starting_day = 23  # Focus on S/4HANA specific process execution
+                rationale = "Strong proficiency in enterprise architecture, S/4HANA core data models, and business flows. Fast-tracked to Phase 4: HANA Engine & CDS Data Semantics (Day 45)."
+
+            # Tier 2: Day 23 (End-to-End Business Processes)
+            elif overall_score >= 40.0 and has_arch_prereq and (proc_score >= 50.0 or has_inmemory_prereq):
+                starting_day = 23
+                resolved_persona = "functional_user"
                 waived_days = list(range(1, 23))
-                rationale = "Foundational ERP knowledge demonstrated. Fast-tracked to S/4HANA End-to-End P2P, O2C, and Financial workflows (Day 23)."
+                rationale = "Solid enterprise architecture intuition and business process understanding verified. Fast-tracked to Phase 3: Core End-to-End Business Processes (Day 23)."
 
-        elif erp >= 60.0:
-            resolved_persona = "beginner"
-            starting_day = 9
-            waived_days = list(range(1, 9))
-            rationale = "Fundamental ERP and computing concepts demonstrated. Days 1–8 waived; starting at S/4HANA Architecture (Day 9)."
+            # Tier 1: Day 9 (S/4HANA Architecture)
+            elif overall_score >= 30.0 and has_arch_prereq:
+                starting_day = 9
+                resolved_persona = "beginner"
+                waived_days = list(range(1, 9))
+                rationale = "Fundamental understanding of 3-tier enterprise architecture demonstrated. Days 1–8 waived; starting at S/4HANA Architecture (Day 9)."
+
+            # Tier 0: Day 1 (Prerequisite conflict or low overall score)
+            else:
+                starting_day = 1
+                resolved_persona = "fresher"
+                waived_days = []
+                if not has_arch_prereq and overall_score >= 40.0:
+                    rationale = "Prerequisite conflict detected: advanced concepts attempted but fundamental enterprise architecture was not demonstrated. Starting from Day 1 ensures full conceptual grounding."
+                else:
+                    rationale = "Assessment indicated foundational gaps across core enterprise architecture. Starting from Day 1 to build end-to-end fluency."
+
+        elif level == "not_sure":
+            overall_score, evaluated_domain_scores, demonstrated_concepts, gap_concepts = evaluate_assessment_answers(
+                "not_sure", answers
+            )
+
+            has_fund = "erp-evolution" in demonstrated_concepts or evaluated_domain_scores.get("enterprise_architecture", 0.0) >= 50.0
+            has_org = "org-structure-company-code" in demonstrated_concepts or evaluated_domain_scores.get("org_structure", 0.0) >= 50.0
+
+            if overall_score >= 80.0 and (has_fund or has_org):
+                starting_day = 9
+                resolved_persona = "beginner"
+                waived_days = list(range(1, 9))
+                rationale = "Demonstrated clear grasp of foundational ERP concepts and organizational structures. Days 1–8 waived; starting at S/4HANA In-Memory Architecture (Day 9)."
+            else:
+                starting_day = 1
+                resolved_persona = "fresher"
+                waived_days = []
+                rationale = "Foundational track recommended. Starting from Day 1 provides full step-by-step intuition across enterprise systems."
 
         else:
-            resolved_persona = "fresher"
+            # Fallback for legacy calls passing raw domain_scores
+            overall_score = 0.0
             starting_day = 1
+            resolved_persona = "fresher"
             waived_days = []
             rationale = "Starting from Day 1 to build complete enterprise computing foundations."
 
+        # If legacy domain_scores was passed without answers, preserve backward compatibility
+        if not answers and domain_scores:
+            erp = float(domain_scores.get("erp_basics", domain_scores.get("fundamentals", 0.0)))
+            proc = float(domain_scores.get("business_processes", erp))
+            delta = float(domain_scores.get("s4hana_delta", domain_scores.get("ddic_and_sql", 0.0)))
+            cds = float(domain_scores.get("modern_abap_cds", domain_scores.get("modern_s4hana_rap", 0.0)))
+            rap = float(domain_scores.get("rap_foundations", domain_scores.get("modern_s4hana_rap", 0.0)))
+
+            overall_score = round((erp * 0.2) + (proc * 0.2) + (delta * 0.2) + (cds * 0.2) + (rap * 0.2), 1)
+            evaluated_domain_scores = domain_scores
+
+            if rap >= 75.0 and cds >= 75.0:
+                starting_day = 77
+                resolved_persona = "experienced_s4hana"
+                waived_days = list(range(1, 77))
+                rationale = "Demonstrated mastery of S/4HANA CDS and RAP architecture. Accelerated to Day 77."
+            elif cds >= 60.0 or delta >= 60.0:
+                starting_day = 45
+                resolved_persona = "ecc_developer"
+                waived_days = list(range(1, 45))
+                rationale = "Demonstrated core data models and business processes. Accelerated to Day 45."
+            elif proc >= 50.0:
+                starting_day = 23
+                resolved_persona = "functional_user"
+                waived_days = list(range(1, 23))
+                rationale = "Demonstrated business processes. Accelerated to Day 23."
+            elif erp >= 50.0:
+                starting_day = 9
+                resolved_persona = "beginner"
+                waived_days = list(range(1, 9))
+                rationale = "Fundamental ERP demonstrated. Accelerated to Day 9."
+
         now = datetime.now(timezone.utc)
 
-        # Record concept evidence ONLY for tested concepts with passing scores
-        tested_concepts_passed: list[str] = []
-        scores_by_domain = {
-            "erp_basics": erp,
-            "business_processes": proc,
-            "s4hana_delta": delta,
-            "classic_abap_ddic": abap,
-            "modern_abap_cds": cds,
-            "rap_foundations": rap,
-            "btp_integration": btp,
-        }
+        # Record concept evidence for demonstrated concepts into the DAG
+        for c_slug in demonstrated_concepts:
+            try:
+                SAPMasteryService.record_concept_attempt(
+                    db=db,
+                    user_id=user_id,
+                    concept_slug=c_slug,
+                    score=100.0,
+                )
+            except Exception:
+                pass
 
-        # Apply specific concept responses if submitted, otherwise apply domain benchmark
-        for domain, d_score in scores_by_domain.items():
-            if d_score >= 80.0:
-                for c_slug in cls.DOMAIN_TESTED_CONCEPTS.get(domain, []):
-                    score_to_record = concept_responses.get(c_slug, d_score) if concept_responses else d_score
-                    if score_to_record >= 80.0:
-                        try:
-                            SAPMasteryService.record_concept_attempt(
-                                db=db,
-                                user_id=user_id,
-                                concept_slug=c_slug,
-                                score=score_to_record,
-                            )
-                            tested_concepts_passed.append(c_slug)
-                        except Exception:
-                            pass
+        # Build topic breakdown for client visualization
+        for topic_key, score_val in evaluated_domain_scores.items():
+            topic_breakdown.append({
+                "topic": topic_key,
+                "label": topic_key.replace("_", " ").title(),
+                "score": score_val,
+            })
 
         # Persist diagnostic placement profile
         profile = db.execute(
@@ -209,9 +249,12 @@ class SAPPlacementService:
 
         diagnostic_results = {
             "overall_score": overall_score,
+            "experience_level": level,
             "waived_days": waived_days,
             "unlocked_days": waived_days + [starting_day],
-            "tested_concepts_passed": tested_concepts_passed,
+            "demonstrated_concepts": demonstrated_concepts,
+            "gap_concepts": gap_concepts,
+            "topic_breakdown": topic_breakdown,
             "evaluation_timestamp": now.isoformat(),
         }
 
@@ -220,9 +263,9 @@ class SAPPlacementService:
                 user_id=user_id,
                 persona=resolved_persona,
                 experience_years=experience_years,
-                prior_sap_experience=experience_years > 0.5 or overall_score > 30.0,
+                prior_sap_experience=experience_years > 0.5 or overall_score > 30.0 or level == "experienced",
                 diagnostic_results=diagnostic_results,
-                concept_benchmarks=domain_scores,
+                concept_benchmarks=evaluated_domain_scores,
                 recommended_start_day=starting_day,
                 rationale=rationale,
                 completed_at=now,
@@ -231,8 +274,9 @@ class SAPPlacementService:
         else:
             profile.persona = resolved_persona
             profile.experience_years = experience_years
+            profile.prior_sap_experience = experience_years > 0.5 or overall_score > 30.0 or level == "experienced"
             profile.diagnostic_results = diagnostic_results
-            profile.concept_benchmarks = domain_scores
+            profile.concept_benchmarks = evaluated_domain_scores
             profile.recommended_start_day = starting_day
             profile.rationale = rationale
             profile.completed_at = now
@@ -249,7 +293,7 @@ class SAPPlacementService:
                 onboarding_persona=resolved_persona,
                 placement_status=SAPPlacementStatus.COMPLETED.value,
                 placement_score=overall_score,
-                completed_days_count=0,  # Strict: waived days do not count as completed!
+                completed_days_count=0,  # Strict: waived days do NOT count as completed!
                 last_active_at=now,
             )
             db.add(user_state)
@@ -291,3 +335,34 @@ class SAPPlacementService:
         db.commit()
         db.refresh(profile)
         return profile
+
+    @classmethod
+    def choose_start_day(
+        cls,
+        db: Session,
+        user_id: uuid.UUID,
+        start_day: int,
+    ) -> SAPPlacementProfile:
+        """Allows learner to override starting point (e.g. choose Day 1 instead of recommended Day X)."""
+        profile = db.execute(
+            select(SAPPlacementProfile).where(SAPPlacementProfile.user_id == user_id)
+        ).scalar_one_or_none()
+
+        if not profile:
+            raise ValueError("No diagnostic profile found for this user.")
+
+        now = datetime.now(timezone.utc)
+        user_state = db.execute(
+            select(SAPUserState).where(SAPUserState.user_id == user_id)
+        ).scalar_one_or_none()
+
+        if user_state:
+            user_state.current_recommended_day = start_day
+            user_state.last_active_at = now
+
+        # Update profile recommended start day
+        profile.recommended_start_day = start_day
+        db.commit()
+        db.refresh(profile)
+        return profile
+

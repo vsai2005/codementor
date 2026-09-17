@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { sapApi } from "@/lib/sap/api";
-import type { SapDayDetail, SapLessonDetail } from "@/lib/sap/types";
+import type { SapDayDetail, SapLessonDetail, SapProgressResponse } from "@/lib/sap/types";
 import { SapLessonShell } from "@/components/sap/SapLessonShell";
 
 export default function SapDayDetailPage() {
@@ -15,6 +15,7 @@ export default function SapDayDetailPage() {
 
   const [day, setDay] = useState<SapDayDetail | null>(null);
   const [lesson, setLesson] = useState<SapLessonDetail | null>(null);
+  const [progress, setProgress] = useState<SapProgressResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [completeSuccess, setCompleteSuccess] = useState(false);
@@ -24,17 +25,21 @@ export default function SapDayDetailPage() {
     if (!dayNumber || isNaN(dayNumber)) return;
     setLoading(true);
 
-    // Fetch both curriculum overview & authored lesson content in parallel
+    // Fetch curriculum overview, authored lesson content, and learner progress in parallel
     Promise.allSettled([
       sapApi.getDayDetail(dayNumber),
       sapApi.getLesson(dayNumber),
+      sapApi.getProgress(),
     ])
-      .then(([dayRes, lessonRes]) => {
+      .then(([dayRes, lessonRes, progressRes]) => {
         if (dayRes.status === "fulfilled") {
           setDay(dayRes.value);
         }
         if (lessonRes.status === "fulfilled") {
           setLesson(lessonRes.value);
+        }
+        if (progressRes.status === "fulfilled" && progressRes.value) {
+          setProgress(progressRes.value);
         }
         setLoading(false);
       })
@@ -90,6 +95,56 @@ export default function SapDayDetailPage() {
     );
   }
 
+  const dayState = progress?.day_states?.[String(dayNumber)];
+  const isUnlocked =
+    dayNumber === 1 ||
+    Boolean(dayState?.unlocked) ||
+    Boolean(dayState?.waived) ||
+    Boolean(progress && dayNumber <= progress.current_day);
+
+  // Authoritative server-gating: If learner has progress record and this milestone is locked, block access
+  if (progress && !isUnlocked) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-[800px] px-4 py-16">
+          <div className="border-4 border-ink bg-surface p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center space-y-4">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center border-3 border-ink bg-amber-100 text-2xl">
+              🔒
+            </div>
+            <h1 className="text-2xl font-black text-ink">
+              Milestone Day {dayNumber} is Locked
+            </h1>
+            <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
+              This milestone requires completing previous prerequisite days. Your current recommended active milestone is{" "}
+              <strong className="text-ink font-mono font-black">Day {progress.current_day}</strong>.
+            </p>
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={`/sap/learning/day/${progress.current_day}`}
+                className="border-3 border-ink bg-emerald-400 px-5 py-2.5 text-xs font-black uppercase text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 transition-all"
+              >
+                Go to Active Day {progress.current_day} →
+              </Link>
+              <Link
+                href="/sap/learning"
+                className="border-2 border-ink bg-surface px-5 py-2 text-xs font-bold text-ink hover:bg-surface-raised shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              >
+                View Full Roadmap
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const nextDayNumber = (day?.day_number || dayNumber) + 1;
+  const nextDayState = progress?.day_states?.[String(nextDayNumber)];
+  const isNextUnlocked =
+    Boolean(nextDayState?.unlocked) ||
+    Boolean(nextDayState?.waived) ||
+    Boolean(progress && nextDayNumber <= progress.current_day);
+
   return (
     <AppShell>
       <div className="mx-auto max-w-[1100px] px-4 py-8">
@@ -126,6 +181,7 @@ export default function SapDayDetailPage() {
         {lesson ? (
           <SapLessonShell
             lesson={lesson}
+            initialDayState={dayState}
             onDayComplete={() => setCompleteSuccess(true)}
           />
         ) : day ? (
@@ -222,12 +278,21 @@ export default function SapDayDetailPage() {
                   </Link>
                 )}
                 {day.day_number < 100 && (
-                  <Link
-                    href={`/sap/learning/day/${day.day_number + 1}`}
-                    className="border border-ink bg-surface px-3 py-1.5 text-xs font-bold text-ink hover:bg-surface-raised"
-                  >
-                    Day {day.day_number + 1} →
-                  </Link>
+                  isNextUnlocked ? (
+                    <Link
+                      href={`/sap/learning/day/${day.day_number + 1}`}
+                      className="border border-ink bg-surface px-3 py-1.5 text-xs font-bold text-ink hover:bg-surface-raised"
+                    >
+                      Day {day.day_number + 1} →
+                    </Link>
+                  ) : (
+                    <span
+                      className="border border-ink/30 bg-muted/10 px-3 py-1.5 text-xs font-bold text-muted cursor-not-allowed opacity-60"
+                      title="Next milestone is locked. Complete this day to unlock."
+                    >
+                      Day {day.day_number + 1} 🔒
+                    </span>
+                  )
                 )}
               </div>
             </div>

@@ -19,7 +19,7 @@ export function LessonCompletion({
   const { progress, markLessonComplete } = useJourney();
   const practiceMapping = getPracticeForDay(step.dayNumber);
   const dayRecord = progress.day_records?.[step.dayNumber];
-  const isPracticePassed = Boolean(dayRecord?.practice_passed || isCompleted);
+  const isPracticePassed = Boolean(dayRecord?.practice_passed);
 
   // Mark lesson complete on server/journey when reaching completion screen
   useEffect(() => {

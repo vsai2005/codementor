@@ -9,7 +9,7 @@ interface SectionCardProps {
   getDayStatus: (dayNumber: number) => DayStatus;
   isCurrentSection: boolean;
   onSelectDay: (day: CurriculumDay) => void;
-  onToggleComplete: (dayNumber: number) => void;
+  onToggleComplete?: (dayNumber: number) => void;
 }
 
 export function SectionCard({
@@ -17,7 +17,6 @@ export function SectionCard({
   getDayStatus,
   isCurrentSection,
   onSelectDay,
-  onToggleComplete,
 }: SectionCardProps) {
   const [isOpen, setIsOpen] = useState(isCurrentSection || section.section_number === 1);
 
@@ -137,7 +136,6 @@ export function SectionCard({
                 day={day}
                 status={getDayStatus(day.day_number)}
                 onSelectDay={onSelectDay}
-                onToggleComplete={onToggleComplete}
               />
             ))}
           </div>

@@ -16,7 +16,7 @@ export function LessonLoader({ dayNumber }: LessonLoaderProps) {
     return <LockedDayGate dayNumber={dayNumber} />;
   }
 
-  const { isLoaded, getDayStatus, markDayComplete } = useJourney();
+  const { isLoaded, getDayStatus, markLessonComplete } = useJourney();
   const [pkg, setPkg] = useState<DailyLessonPackage | null>(null);
   const [loadingPkg, setLoadingPkg] = useState(true);
 
@@ -67,7 +67,7 @@ export function LessonLoader({ dayNumber }: LessonLoaderProps) {
       dayNumber={pkg.dayNumber}
       title={pkg.title}
       steps={pkg.steps}
-      onMarkDayComplete={markDayComplete}
+      onLessonComplete={markLessonComplete}
     />
   );
 }

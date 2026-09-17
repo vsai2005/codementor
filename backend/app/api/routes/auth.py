@@ -170,6 +170,7 @@ def logout(response: Response) -> dict:
         path="/",
         domain=settings.cookie_domain,
         samesite=settings.cookie_samesite,
+        secure=settings.secure_cookies,
     )
     return {"detail": "Logged out successfully"}
 

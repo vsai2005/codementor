@@ -359,3 +359,9 @@ async def execute_script_async(code: str) -> dict:
             "runtime_ms": runtime_ms,
         }
 
+
+async def run_custom_async(code: str, entry_point: str, args: list[Any]) -> TestResult:
+    """Asynchronously run `code` against custom input arguments (for live problem testing)."""
+    return await _run_one_async(code, entry_point, args, expected=None, index=0)
+
+

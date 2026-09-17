@@ -241,3 +241,119 @@ class LearningTutorResponse(BaseModel):
     pedagogical_mode: str = "socratic"
     visual: dict[str, Any] | None = None
 
+
+# Practice, Dashboard & Spaced Repetition Models
+class ReferenceSolution(BaseModel):
+    available: bool
+    language: str = "python"
+    code: str = ""
+    commentary: str = ""
+
+
+class AccountSummary(BaseModel):
+    solved_count: int = 0
+    total_problems: int = 0
+    avg_score: int = 0
+    attempts: int = 0
+
+
+class RecentSolvedItem(BaseModel):
+    id: str
+    title: str
+    topic: TopicOut | dict[str, Any]
+
+
+class RecentSolvedResponse(BaseModel):
+    items: list[RecentSolvedItem] = Field(default_factory=list)
+    solved_count: int = 0
+
+
+class ReviewQueueItem(BaseModel):
+    id: str
+    title: str
+    topic: TopicOut | dict[str, Any]
+    due_at: str | None = None
+    last_score: int | None = None
+    reps: int = 0
+    due_in_days: int = 0
+
+
+class ReviewQueueResponse(BaseModel):
+    due: list[ReviewQueueItem] = Field(default_factory=list)
+    upcoming: list[ReviewQueueItem] = Field(default_factory=list)
+    due_count: int = 0
+    tracked_count: int = 0
+
+
+class MisconceptionItem(BaseModel):
+    tag: str
+    label: str
+    tip: str
+    count: int = 0
+    last_at: str | None = None
+    problems: list[str] = Field(default_factory=list)
+
+
+class MisconceptionsResponse(BaseModel):
+    items: list[MisconceptionItem] = Field(default_factory=list)
+    total: int = 0
+
+
+class Badge(BaseModel):
+    id: str
+    emoji: str
+    label: str
+    desc: str
+    earned: bool = False
+    earned_at: str | None = None
+
+
+class MomentumSummary(BaseModel):
+    xp: int = 0
+    level: int = 1
+    level_progress: int = 0
+    level_span: int = 100
+    streak: int = 0
+    longest_streak: int = 0
+    daily_goal: int = 1
+    solved_today: int = 0
+    solved_count: int = 0
+    badges: list[Badge] = Field(default_factory=list)
+    earned_count: int = 0
+
+
+class CustomRunRequest(BaseModel):
+    problem_id: str
+    code: str = Field(min_length=1, max_length=50_000)
+    args: list[Any] = Field(default_factory=list)
+
+
+class CustomRunResponse(BaseModel):
+    status: str
+    returned: Any = None
+    stdout: str = ""
+    stderr: str = ""
+    runtime_ms: int = 0
+
+
+class CoachDebriefRequest(BaseModel):
+    problem_id: str
+    code: str = ""
+    review: dict[str, Any] | None = None
+    tests: dict[str, Any] | None = None
+    plan: str | None = None
+
+
+class CoachResponse(BaseModel):
+    message: str
+
+
+class GenerateProblemRequest(BaseModel):
+    topic: str | None = None
+    tier: int | None = None
+
+
+class DevSetProgressRequest(BaseModel):
+    completed_up_to: int = 1
+
+

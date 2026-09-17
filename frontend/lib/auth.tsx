@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-import { api } from "./api";
+import { api, clearLegacyAuthStorage } from "./api";
 import type { User } from "./types";
 
 interface AuthState {
@@ -25,12 +25,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Authenticate session via HttpOnly cookie transport (no localStorage dependency)
+  // Authenticate session via HttpOnly cookie transport (zero localStorage dependency)
   useEffect(() => {
+    clearLegacyAuthStorage();
     api
       .me()
       .then(setUser)
-      .catch(() => setUser(null))
+      .catch(() => {
+        setUser(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -47,9 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user);
   }, []);
 
-  const signOut = useCallback(() => {
-    api.logout().catch(() => {});
-    setUser(null);
+  const signOut = useCallback(async () => {
+    try {
+      await api.logout();
+    } catch {
+      // Ignore network errors on logout
+    } finally {
+      clearLegacyAuthStorage();
+      setUser(null);
+    }
   }, []);
 
   const value = useMemo<AuthState>(

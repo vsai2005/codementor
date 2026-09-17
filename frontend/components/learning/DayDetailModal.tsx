@@ -9,14 +9,13 @@ interface DayDetailModalProps {
   day: CurriculumDay | null;
   status: DayStatus;
   onClose: () => void;
-  onToggleComplete: (dayNumber: number) => void;
+  onToggleComplete?: (dayNumber: number) => void;
 }
 
 export function DayDetailModal({
   day,
   status,
   onClose,
-  onToggleComplete,
 }: DayDetailModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

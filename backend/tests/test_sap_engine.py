@@ -321,9 +321,9 @@ def test_placement_persona_rules():
 
     assert SAPPlacementService.PERSONA_CONFIG["fresher"]["default_start_day"] == 1
     assert SAPPlacementService.PERSONA_CONFIG["beginner"]["default_start_day"] == 9
-    assert SAPPlacementService.PERSONA_CONFIG["functional_user"]["default_start_day"] == 45
+    assert SAPPlacementService.PERSONA_CONFIG["functional_user"]["default_start_day"] == 23
     assert SAPPlacementService.PERSONA_CONFIG["ecc_developer"]["default_start_day"] == 45
-    assert SAPPlacementService.PERSONA_CONFIG["experienced_s4hana"]["default_start_day"] == 84
+    assert SAPPlacementService.PERSONA_CONFIG["experienced_s4hana"]["default_start_day"] == 77
 
 
 # =============================================================================
@@ -622,8 +622,8 @@ def test_placement_evidence_routing_and_untested_concept_protection():
             "erp_basics": 90.0,
         },
     )
-    assert s4_prof.recommended_start_day == 90
-    assert s4_prof.diagnostic_results["waived_days"] == list(range(1, 90))
+    assert s4_prof.recommended_start_day == 77
+    assert s4_prof.diagnostic_results["waived_days"] == list(range(1, 77))
 
 
 # =============================================================================

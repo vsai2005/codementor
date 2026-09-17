@@ -76,6 +76,21 @@ export interface SapProgressResponse {
   day_states: Record<string, SapDayStateDetail>;
 }
 
+export interface PlacementQuestionOption {
+  id: string;
+  text: string;
+}
+
+export interface PlacementQuestion {
+  id: string;
+  topic: string;
+  topic_label: string;
+  concept_slug: string;
+  question: string;
+  options: PlacementQuestionOption[];
+  difficulty: number;
+}
+
 export interface SapPlacementProfile {
   persona: string;
   diagnostic_score: number;
@@ -84,6 +99,13 @@ export interface SapPlacementProfile {
   waived_days?: number[];
   rationale: string;
   domain_scores: Record<string, number>;
+  topic_breakdown?: Array<{
+    topic: string;
+    label: string;
+    score: number;
+  }>;
+  demonstrated_concepts?: string[];
+  gap_concepts?: string[];
 }
 
 export type SapExecutionCategory =
@@ -224,6 +246,54 @@ export interface SapSkillEvidenceSummaryResponse {
   evidences: SapSkillEvidenceItem[];
 }
 
+export type SapAssessmentType =
+  | "abap_challenge"
+  | "analytics_eval"
+  | "capstone_multi_concept"
+  | "capstone_quiz"
+  | "cds_challenge"
+  | "concept_quiz"
+  | "data_modeling"
+  | "decision_matrix"
+  | "mcq"
+  | "process_ordering"
+  | "rap_challenge"
+  | "rubric_based"
+  | "scenario_decision"
+  | "simulation"
+  | "technical_audit"
+  | "troubleshooting";
+
+export interface SapAssessmentSubmitRequest {
+  day_number: number;
+  assessment_id: string;
+  assessment_type: SapAssessmentType;
+  rubric_spec?: Record<string, any>;
+  submission_payload?: Record<string, any>;
+}
+
+export interface SapAssessmentSubmitResponse {
+  submission_id: string;
+  passed: boolean;
+  score: number;
+  feedback: string;
+  evaluation_breakdown: Record<string, any>;
+  mastery_updated: boolean;
+  concept_evaluations: Array<{
+    concept_slug: string;
+    score: number;
+    passed: boolean;
+    remediation_capsule?: any;
+  }>;
+  remediation_required: boolean;
+  remediation_capsule?: any;
+  all_remediations: any[];
+  day_completed?: boolean;
+  unlocked_next_day?: boolean;
+  current_day?: number;
+  next_day_number?: number;
+}
+
 // --- Guided Learning 8-Step Lesson Schemas ---
 
 export interface SapLessonStep {
@@ -269,6 +339,7 @@ export interface SapLessonStep {
     desc?: string;
   } | null;
   is_capstone?: boolean | null;
+  assessment_type?: SapAssessmentType | string | null;
   multi_concept_eval?: boolean | null;
   concepts_evaluated?: string[] | null;
 }

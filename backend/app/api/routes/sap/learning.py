@@ -12,6 +12,8 @@ from app.data.sap_lessons import SAP_DAYS_CONTENT
 from app.sap.schemas.api import (
     SAPCompleteLessonRequest,
     SAPCompleteLessonResponse,
+    SAPCompletePracticeRequest,
+    SAPCompletePracticeResponse,
     SAPLessonDetail,
     SAPProgressResponse,
 )
@@ -38,7 +40,7 @@ def get_lesson_content(
     if not lesson:
         raise HTTPException(
             status_code=404,
-            detail=f"Lesson content for Day {day_number} is not authored yet (Days 1–8 available).",
+            detail=f"Lesson content for Day {day_number} is not authored yet (Days 1–54 available).",
         )
     return SAPLessonDetail(**lesson)
 
@@ -52,6 +54,19 @@ def complete_lesson(
     try:
         result = SAPProgressionService.complete_lesson(db, user.id, payload.day_number)
         return SAPCompleteLessonResponse(**result)
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+
+@router.post("/complete-practice", response_model=SAPCompletePracticeResponse)
+def complete_practice(
+    payload: SAPCompletePracticeRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> SAPCompletePracticeResponse:
+    try:
+        result = SAPProgressionService.record_practice_completed(db, user.id, payload.day_number)
+        return SAPCompletePracticeResponse(**result)
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
 

@@ -8,7 +8,8 @@ from app.models.models import Base
 import app.models  # noqa: F401
 
 config = context.config
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+if not config.get_main_option("sqlalchemy.url"):
+    config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
 if config.config_file_name:
     fileConfig(config.config_file_name)

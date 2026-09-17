@@ -11,7 +11,7 @@
       "phase_number": 1,
       "slug": "erp-foundations",
       "title": "Enterprise Architecture & ERP Foundations",
-      "subtitle": "Days 1\u20138: Enterprise Systems, Organizational Modeling & Core Foundations",
+      "subtitle": "Days 1–8: Enterprise Systems, Organizational Modeling & Core Foundations",
       "day_start": 1,
       "day_end": 8,
       "color_theme": "emerald",
@@ -21,7 +21,7 @@
       "phase_number": 2,
       "slug": "s4hana-fundamentals",
       "title": "S/4HANA Fundamentals & Data Architecture",
-      "subtitle": "Days 9\u201322: In-Memory HANA Engine, Universal Journal, MATDOC & Landscapes",
+      "subtitle": "Days 9–22: In-Memory HANA Engine, Universal Journal, MATDOC & Landscapes",
       "day_start": 9,
       "day_end": 22,
       "color_theme": "blue",
@@ -31,7 +31,7 @@
       "phase_number": 3,
       "slug": "e2e-business-processes",
       "title": "Core End-to-End Business Processes",
-      "subtitle": "Days 23\u201344: P2P, O2C, Financial Accounting, Manufacturing & Settlement",
+      "subtitle": "Days 23–44: P2P, O2C, Financial Accounting, Manufacturing & Settlement",
       "day_start": 23,
       "day_end": 44,
       "color_theme": "indigo",
@@ -41,7 +41,7 @@
       "phase_number": 4,
       "slug": "hana-data-semantics",
       "title": "HANA Engine & Data Semantics",
-      "subtitle": "Days 45\u201354: Code Pushdown, Core Data Services (CDS), VDM & Analytical Queries",
+      "subtitle": "Days 45–54: Code Pushdown, Core Data Services (CDS), VDM & Analytical Queries",
       "day_start": 45,
       "day_end": 54,
       "color_theme": "cyan",
@@ -51,7 +51,7 @@
       "phase_number": 5,
       "slug": "fiori-enterprise-ux",
       "title": "SAP Fiori & Enterprise UX",
-      "subtitle": "Days 55\u201364: Fiori Launchpad, SAPUI5, OData Services & Fiori Elements",
+      "subtitle": "Days 55–64: Fiori Launchpad, SAPUI5, OData Services & Fiori Elements",
       "day_start": 55,
       "day_end": 64,
       "color_theme": "amber",
@@ -61,7 +61,7 @@
       "phase_number": 6,
       "slug": "cloud-clean-core",
       "title": "S/4HANA Cloud & Clean Core",
-      "subtitle": "Days 65\u201376: Public/Private Cloud, SAP Activate, Extensibility & Data Migration",
+      "subtitle": "Days 65–76: Public/Private Cloud, SAP Activate, Extensibility & Data Migration",
       "day_start": 65,
       "day_end": 76,
       "color_theme": "teal",
@@ -71,7 +71,7 @@
       "phase_number": 7,
       "slug": "abap-cloud-rap",
       "title": "ABAP Cloud & RAP",
-      "subtitle": "Days 77\u201389: RESTful Application Programming Model, Behavior Definitions & Actions",
+      "subtitle": "Days 77–89: RESTful Application Programming Model, Behavior Definitions & Actions",
       "day_start": 77,
       "day_end": 89,
       "color_theme": "violet",
@@ -81,7 +81,7 @@
       "phase_number": 8,
       "slug": "btp-integration",
       "title": "SAP BTP & Enterprise Integration",
-      "subtitle": "Days 90\u201395: Integration Suite, iFlows, Event Mesh & Secure Connectivity",
+      "subtitle": "Days 90–95: Integration Suite, iFlows, Event Mesh & Secure Connectivity",
       "day_start": 90,
       "day_end": 95,
       "color_theme": "orange",
@@ -91,7 +91,7 @@
       "phase_number": 9,
       "slug": "enterprise-capstone",
       "title": "Enterprise Capstone",
-      "subtitle": "Days 96\u2013100: Fit-to-Standard, RAP Implementation, Clean Core Audit & Defense",
+      "subtitle": "Days 96–100: Fit-to-Standard, RAP Implementation, Clean Core Audit & Defense",
       "day_start": 96,
       "day_end": 100,
       "color_theme": "rose",
@@ -2086,7 +2086,7 @@
       "description": "Discover, Prepare, Explore, Realize, Deploy, Run; agile governance, deliverables, and Q-Gates.",
       "objectives": [
         "Navigate 6 phases of SAP Activate",
-        "Manage Quality Gates (Q-Gate 1\u20134) approval criteria",
+        "Manage Quality Gates (Q-Gate 1–4) approval criteria",
         "Execute agile sprints for S/4HANA deployment"
       ],
       "estimated_minutes": 75,
@@ -6015,6 +6015,108 @@
       ],
       "remediation_content_md": "# Remediation: Secure Enterprise VDM Synthesis\n\nA production-grade S/4HANA analytical architecture unifies:\n\n1. **Strict VDM Layering**: Basic -> Composite -> Consumption (naming prefixes like I_, R_, C_ are SAP conventions, but view types are determined by @VDM.viewType annotations).\n2. **Association Performance**: Navigation path expressions instantiate joins on-demand; accurate cardinalities ([1..1], [0..1]) govern optimization.\n3. **Multidimensional Analytics**: Facts modeled as `#CUBE` with aggregated measures (@Aggregation.default: #SUM), joined with `#DIMENSION` entities.\n4. **Security by Design**: Declarative DCL access rules bound to PFCG authorization objects at the database level.",
       "recovery_assessment_slug": "vdm-synthesis-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-fiori-elements",
+      "target_concept_slug": "fiori-elements-floorplans",
+      "title": "Remediation Capsule: SAP Fiori Elements Floorplans & UI Annotations",
+      "deficiency_triggers": [
+        "Misunderstanding metadata-driven UI rendering",
+        "Confusing List Report with Overview Page",
+        "Failure to map OData annotations to UI controls"
+      ],
+      "prerequisite_deficiencies": [
+        "fiori-design-principles",
+        "odata-v4-vs-v2",
+        "sapui5-mvc-architecture"
+      ],
+      "remediation_content_md": "# Remediation: SAP Fiori Elements & OData UX\n\n1. **Metadata-Driven UX**: Fiori Elements applications (List Report, Object Page, Overview Page, Analytical List Page) are not coded imperatively in JavaScript. Instead, the UI structure is generated deterministically from CDS and OData annotations (`@UI.lineItem`, `@UI.identification`, `@UI.selectionField`).\n2. **Floorplan Selection**: Use List Report for high-volume searchable items, Object Page for detailed single entity maintenance, and Overview Page for multi-card operational dashboards.\n3. **OData V4**: Modern standard with batch operations, sparse fieldsets ($select), and responsive server-side paging.",
+      "recovery_assessment_slug": "fiori-elements-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-clean-core",
+      "target_concept_slug": "clean-core-philosophy",
+      "title": "Remediation Capsule: Clean Core Extensibility Principles",
+      "deficiency_triggers": [
+        "Modifying standard SAP code or database tables directly",
+        "Using non-released internal APIs in custom extensions",
+        "Improper selection between Key-User, On-Stack Developer, and Side-by-Side extensibility"
+      ],
+      "prerequisite_deficiencies": [
+        "s4hana-cloud-editions",
+        "upgrade-safety-principles",
+        "released-apis-c1"
+      ],
+      "remediation_content_md": "# Remediation: Clean Core Extensibility\n\n1. **Zero Core Modifications**: The digital core must remain standard. Custom tables, custom fields, and extensions must never break standard SAP upgrade cycles.\n2. **Extensibility Spectrum**:\n   - **Key-User Extensibility**: Low-code in-app additions (Custom Fields and Logic) using restricted ABAP.\n   - **Developer Extensibility (On-Stack ABAP Cloud)**: ABAP Cloud in Eclipse ADT strictly calling Released APIs (contract C1).\n   - **Side-by-Side Extensibility**: Independent applications running on SAP BTP communicating via OData/REST APIs and events.\n3. **Release Contracts**: C1 (system-internal use), C2 (cross-component use), C3 (B2B integration).",
+      "recovery_assessment_slug": "clean-core-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-abap-cloud",
+      "target_concept_slug": "abap-cloud-paradigm",
+      "title": "Remediation Capsule: Modern ABAP Cloud & Restricted Syntax",
+      "deficiency_triggers": [
+        "Using forbidden legacy statements (CALL TRANSACTION, direct standard DB writes)",
+        "Failing to utilize Released APIs for database and system operations",
+        "Lack of automated test coverage with ABAP Unit"
+      ],
+      "prerequisite_deficiencies": [
+        "modern-abap-syntax",
+        "released-apis-c1",
+        "forbidden-legacy-abap"
+      ],
+      "remediation_content_md": "# Remediation: ABAP Cloud Paradigm\n\n1. **Language Version**: ABAP Cloud enforces Language Version 5 (Standard ABAP Cloud). Legacy statements like `CALL TRANSACTION`, `SELECT * FROM non-released table`, and direct file I/O are compilation errors.\n2. **Released APIs**: Only interfaces and classes with Contract C1 can be invoked.\n3. **Automated Testing**: ABAP Unit tests are mandatory for cloud compliance, isolating business logic via test seams and mock doubles.",
+      "recovery_assessment_slug": "abap-cloud-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-rap-behavior",
+      "target_concept_slug": "bdef-syntax",
+      "title": "Remediation Capsule: RAP Behavior Definitions & Transactional Lifecycle",
+      "deficiency_triggers": [
+        "Misunderstanding Managed vs Unmanaged RAP implementation patterns",
+        "Executing business modifications in Save phase instead of Determinations or Validations",
+        "Improper Draft handling and ETag optimistic locking"
+      ],
+      "prerequisite_deficiencies": [
+        "rap-architecture-overview",
+        "rap-save-sequence",
+        "rap-determinations"
+      ],
+      "remediation_content_md": "# Remediation: RAP Architecture & Execution Lifecycle\n\n1. **Dual Phase Lifecycle**:\n   - **Interaction Phase**: Read, modify, execute Determinations (`on modify`, `on save`), and Validations. Operates in transactional buffer.\n   - **Save Phase**: `finalize`, `check_before_save`, `adjust_numbers`, `save`. Strictly NO external calls or buffer modifications allowed during save.\n2. **Managed vs Unmanaged**: Managed RAP delegates CRUD and draft handling to the RAP runtime framework; Unmanaged RAP requires manual ABAP implementation in behavior pool classes.\n3. **Draft Enablement**: Preserves temporary user edits in dedicated draft database tables with total ETag concurrency control.",
+      "recovery_assessment_slug": "rap-behavior-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-cpi-integration",
+      "target_concept_slug": "sap-integration-suite",
+      "title": "Remediation Capsule: SAP BTP Integration Suite & Event-Driven Architecture",
+      "deficiency_triggers": [
+        "Designing tight point-to-point connections instead of mediated iFlows",
+        "Failing to handle asynchronous enterprise events with SAP Event Mesh",
+        "Insecure hybrid connectivity without Cloud Connector or Principal Propagation"
+      ],
+      "prerequisite_deficiencies": [
+        "btp-architecture-overview",
+        "cloud-integration-cpi",
+        "sap-event-mesh"
+      ],
+      "remediation_content_md": "# Remediation: SAP Integration Suite & Event Mesh\n\n1. **Integration Patterns**: Mediate protocols and data formats using Cloud Integration (CPI) integration flows (iFlows) with Content Enricher, Splitter, and Router patterns.\n2. **Event-Driven Architecture**: Decouple publishers and subscribers using SAP Event Mesh with standard CloudEvents JSON payloads.\n3. **Secure Connectivity**: Connect On-Premise S/4HANA to BTP via reverse-proxy Cloud Connector, preserving corporate firewall integrity and user context through Principal Propagation.",
+      "recovery_assessment_slug": "cpi-integration-recovery-diagnostic"
+    },
+    {
+      "slug": "remediation-enterprise-capstone",
+      "target_concept_slug": "capstone-process-architecture",
+      "title": "Remediation Capsule: Enterprise Architecture Synthesis & Capstone Defense",
+      "deficiency_triggers": [
+        "Architectural misalignment between business requirements and Clean Core compliance",
+        "Incomplete document flow and data lineage from CDS to RAP and Fiori UX",
+        "Inability to resolve production-down incident scenarios during architectural defense"
+      ],
+      "prerequisite_deficiencies": [
+        "clean-core-philosophy",
+        "rap-architecture-overview",
+        "fiori-ux-synthesis"
+      ],
+      "remediation_content_md": "# Remediation: Enterprise Capstone Architecture Synthesis\n\n1. **Discovery & Fit-to-Standard**: Scope standard SAP Best Practices scope items before considering extensions.\n2. **Full-Stack Execution**: Model data in CDS View Entities, implement transactional logic in RAP BDEF, expose via OData V4 Service Bindings, and render through Fiori Elements List Report & Object Page.\n3. **Enterprise Defense**: Defend architectural choices based on TCO, upgrade agility, response latency, and Clean Core audit metrics.",
+      "recovery_assessment_slug": "capstone-defense-recovery-diagnostic"
     }
   ]
 }

@@ -29,10 +29,11 @@ class FakeEmbedder:
         self.calls += 1
         if self.fail:
             raise RuntimeError("embedding provider down")
-        vec = [0.0] * 8
+        import zlib
+        vec = [0.0] * 32
         for token in text.lower().split():
-            vec[hash(token) % 8] += 1.0
-        return vec or [0.0] * 8
+            vec[zlib.crc32(token.encode("utf-8")) % 32] += 1.0
+        return vec or [0.0] * 32
 
 
 class FakeRepo:

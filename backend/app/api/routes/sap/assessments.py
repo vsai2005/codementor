@@ -45,6 +45,12 @@ def submit_assessment(
         feedback=result["feedback"],
         evaluation_breakdown=result["evaluation_breakdown"],
         mastery_updated=result["mastery_updated"],
+        concept_evaluations=result.get("concept_evaluations", []),
         remediation_required=result["remediation_required"],
         remediation_capsule=remed_capsule,
+        all_remediations=result.get("all_remediations", []),
+        day_completed=result.get("day_completed", False),
+        unlocked_next_day=result.get("unlocked_next_day", False),
+        current_day=result.get("current_day"),
+        next_day_number=result.get("next_day_number"),
     )

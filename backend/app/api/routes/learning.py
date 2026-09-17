@@ -1,16 +1,18 @@
-from __future__ import annotations
-
+from datetime import datetime, timezone
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.api.deps import get_current_user, get_current_user_optional
 from app.database import get_db
-from app.models.models import User
+from app.models.models import User, UserLearningDayState
 from app.schemas.api import (
     CompleteLessonRequest,
     CompleteLessonResponse,
+    DevSetProgressRequest,
     LearningProgressResponse,
     LearningTutorChatRequest,
     LearningTutorQuickActionRequest,
@@ -143,4 +145,48 @@ async def tutor_quick_action(
         quick_action=payload.action,
     )
     return LearningTutorResponse(**result)
+
+
+@router.post("/dev-set-progress", response_model=LearningProgressResponse)
+def dev_set_progress(
+    payload: DevSetProgressRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> LearningProgressResponse:
+    """Developer helper: fast-forward user progress up to day N."""
+    settings = get_settings()
+    if settings.is_production:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Developer fast-forward endpoint is disabled in production environments.",
+        )
+
+    now = datetime.now(timezone.utc)
+    for d in range(1, payload.completed_up_to + 1):
+        st = db.execute(
+            select(UserLearningDayState).where(
+                UserLearningDayState.user_id == user.id,
+                UserLearningDayState.day_number == d,
+            )
+        ).scalar_one_or_none()
+        if not st:
+            st = UserLearningDayState(
+                user_id=user.id,
+                day_number=d,
+                lesson_completed=True,
+                lesson_completed_at=now,
+                practice_passed=True,
+                practice_passed_at=now,
+                completed=True,
+                completed_at=now,
+            )
+            db.add(st)
+        else:
+            st.lesson_completed = True
+            st.practice_passed = True
+            st.completed = True
+            st.completed_at = now
+    db.commit()
+    return learning_svc.compute_user_progress(db, user.id)
+
 

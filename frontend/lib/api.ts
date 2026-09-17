@@ -23,7 +23,6 @@ import type {
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-const TOKEN_KEY = "codementor.token";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -37,18 +36,16 @@ export class ApiError extends Error {
   }
 }
 
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+/**
+ * Purges any legacy local storage tokens to ensure HttpOnly cookie is canonical.
+ */
+export function clearLegacyAuthStorage(): void {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem("codementor.token");
+  }
 }
 
-export function setToken(token: string): void {
-  window.localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken(): void {
-  window.localStorage.removeItem(TOKEN_KEY);
-}
+export const clearToken = clearLegacyAuthStorage;
 
 interface RequestOptions {
   method?: "GET" | "POST";
@@ -57,9 +54,7 @@ interface RequestOptions {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const token = getToken();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const response = await fetch(`${BASE}${path}`, {
     method: options.method ?? "GET",
@@ -69,13 +64,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     signal: options.signal,
   });
 
-  // A 401 on a request that carried a token means the session is genuinely
-  // expired/invalid — clear it and say so. A 401 WITHOUT a token (e.g. a login
-  // with a wrong password) is not a session problem: fall through so the
-  // server's real message ("Incorrect username/email or password.") is shown.
-  if (response.status === 401 && token) {
-    clearToken();
-    throw new ApiError(401, "Your session expired. Please sign in again.");
+  if (response.status === 401) {
+    clearLegacyAuthStorage();
+    if (path !== "/api/auth/login" && path !== "/api/auth/register") {
+      let detail = "Not authenticated. Please sign in.";
+      try {
+        const payload = (await response.json()) as { detail?: string };
+        if (payload.detail) detail = payload.detail;
+      } catch {
+        /* ignore */
+      }
+      throw new ApiError(401, detail);
+    }
   }
 
   if (!response.ok) {

@@ -18,20 +18,12 @@ export default function LearningDashboardPage() {
     completedDays,
     isLoaded,
     getDayStatus,
-    toggleDayComplete,
     resetProgress,
     currentDayData,
     currentSection,
   } = useJourney();
 
   const [selectedDay, setSelectedDay] = useState<CurriculumDay | null>(null);
-
-  const handleToggleComplete = useCallback(
-    (dayNumber: number) => {
-      toggleDayComplete(dayNumber);
-    },
-    [toggleDayComplete]
-  );
 
   const handleContinue = useCallback(() => {
     if (currentDayData) {
@@ -88,7 +80,6 @@ export default function LearningDashboardPage() {
               getDayStatus={getDayStatus}
               isCurrentSection={currentSection?.id === section.id}
               onSelectDay={setSelectedDay}
-              onToggleComplete={handleToggleComplete}
             />
           ))}
         </div>
@@ -99,7 +90,6 @@ export default function LearningDashboardPage() {
             day={selectedDay}
             status={getDayStatus(selectedDay.day_number)}
             onClose={handleCloseModal}
-            onToggleComplete={handleToggleComplete}
           />
         )}
       </div>

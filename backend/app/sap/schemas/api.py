@@ -109,6 +109,15 @@ class SAPCompleteLessonResponse(BaseModel):
     day_state: SAPDayStateDetail
 
 
+class SAPCompletePracticeRequest(BaseModel):
+    day_number: int = Field(..., ge=1, le=100, description="SAP day number for practice completion")
+
+
+class SAPCompletePracticeResponse(BaseModel):
+    day_number: int
+    practice_completed: bool
+
+
 # --- Concept Mastery Schemas ---
 
 class SAPConceptMasteryItem(BaseModel):
@@ -135,13 +144,40 @@ class SAPRecordConceptMasteryRequest(BaseModel):
 
 # --- Placement Schemas ---
 
+class PlacementQuestionOption(BaseModel):
+    id: str
+    text: str
+
+
+class PlacementQuestionOut(BaseModel):
+    id: str
+    topic: str
+    topic_label: str
+    concept_slug: str
+    question: str
+    options: list[PlacementQuestionOption]
+    difficulty: int = 1
+
+
 class SAPPlacementDiagnosticRequest(BaseModel):
+    experience_level: str | None = Field(
+        default=None,
+        description="Experience level: 'fresher', 'experienced', or 'not_sure'."
+    )
     persona_self_select: str | None = None
     experience_years: float = Field(default=0.0, ge=0.0)
-    domain_scores: dict[str, float] = Field(
-        ...,
-        description="Benchmark scores per domain (0.0 to 100.0). Expected keys: erp_basics, ddic_and_sql, classic_abap, modern_s4hana_rap, btp_integration."
+    answers: dict[str, str] = Field(
+        default_factory=dict,
+        description="Map of question ID -> chosen option ID ('a', 'b', 'c', 'd')."
     )
+    domain_scores: dict[str, float] | None = Field(
+        default=None,
+        description="Optional benchmark scores per domain (0.0 to 100.0) for backward compatibility."
+    )
+
+
+class SAPPlacementChooseStartRequest(BaseModel):
+    start_day: int = Field(..., ge=1, le=100, description="Desired starting day number (e.g. 1 or recommended day)")
 
 
 class SAPPlacementProfileResponse(BaseModel):
@@ -149,16 +185,44 @@ class SAPPlacementProfileResponse(BaseModel):
     diagnostic_score: float
     recommended_start_day: int
     unlocked_days: list[int]
+    waived_days: list[int] = Field(default_factory=list)
     rationale: str
-    domain_scores: dict[str, float]
+    domain_scores: dict[str, float] = Field(default_factory=dict)
+    topic_breakdown: list[dict[str, Any]] = Field(default_factory=list)
+    demonstrated_concepts: list[str] = Field(default_factory=list)
+    gap_concepts: list[str] = Field(default_factory=list)
+
 
 
 # --- Assessment Schemas ---
 
+SAPAssessmentType = Literal[
+    "abap_challenge",
+    "analytics_eval",
+    "capstone_multi_concept",
+    "capstone_quiz",
+    "cds_challenge",
+    "concept_quiz",
+    "data_modeling",
+    "decision_matrix",
+    "mcq",
+    "process_ordering",
+    "rap_challenge",
+    "rubric_based",
+    "scenario_decision",
+    "simulation",
+    "technical_audit",
+    "troubleshooting",
+]
+
+
 class SAPAssessmentSubmitRequest(BaseModel):
     day_number: int = Field(..., ge=1, le=100)
     assessment_id: str
-    assessment_type: Literal["mcq", "process_ordering", "scenario_decision", "rubric_based"]
+    assessment_type: SAPAssessmentType = Field(
+        ...,
+        description="Explicit validated curriculum assessment type: e.g. 'capstone_multi_concept', 'mcq', 'process_ordering', 'scenario_decision', 'rubric_based', 'simulation', 'troubleshooting', 'abap_challenge', 'cds_challenge', 'rap_challenge', etc."
+    )
     rubric_spec: dict[str, Any] = Field(default_factory=dict)
     submission_payload: dict[str, Any] = Field(default_factory=dict)
 
@@ -174,6 +238,10 @@ class SAPAssessmentSubmitResponse(BaseModel):
     remediation_required: bool = False
     remediation_capsule: SAPRemediationCapsuleDetail | None = None
     all_remediations: list[dict[str, Any]] = Field(default_factory=list)
+    day_completed: bool = False
+    unlocked_next_day: bool = False
+    current_day: int | None = None
+    next_day_number: int | None = None
 
 
 # --- Execution Provider Schemas ---

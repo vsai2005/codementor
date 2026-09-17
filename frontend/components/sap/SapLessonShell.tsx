@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { sapApi } from "@/lib/sap/api";
-import type { SapLessonDetail, SapLessonStep } from "@/lib/sap/types";
+import type { SapLessonDetail, SapLessonStep, SapDayStateDetail } from "@/lib/sap/types";
 import { ProcessFlow } from "./ProcessFlow";
 import { OrgStructureMapper } from "./OrgStructureMapper";
 import { MasterDataClassifier } from "./MasterDataClassifier";
@@ -40,6 +40,7 @@ import { DCLAccessSimulator } from "./DCLAccessSimulator";
 
 interface SapLessonShellProps {
   lesson: SapLessonDetail;
+  initialDayState?: SapDayStateDetail | null;
   onDayComplete?: () => void;
 }
 
@@ -54,22 +55,68 @@ const STEP_LABELS = [
   "8. Completion",
 ];
 
-export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
+export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLessonShellProps) {
   const router = useRouter();
+  const steps = lesson.steps || [];
+
+  const isAlreadyPassed = Boolean(
+    initialDayState?.completed || initialDayState?.assessment_passed
+  );
+
   const [currentStepIdx, setCurrentStepIdx] = useState<number>(0);
-  const [maxUnlockedIdx, setMaxUnlockedIdx] = useState<number>(5); // Steps 0-5 open; 6-7 unlocked after assessment
+  const [maxUnlockedIdx, setMaxUnlockedIdx] = useState<number>(() => {
+    if (isAlreadyPassed) {
+      return Math.max(0, steps.length - 1);
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(`codementor_sap_day_${lesson.day_number}_step_progress`);
+        if (saved !== null) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed >= 0) {
+            return Math.min(parsed, 5); // Cannot skip assessment from localStorage alone
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return 0; // Fresh lesson begins strictly at Step 0
+  });
 
   // Assessment State
   const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
   const [submittingAssessment, setSubmittingAssessment] = useState<boolean>(false);
-  const [assessmentResult, setAssessmentResult] = useState<any>(null);
+  const [assessmentResult, setAssessmentResult] = useState<any>(
+    isAlreadyPassed ? { passed: true, score: 100, day_completed: initialDayState?.completed } : null
+  );
   const [assessmentError, setAssessmentError] = useState<string | null>(null);
 
   // Lesson Completion State
   const [completingLesson, setCompletingLesson] = useState<boolean>(false);
-  const [lessonCompleted, setLessonCompleted] = useState<boolean>(false);
+  const [lessonCompleted, setLessonCompleted] = useState<boolean>(Boolean(initialDayState?.completed));
 
-  const steps = lesson.steps || [];
+  // Sync maxUnlockedIdx changes to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`codementor_sap_day_${lesson.day_number}_step_progress`, String(maxUnlockedIdx));
+      } catch {
+        // ignore
+      }
+    }
+  }, [lesson.day_number, maxUnlockedIdx]);
+
+  // If initial day state arrives late and indicates passed/completed, unlock all
+  useEffect(() => {
+    if (isAlreadyPassed) {
+      setMaxUnlockedIdx(steps.length - 1);
+      if (!assessmentResult) {
+        setAssessmentResult({ passed: true, score: 100, day_completed: initialDayState?.completed });
+      }
+    }
+  }, [isAlreadyPassed, steps.length, initialDayState, assessmentResult]);
+
   const currentStep = steps[currentStepIdx] || steps[0];
 
   if (!currentStep) {
@@ -80,14 +127,28 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
     );
   }
 
+  const isAssessmentPassed = Boolean(
+    assessmentResult?.passed || initialDayState?.assessment_passed || initialDayState?.completed
+  );
+
+  const handleAdvanceTo = (targetIdx: number) => {
+    if (targetIdx > 5 && !isAssessmentPassed) {
+      return;
+    }
+    if (targetIdx > maxUnlockedIdx) {
+      setMaxUnlockedIdx(targetIdx);
+    }
+    setCurrentStepIdx(targetIdx);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleNext = () => {
     if (currentStepIdx < steps.length - 1) {
       const nextIdx = currentStepIdx + 1;
-      setCurrentStepIdx(nextIdx);
-      if (nextIdx > maxUnlockedIdx) {
-        setMaxUnlockedIdx(nextIdx);
+      if (nextIdx > 5 && !isAssessmentPassed) {
+        return;
       }
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      handleAdvanceTo(nextIdx);
     }
   };
 
@@ -99,6 +160,9 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
   };
 
   const handleStepJump = (idx: number) => {
+    if (idx > 5 && !isAssessmentPassed) {
+      return;
+    }
     if (idx <= maxUnlockedIdx) {
       setCurrentStepIdx(idx);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -122,7 +186,7 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
       const res = await sapApi.submitAssessment({
         day_number: lesson.day_number,
         assessment_id: currentStep.step_id || `day-${lesson.day_number}-assessment`,
-        assessment_type: currentStep.multi_concept_eval ? "capstone_multi_concept" : "mcq",
+        assessment_type: (currentStep.assessment_type as any) || (currentStep.multi_concept_eval ? "capstone_multi_concept" : "mcq"),
         submission_payload: {
           answers: payloadAnswers,
         },
@@ -130,7 +194,11 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
 
       setAssessmentResult(res);
       if (res.passed) {
-        setMaxUnlockedIdx(steps.length - 1);
+        const fullUnlockIdx = steps.length - 1;
+        setMaxUnlockedIdx(fullUnlockIdx);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`codementor_sap_day_${lesson.day_number}_step_progress`, String(fullUnlockIdx));
+        }
       }
     } catch (err: any) {
       setAssessmentError(err.message || "Failed to submit assessment.");
@@ -360,6 +428,16 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
                 {currentStep.takeaway}
               </div>
             )}
+
+            <div className="pt-4 border-t-2 border-ink flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleAdvanceTo(1)}
+                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                I've Read the Foundation → Proceed to Step 2
+              </button>
+            </div>
           </div>
         )}
 
@@ -377,6 +455,16 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
 
             <div className="prose max-w-none text-sm text-ink leading-relaxed whitespace-pre-line font-medium">
               {currentStep.content_md}
+            </div>
+
+            <div className="pt-4 border-t-2 border-ink flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleAdvanceTo(2)}
+                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Grasp Architectural Concept → Continue to Visual Example
+              </button>
             </div>
           </div>
         )}
@@ -406,6 +494,16 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
             <div className="prose max-w-none text-sm text-ink leading-relaxed whitespace-pre-line font-medium">
               {currentStep.content_md}
             </div>
+
+            <div className="pt-4 border-t-2 border-ink flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleAdvanceTo(3)}
+                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Reviewed Enterprise Scenario → Enter Interactive Practice
+              </button>
+            </div>
           </div>
         )}
 
@@ -427,16 +525,44 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
             </div>
 
             {renderPracticeComponent(currentStep)}
+
+            <div className="border-3 border-ink bg-surface p-4 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <div className="text-xs font-mono font-bold text-ink">
+                Completed hands-on configuration or process tracing?
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  sapApi.completePractice(lesson.day_number).catch(() => {});
+                  handleAdvanceTo(4);
+                }}
+                className="border-2 border-ink bg-emerald-400 hover:bg-emerald-300 text-ink px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Log Practice & Proceed to Scenario Challenge →
+              </button>
+            </div>
           </div>
         )}
 
         {/* STEP 5: CHALLENGE */}
         {currentStep.step_type === "challenge" && (
-          <ScenarioDecision
-            title={currentStep.title}
-            scenarioMd={currentStep.scenario_md || ""}
-            options={currentStep.options || []}
-          />
+          <div className="space-y-4">
+            <ScenarioDecision
+              title={currentStep.title}
+              scenarioMd={currentStep.scenario_md || ""}
+              options={currentStep.options || []}
+            />
+
+            <div className="border-3 border-ink bg-surface p-4 flex justify-end shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <button
+                type="button"
+                onClick={() => handleAdvanceTo(5)}
+                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Proceed to Milestone Assessment (Step 6) →
+              </button>
+            </div>
+          </div>
         )}
 
         {/* STEP 6: ASSESSMENT */}
@@ -545,13 +671,24 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
                       {assessmentResult.passed ? "— PASSED" : "— NEEDS REVIEW"}
                     </span>
                   </div>
-                  {assessmentResult.passed && (
+                  {assessmentResult.passed ? (
                     <button
                       type="button"
                       onClick={() => handleStepJump(6)}
                       className="border-2 border-ink bg-emerald-300 hover:bg-emerald-200 text-ink px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                     >
                       Proceed to Step 7: Skill Evidence →
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAssessmentResult(null);
+                        setAssessmentError(null);
+                      }}
+                      className="border-2 border-ink bg-amber-300 hover:bg-amber-200 text-ink px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                    >
+                      🔄 Revise Answers & Retake
                     </button>
                   )}
                 </div>
@@ -627,14 +764,26 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
               </div>
             )}
 
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end gap-3">
+              {assessmentResult && !assessmentResult.passed && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAssessmentResult(null);
+                    setAssessmentError(null);
+                  }}
+                  className="border-2 border-ink bg-surface px-4 py-2.5 text-xs font-black uppercase text-ink hover:bg-surface-raised shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  Clear & Retake
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleSubmitAssessment}
                 disabled={submittingAssessment}
                 className="border-3 border-ink bg-emerald-400 px-6 py-2.5 text-xs font-black uppercase tracking-wider text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 disabled:opacity-50"
               >
-                {submittingAssessment ? "Evaluating Evidence…" : "Submit Assessment →"}
+                {submittingAssessment ? "Evaluating Evidence…" : assessmentResult?.passed ? "Re-evaluate Assessment →" : "Submit Assessment →"}
               </button>
             </div>
           </div>
@@ -678,6 +827,16 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
                 <div className="text-muted text-[10px] uppercase font-bold">Verification Category</div>
                 <div className="font-bold text-ink mt-0.5">STATIC_VALIDATION</div>
               </div>
+            </div>
+
+            <div className="pt-4 border-t-2 border-ink flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleAdvanceTo(7)}
+                className="border-2 border-ink bg-emerald-400 hover:bg-emerald-300 text-ink px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Proceed to Milestone Completion (Step 8) →
+              </button>
             </div>
           </div>
         )}
@@ -743,7 +902,11 @@ export function SapLessonShell({ lesson, onDayComplete }: SapLessonShellProps) {
         <button
           type="button"
           onClick={handleNext}
-          disabled={currentStepIdx === steps.length - 1 || currentStepIdx >= maxUnlockedIdx}
+          disabled={
+            currentStepIdx === steps.length - 1 ||
+            currentStepIdx >= maxUnlockedIdx ||
+            (currentStepIdx === 5 && !isAssessmentPassed)
+          }
           className="border-2 border-ink bg-ink text-surface px-5 py-2 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-ink/90 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Next Stage →

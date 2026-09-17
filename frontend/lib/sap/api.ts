@@ -4,29 +4,34 @@ import type {
   SapLessonDetail,
   SapProgressResponse,
   SapPlacementProfile,
+  PlacementQuestion,
+  SapAssessmentSubmitRequest,
+  SapAssessmentSubmitResponse,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-const TOKEN_KEY = "codementor.token";
-
-function authHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (typeof window !== "undefined") {
-    const token = window.localStorage.getItem(TOKEN_KEY);
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  }
-  return headers;
-}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...options,
-    headers: { ...authHeaders(), ...(options.headers as Record<string, string>) },
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    },
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(body.detail || `Request failed with status ${res.status}`);
+    let detail = `Request failed with status ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body.detail) detail = body.detail;
+    } catch {
+      detail = res.statusText || detail;
+    }
+    const err = new Error(detail);
+    (err as any).status = res.status;
+    throw err;
   }
 
   return res.json();
@@ -53,8 +58,19 @@ export const sapApi = {
       body: JSON.stringify({ day_number: dayNumber }),
     }),
 
+  completePractice: (dayNumber: number): Promise<any> =>
+    request<any>("/api/sap/learning/complete-practice", {
+      method: "POST",
+      body: JSON.stringify({ day_number: dayNumber }),
+    }),
+
+  getPlacementQuestions: (track: "experienced" | "not_sure" = "experienced"): Promise<PlacementQuestion[]> =>
+    request<PlacementQuestion[]>(`/api/sap/placement/questions?track=${track}`),
+
   submitPlacement: (payload: {
-    domain_scores: Record<string, number>;
+    experience_level?: string;
+    answers?: Record<string, string>;
+    domain_scores?: Record<string, number>;
     experience_years?: number;
     persona_self_select?: string;
   }): Promise<SapPlacementProfile> =>
@@ -63,17 +79,17 @@ export const sapApi = {
       body: JSON.stringify(payload),
     }),
 
+  chooseStartDay: (startDay: number): Promise<SapPlacementProfile> =>
+    request<SapPlacementProfile>("/api/sap/placement/choose-start", {
+      method: "POST",
+      body: JSON.stringify({ start_day: startDay }),
+    }),
+
   getPlacementProfile: (): Promise<SapPlacementProfile> =>
     request<SapPlacementProfile>("/api/sap/placement/profile"),
 
-  submitAssessment: (payload: {
-    day_number: number;
-    assessment_id: string;
-    assessment_type: string;
-    rubric_spec?: Record<string, any>;
-    submission_payload?: Record<string, any>;
-  }): Promise<any> =>
-    request<any>("/api/sap/assessments/submit", {
+  submitAssessment: (payload: SapAssessmentSubmitRequest): Promise<SapAssessmentSubmitResponse> =>
+    request<SapAssessmentSubmitResponse>("/api/sap/assessments/submit", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

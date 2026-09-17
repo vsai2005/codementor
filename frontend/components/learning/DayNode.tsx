@@ -15,7 +15,6 @@ export const DayNode = memo(function DayNode({
   day,
   status,
   onSelectDay,
-  onToggleComplete,
 }: DayNodeProps) {
   const isLocked = status === "locked";
   const isCurrent = status === "current";
@@ -210,26 +209,6 @@ export const DayNode = memo(function DayNode({
               <span>Inspect →</span>
             )}
           </span>
-
-          {/* Quick toggle completion button */}
-          {!isLocked && onToggleComplete && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleComplete(day.day_number);
-              }}
-              title={isCompleted ? "Mark as Incomplete" : "Mark as Completed"}
-              aria-label={isCompleted ? `Mark Day ${day.day_number} incomplete` : `Mark Day ${day.day_number} complete`}
-              className={`rounded border px-2 py-1 font-mono text-[11px] transition-colors ${
-                isCompleted
-                  ? "border-accent-2/60 text-accent-2 hover:border-accent-2 hover:bg-accent-2/10"
-                  : "border-ink/30 text-muted hover:border-ink hover:text-ink"
-              }`}
-            >
-              {isCompleted ? "Unmark" : "Mark done"}
-            </button>
-          )}
         </div>
       </div>
     </div>

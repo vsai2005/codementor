@@ -6,12 +6,14 @@ import { LessonProgress, LessonStep } from "./types";
 interface UseLessonProgressOptions {
   dayNumber: number;
   steps: LessonStep[];
+  onCompleteLesson?: () => void;
   onCompleteDay?: () => void;
 }
 
 export function useLessonProgress({
   dayNumber,
   steps,
+  onCompleteLesson,
   onCompleteDay,
 }: UseLessonProgressOptions) {
   const storageKey = `codementor.lesson.${dayNumber}.progress`;
@@ -218,16 +220,18 @@ export function useLessonProgress({
     [totalSteps, saveProgress]
   );
 
-  const completeDay = useCallback(() => {
+  const completeLesson = useCallback(() => {
     saveProgress((prev) => ({
       ...prev,
       isCompleted: true,
       completedAt: Date.now(),
     }));
-    if (onCompleteDay) {
+    if (onCompleteLesson) {
+      onCompleteLesson();
+    } else if (onCompleteDay) {
       onCompleteDay();
     }
-  }, [saveProgress, onCompleteDay]);
+  }, [saveProgress, onCompleteLesson, onCompleteDay]);
 
   const resetLesson = useCallback(() => {
     saveProgress(() => ({
@@ -256,7 +260,8 @@ export function useLessonProgress({
     recordCheckpointAnswer,
     setCodeDraft,
     setPracticeCompleted,
-    completeDay,
+    completeLesson,
+    completeDay: completeLesson,
     resetLesson,
   };
 }

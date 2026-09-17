@@ -11,6 +11,8 @@ from app.api.deps import get_current_user
 from app.database import SessionLocal, get_db
 from app.models.models import Problem, Submission, User
 from app.schemas.api import (
+    CustomRunRequest,
+    CustomRunResponse,
     DifficultyChange,
     RunRequest,
     SubmissionHistoryItem,
@@ -63,6 +65,34 @@ async def run_only(
     problem = _load_problem(db, payload.problem_id)
     report = await svc.execute_async(problem, payload.code)
     return _tests_payload(report)
+
+
+@router.post("/run-custom", response_model=CustomRunResponse)
+async def run_custom_input(
+    payload: CustomRunRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> CustomRunResponse:
+    problem = None
+    try:
+        uid = uuid.UUID(payload.problem_id)
+        problem = db.get(Problem, uid)
+    except (ValueError, TypeError):
+        problem = db.execute(select(Problem).where(Problem.slug == payload.problem_id)).scalar_one_or_none()
+
+    if problem is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Problem not found")
+
+    from app.services.sandbox import run_custom_async
+    res = await run_custom_async(payload.code, problem.entry_point, payload.args)
+    status_str = "ok" if (res.status in ("ok", "wrong_answer") and not res.stderr) else res.status
+    return CustomRunResponse(
+        status=status_str,
+        returned=res.returned,
+        stdout=res.stdout,
+        stderr=res.stderr,
+        runtime_ms=res.runtime_ms,
+    )
 
 
 @router.post("", response_model=SubmissionResponse)

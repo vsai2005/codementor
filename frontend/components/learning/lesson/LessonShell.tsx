@@ -18,13 +18,15 @@ interface LessonShellProps {
   dayNumber: number;
   title: string;
   steps: LessonStep[];
-  onMarkDayComplete: (dayNumber: number) => void;
+  onLessonComplete: (dayNumber: number) => void;
+  onMarkDayComplete?: (dayNumber: number) => void;
 }
 
 export function LessonShell({
   dayNumber,
   title,
   steps,
+  onLessonComplete,
   onMarkDayComplete,
 }: LessonShellProps) {
   const {
@@ -42,22 +44,25 @@ export function LessonShell({
     recordCheckpointAnswer,
     setCodeDraft,
     setPracticeCompleted,
-    completeDay,
+    completeLesson,
     resetLesson,
   } = useLessonProgress({
     dayNumber,
     steps,
-    onCompleteDay: () => onMarkDayComplete(dayNumber),
+    onCompleteLesson: () => {
+      if (onLessonComplete) onLessonComplete(dayNumber);
+      else if (onMarkDayComplete) onMarkDayComplete(dayNumber);
+    },
   });
 
   const [isAiTeacherOpen, setIsAiTeacherOpen] = useState(false);
 
   const router = useRouter();
 
-  const handleFinishDay = useCallback(() => {
-    completeDay();
+  const handleCompleteLesson = useCallback(() => {
+    completeLesson();
     router.push("/learning");
-  }, [completeDay, router]);
+  }, [completeLesson, router]);
 
   const handleStepChange = useCallback(
     (index: number) => {
@@ -193,7 +198,7 @@ export function LessonShell({
           <LessonCompletion
             step={activeStep}
             isCompleted={progress.isCompleted}
-            onFinishDay={completeDay}
+            onFinishDay={completeLesson}
           />
         )}
       </main>
@@ -235,7 +240,7 @@ export function LessonShell({
               </span>
             ) : currentStepIndex === steps.length - 1 ? (
               <span className="font-mono text-xs text-accent-2 font-bold block truncate">
-                🎉 Day {dayNumber} Complete!
+                🎉 Lesson {dayNumber} Complete!
               </span>
             ) : (
               <span className="font-mono text-xs text-muted block truncate">
@@ -260,10 +265,10 @@ export function LessonShell({
           ) : (
             <button
               type="button"
-              onClick={handleFinishDay}
+              onClick={handleCompleteLesson}
               className="btn btn-primary min-h-[44px] text-xs sm:text-sm font-bold shadow-hard-sm hover:shadow-hard focus-visible:ring-2 focus-visible:ring-accent"
             >
-              Finish Day {dayNumber} →
+              Complete Lesson {dayNumber} →
             </button>
           )}
         </div>
