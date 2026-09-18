@@ -39,7 +39,7 @@ cd backend
 pytest                                    # 84 unit tests, no DB needed
 
 # integration tests, opt-in:
-export TEST_DATABASE_URL=postgresql+psycopg://codementor:codementor@localhost:5432/codementor_test
+export TEST_DATABASE_URL=postgresql+psycopg://codementor:codementor@localhost:5433/codementor_test
 pytest -m integration                     # 12 tests: migration, pgvector, isolation
 
 cd ../frontend

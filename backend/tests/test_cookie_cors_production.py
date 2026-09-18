@@ -73,7 +73,13 @@ def test_login_sets_httponly_cookie_with_correct_attributes(client, test_user):
     assert "Secure" not in set_cookie  # Not in dev
 
     # Patch settings to production mode using a dedicated Settings instance (never mutate singleton)
-    prod_settings = Settings(environment="production", cookie_secure=None)
+    prod_settings = Settings(
+        environment="production",
+        cookie_secure=None,
+        jwt_secret="a" * 32,
+        database_url="postgresql+psycopg://user:pass@db.example.com:5432/codementor",
+        redis_url="rediss://default:secret@upstash.io:6379",
+    )
     with patch("app.api.routes.auth.get_settings", return_value=prod_settings):
         response = client.post("/api/auth/login", json={
             "identifier": "testuser",
@@ -104,7 +110,13 @@ def test_logout_clears_cookie_with_secure_flag(client, test_user):
     assert 'access_token=""' in set_cookie or "access_token=;" in set_cookie or "Max-Age=0" in set_cookie or "expires=" in set_cookie.lower()
     
     # Patch settings to production mode for logout
-    prod_settings = Settings(environment="production", cookie_secure=None)
+    prod_settings = Settings(
+        environment="production",
+        cookie_secure=None,
+        jwt_secret="a" * 32,
+        database_url="postgresql+psycopg://user:pass@db.example.com:5432/codementor",
+        redis_url="rediss://default:secret@upstash.io:6379",
+    )
     with patch("app.api.routes.auth.get_settings", return_value=prod_settings):
         response = client.post("/api/auth/logout")
         assert response.status_code == 200

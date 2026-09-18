@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { CURRICULUM_SECTIONS, TOTAL_CURRICULUM_DAYS } from "./curriculumData";
 import { DayStatus, LearningJourneyProgress, DayProgressRecord, CurriculumDay, CurriculumSection } from "./types";
 import { api } from "@/lib/api";
@@ -56,10 +56,16 @@ export function useJourney() {
   const { user } = useAuth();
   const [progress, setProgress] = useState<LearningJourneyProgress>(DEFAULT_PROGRESS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const progressRef = useRef(progress);
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   const saveProgress = useCallback((updater: (prev: LearningJourneyProgress) => LearningJourneyProgress) => {
     setProgress((prev) => {
       const nextProgress = updater(prev);
+      progressRef.current = nextProgress;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProgress));
       } catch {
@@ -229,6 +235,11 @@ export function useJourney() {
    */
   const recordPracticePassed = useCallback(
     async (dayNumber: number) => {
+      // Synchronous idempotency check: if practice is already passed, exit immediately
+      if (progressRef.current.day_records?.[dayNumber]?.practice_passed) {
+        return;
+      }
+
       saveProgress((prev) => {
         const records = { ...(prev.day_records || {}) };
         const existing = records[dayNumber] || {
@@ -237,6 +248,11 @@ export function useJourney() {
           practice_passed: false,
           completed: false,
         };
+
+        if (existing.practice_passed) {
+          return prev;
+        }
+
         const lesson_completed = Boolean(existing.lesson_completed);
         const practice_passed = true;
         const completed = lesson_completed && practice_passed;
@@ -289,10 +305,8 @@ export function useJourney() {
       }
     };
     window.addEventListener("codementor:practice-passed", handlePracticeEvent);
-    window.addEventListener("codementor:day-completed", handlePracticeEvent);
     return () => {
       window.removeEventListener("codementor:practice-passed", handlePracticeEvent);
-      window.removeEventListener("codementor:day-completed", handlePracticeEvent);
     };
   }, [recordPracticePassed]);
 

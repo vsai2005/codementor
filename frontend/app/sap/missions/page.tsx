@@ -17,24 +17,83 @@ export default function SapMissionsPage() {
   const [assistanceLevel, setAssistanceLevel] = useState<SapAssistanceLevel>("TRAINING");
   const [evidence, setEvidence] = useState<SapSkillEvidenceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [missionsError, setMissionsError] = useState<string | null>(null);
+  const [companyError, setCompanyError] = useState<string | null>(null);
+  const [evidenceError, setEvidenceError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
 
   const loadData = async () => {
-    try {
-      const [companyData, missionsData, modesData, evidenceData] = await Promise.all([
-        sapApi.getCompany().catch(() => null),
-        sapApi.getMissions().catch(() => []),
-        sapApi.getModes().catch(() => null),
-        sapApi.getSkillEvidence(10).catch(() => ({ evidences: [] })),
-      ]);
+    setLoading(true);
+    setMissionsError(null);
+    setCompanyError(null);
+    setActionError(null);
 
-      if (companyData) setEnterprise(companyData);
-      if (missionsData) setMissions(missionsData);
-      if (modesData?.assistance_level) setAssistanceLevel(modesData.assistance_level);
-      if (evidenceData?.evidences) setEvidence(evidenceData.evidences);
-    } finally {
-      setLoading(false);
+    const results = await Promise.allSettled([
+      sapApi.getCompany(),
+      sapApi.getMissions(),
+      sapApi.getModes(),
+      sapApi.getSkillEvidence(10),
+    ]);
+
+    const [companyRes, missionsRes, modesRes, evidenceRes] = results;
+
+    if (companyRes.status === "fulfilled") {
+      setEnterprise(companyRes.value);
+      setCompanyError(null);
+    } else {
+      setCompanyError(companyRes.reason?.message || "Failed to load enterprise digital twin.");
+    }
+
+    if (missionsRes.status === "fulfilled") {
+      setMissions(missionsRes.value || []);
+      setMissionsError(null);
+    } else {
+      setMissionsError(missionsRes.reason?.message || "Failed to load enterprise missions.");
+    }
+
+    if (modesRes.status === "fulfilled" && modesRes.value?.assistance_level) {
+      setAssistanceLevel(modesRes.value.assistance_level);
+    }
+
+    if (evidenceRes.status === "fulfilled" && evidenceRes.value?.evidences) {
+      setEvidence(evidenceRes.value.evidences);
+      setEvidenceError(null);
+    } else if (evidenceRes.status === "rejected") {
+      setEvidenceError(evidenceRes.reason?.message || "Failed to load skill evidence feed.");
+    }
+
+    setLoading(false);
+  };
+
+  const retryMissions = async () => {
+    setMissionsError(null);
+    try {
+      const data = await sapApi.getMissions();
+      setMissions(data || []);
+    } catch (err: any) {
+      setMissionsError(err?.message || "Failed to load enterprise missions.");
+    }
+  };
+
+  const retryCompany = async () => {
+    setCompanyError(null);
+    try {
+      const data = await sapApi.getCompany();
+      setEnterprise(data);
+    } catch (err: any) {
+      setCompanyError(err?.message || "Failed to load enterprise digital twin.");
+    }
+  };
+
+  const retryEvidence = async () => {
+    setEvidenceError(null);
+    try {
+      const data = await sapApi.getSkillEvidence(10);
+      if (data?.evidences) setEvidence(data.evidences);
+    } catch (err: any) {
+      setEvidenceError(err?.message || "Failed to load skill evidence feed.");
     }
   };
 
@@ -43,11 +102,15 @@ export default function SapMissionsPage() {
   }, []);
 
   const handleAssistanceChange = async (level: SapAssistanceLevel) => {
+    const prevLevel = assistanceLevel;
     setAssistanceLevel(level);
+    setActionError(null);
     try {
       await sapApi.switchMode({ mode: "MISSION", assistance_level: level });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to update assistance level:", err);
+      setActionError(err?.message || "Failed to update assistance level. Please try again.");
+      setAssistanceLevel(prevLevel);
     }
   };
 
@@ -56,13 +119,14 @@ export default function SapMissionsPage() {
   const handleResetEnterprise = async () => {
     setResetting(true);
     setResetMessage(null);
+    setActionError(null);
     setConfirmReset(false);
     try {
       const res = await sapApi.resetCompany();
       setResetMessage(res.message || "Enterprise digital twin reset successfully.");
       await loadData();
     } catch (err: any) {
-      setResetMessage(err.message || "Failed to reset enterprise state.");
+      setActionError(err.message || "Failed to reset enterprise state.");
     } finally {
       setResetting(false);
     }
@@ -122,6 +186,22 @@ export default function SapMissionsPage() {
             </Link>
           </div>
         </div>
+
+        {/* Action Error Alert */}
+        {actionError && (
+          <div className="mb-6 border-3 border-rose-500 bg-rose-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between gap-3 text-rose-900">
+            <div className="text-xs font-bold">
+              <span className="uppercase font-black mr-2">Action Error:</span>
+              {actionError}
+            </div>
+            <button
+              onClick={() => setActionError(null)}
+              className="text-xs font-mono font-bold underline hover:text-rose-700 whitespace-nowrap"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Header Briefing */}
         <div className="border-4 border-ink bg-surface p-6 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-8">
@@ -213,6 +293,20 @@ export default function SapMissionsPage() {
             </div>
           </div>
 
+          {companyError && (
+            <div className="mb-4 p-3 bg-rose-50 border-2 border-rose-400 text-rose-900 text-xs flex flex-wrap items-center justify-between gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <div>
+                <span className="font-bold">Enterprise Status Offline / Error:</span> {companyError}
+              </div>
+              <button
+                onClick={retryCompany}
+                className="border-2 border-ink bg-rose-200 hover:bg-rose-300 px-3 py-1 text-xs font-bold text-rose-900 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
+              >
+                Retry Enterprise
+              </button>
+            </div>
+          )}
+
           {resetMessage && (
             <div className="mb-4 p-2 bg-emerald-100 border border-emerald-400 text-emerald-900 text-xs font-semibold">
               {resetMessage}
@@ -243,81 +337,119 @@ export default function SapMissionsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-black text-ink">Enterprise Mission Briefings</h2>
-            <span className="text-xs font-mono text-muted">{missions.length} Missions Available</span>
+            {!missionsError && (
+              <span className="text-xs font-mono text-muted">{missions.length} Missions Available</span>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {missions.map((m) => (
-              <div
-                key={m.id}
-                className="border-3 border-ink bg-surface p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between"
+          {missionsError ? (
+            <div className="border-3 border-rose-500 bg-rose-50 p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+              <h3 className="text-base font-black text-rose-900 mb-2">
+                Failed to Load Missions
+              </h3>
+              <p className="text-xs text-rose-700 max-w-xl mx-auto mb-4">
+                {missionsError}
+              </p>
+              <button
+                onClick={retryMissions}
+                className="border-2 border-ink bg-amber-300 hover:bg-amber-400 px-4 py-2 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span
-                      className={`text-[10px] font-mono font-bold uppercase border px-2 py-0.5 ${getMissionTypeColor(
-                        m.mission_type
-                      )}`}
+                Retry Loading Missions
+              </button>
+            </div>
+          ) : missions.length === 0 ? (
+            <div className="border-3 border-ink bg-surface p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+              <h3 className="text-base font-black text-ink mb-1">No Missions Available</h3>
+              <p className="text-xs text-muted max-w-md mx-auto">
+                There are currently no active enterprise mission scenarios configured for your role.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {missions.map((m) => (
+                <div
+                  key={m.id}
+                  className="border-3 border-ink bg-surface p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span
+                        className={`text-[10px] font-mono font-bold uppercase border px-2 py-0.5 ${getMissionTypeColor(
+                          m.mission_type
+                        )}`}
+                      >
+                        {m.mission_type}
+                      </span>
+                      <span className="text-xs font-mono text-muted">
+                        Difficulty: {"★".repeat(m.difficulty)}{"☆".repeat(Math.max(0, 3 - m.difficulty))}
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-black text-ink mb-1">{m.title}</h3>
+                    <p className="text-xs text-muted mb-4 line-clamp-2">{m.description}</p>
+
+                    {/* Related Days & Concepts */}
+                    <div className="mb-4">
+                      <div className="text-[10px] font-mono uppercase text-muted mb-1">Aligned Guided Days:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {m.related_days.map((day) => (
+                          <span key={day} className="border border-ink bg-emerald-100 text-ink px-1.5 py-0.5 text-[10px] font-mono font-bold">
+                            Day {day}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <div className="text-[10px] font-mono uppercase text-muted mb-1">Tested Concepts:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {m.concept_slugs.map((c) => (
+                          <span key={c} className="border border-ink/40 bg-surface-raised text-ink px-1.5 py-0.5 text-[10px] font-mono">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t-2 border-ink pt-3 flex items-center justify-between">
+                    <div className="text-xs font-mono">
+                      {m.passed ? (
+                        <span className="text-emerald-700 font-bold">✓ Completed ({m.score}%)</span>
+                      ) : m.attempt_status === "IN_PROGRESS" ? (
+                        <span className="text-amber-700 font-bold">● In Progress</span>
+                      ) : (
+                        <span className="text-muted">Not Started</span>
+                      )}
+                    </div>
+
+                    <Link
+                      href={`/sap/missions/${m.slug}`}
+                      className="border-2 border-ink bg-amber-300 hover:bg-amber-400 px-3 py-1.5 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                     >
-                      {m.mission_type}
-                    </span>
-                    <span className="text-xs font-mono text-muted">
-                      Difficulty: {"★".repeat(m.difficulty)}{"☆".repeat(Math.max(0, 3 - m.difficulty))}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-black text-ink mb-1">{m.title}</h3>
-                  <p className="text-xs text-muted mb-4 line-clamp-2">{m.description}</p>
-
-                  {/* Related Days & Concepts */}
-                  <div className="mb-4">
-                    <div className="text-[10px] font-mono uppercase text-muted mb-1">Aligned Guided Days:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {m.related_days.map((day) => (
-                        <span key={day} className="border border-ink bg-emerald-100 text-ink px-1.5 py-0.5 text-[10px] font-mono font-bold">
-                          Day {day}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <div className="text-[10px] font-mono uppercase text-muted mb-1">Tested Concepts:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {m.concept_slugs.map((c) => (
-                        <span key={c} className="border border-ink/40 bg-surface-raised text-ink px-1.5 py-0.5 text-[10px] font-mono">
-                          {c}
-                        </span>
-                      ))}
-                    </div>
+                      {m.passed ? "Review Mission →" : m.attempt_status === "IN_PROGRESS" ? "Resume →" : "Launch Mission →"}
+                    </Link>
                   </div>
                 </div>
-
-                <div className="border-t-2 border-ink pt-3 flex items-center justify-between">
-                  <div className="text-xs font-mono">
-                    {m.passed ? (
-                      <span className="text-emerald-700 font-bold">✓ Completed ({m.score}%)</span>
-                    ) : m.attempt_status === "IN_PROGRESS" ? (
-                      <span className="text-amber-700 font-bold">● In Progress</span>
-                    ) : (
-                      <span className="text-muted">Not Started</span>
-                    )}
-                  </div>
-
-                  <Link
-                    href={`/sap/missions/${m.slug}`}
-                    className="border-2 border-ink bg-amber-300 hover:bg-amber-400 px-3 py-1.5 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-                  >
-                    {m.passed ? "Review Mission →" : m.attempt_status === "IN_PROGRESS" ? "Resume →" : "Launch Mission →"}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Skill Evidence Stream */}
-        {evidence.length > 0 && (
+        {/* Skill Evidence Stream or Evidence Error */}
+        {evidenceError ? (
+          <div className="border-3 border-amber-400 bg-amber-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-950">
+            <div>
+              <span className="font-bold">Skill Evidence Notice:</span> {evidenceError}
+            </div>
+            <button
+              onClick={retryEvidence}
+              className="border-2 border-ink bg-amber-300 hover:bg-amber-400 px-3 py-1 font-bold text-ink shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
+            >
+              Retry Evidence Feed
+            </button>
+          </div>
+        ) : evidence.length > 0 ? (
           <div className="border-3 border-ink bg-surface p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <h2 className="text-lg font-black text-ink mb-3">Unified Skill Evidence Feed</h2>
             <p className="text-xs text-muted mb-4">
@@ -341,7 +473,7 @@ export default function SapMissionsPage() {
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </AppShell>
   );

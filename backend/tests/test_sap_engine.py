@@ -461,16 +461,24 @@ def test_api_sap_execution_validate():
 # =============================================================================
 
 def test_python_learning_run_still_works():
-    """Verify that Python execution sandbox is intact and untouched."""
-    payload = {
-        "code": "print('Python sandbox remains completely functional')",
-        "day_number": 1,
-    }
-    resp = client.post("/api/learning/run", json=payload)
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["status"] == "ok"
-    assert "Python sandbox remains completely functional" in data["stdout"]
+    """Verify that Python execution sandbox is intact and untouched for authenticated users."""
+    from app.api.deps import get_current_user
+    from app.models.models import User
+
+    test_user = User(id=uuid.uuid4(), email="sap_test@example.com", name="SAP Tester")
+    app.dependency_overrides[get_current_user] = lambda: test_user
+    try:
+        payload = {
+            "code": "print('Python sandbox remains completely functional')",
+            "day_number": 1,
+        }
+        resp = client.post("/api/learning/run", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "ok"
+        assert "Python sandbox remains completely functional" in data["stdout"]
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
 
 
 # =============================================================================

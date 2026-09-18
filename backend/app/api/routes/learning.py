@@ -19,7 +19,7 @@ from app.schemas.api import (
     LearningTutorResponse,
 )
 from app.services import learning as learning_svc
-from app.services.ratelimit import get_tutor_rate_limiter
+from app.services.ratelimit import get_run_rate_limiter, get_tutor_rate_limiter
 from app.services.sandbox import execute_script_async
 from app.services.teacher import AITeacherService, get_teacher_service
 from app.services.tutor_security import sanitize_tutor_input
@@ -41,8 +41,25 @@ class RunLessonSnippetResponse(BaseModel):
 
 
 @router.post("/run", response_model=RunLessonSnippetResponse)
-async def run_lesson_snippet(payload: RunLessonSnippetRequest) -> RunLessonSnippetResponse:
+async def run_lesson_snippet(
+    payload: RunLessonSnippetRequest,
+    user: User = Depends(get_current_user),
+) -> RunLessonSnippetResponse:
     """Execute a student code snippet in the zero-trust sandbox for interactive curriculum days."""
+    if not payload.code or not payload.code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Code snippet cannot be empty.",
+        )
+
+    limiter = get_run_rate_limiter()
+    verdict = limiter.check(f"run:{user.id}")
+    if not verdict.allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Too many code execution requests. Please wait {verdict.retry_after_s} seconds.",
+        )
+
     try:
         result = await execute_script_async(payload.code)
         return RunLessonSnippetResponse(

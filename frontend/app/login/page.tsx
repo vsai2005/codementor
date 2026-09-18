@@ -41,7 +41,7 @@ export default function LoginPage() {
       setError(
         err instanceof ApiError
           ? err.message
-          : "Couldn't reach the server. Is the backend running on :8000?",
+          : "Couldn't reach the server. Please check your connection and try again.",
       );
     } finally {
       setBusy(false);

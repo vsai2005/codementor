@@ -129,4 +129,74 @@ test.describe('CodeMentor Full Integration E2E Suite', () => {
     await expect(page.locator('h1')).toContainText(/Welcome back|Create your account/);
   });
 
+  test('7. Practice pass synchronization is idempotent and syncs exactly once', async ({ page }) => {
+    await registerUser(page);
+
+    // Track /api/learning/progress sync requests
+    let syncCount = 0;
+    let practicePassed = false;
+    await page.route('**/api/learning/progress', async (route) => {
+      syncCount++;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          current_day: 1,
+          completed_days: [],
+          day_states: {
+            '1': {
+              day_number: 1,
+              lesson_completed: false,
+              practice_passed: practicePassed,
+              completed: false,
+              unlocked: true,
+              status: 'available',
+            },
+          },
+        }),
+      });
+    });
+
+    // Navigate to Day 1 lesson where useJourney is active
+    await page.goto('/learning/day/1');
+    await page.waitForLoadState('networkidle');
+
+    // Reset counter after initial page load
+    const initialSyncs = syncCount;
+
+    // Simulate practice pass
+    practicePassed = true;
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent('codementor:practice-passed', {
+          detail: { day_number: 1 },
+        })
+      );
+    });
+
+    // Wait for debounce / server sync
+    await page.waitForTimeout(500);
+    const syncsAfterFirstPass = syncCount - initialSyncs;
+    expect(syncsAfterFirstPass).toBe(1);
+
+    // Repeated pass event on the same day must be idempotent — NO additional sync calls
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent('codementor:practice-passed', {
+          detail: { day_number: 1 },
+        })
+      );
+      // Even if day-completed is also dispatched
+      window.dispatchEvent(
+        new CustomEvent('codementor:day-completed', {
+          detail: { day_number: 1 },
+        })
+      );
+    });
+
+    await page.waitForTimeout(500);
+    const syncsAfterRepeatedPass = syncCount - initialSyncs;
+    expect(syncsAfterRepeatedPass).toBe(1);
+  });
+
 });

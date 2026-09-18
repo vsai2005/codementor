@@ -1,58 +1,216 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { sapApi } from "@/lib/sap/api";
-import type { SapCurriculumOverview, SapPlacementProfile } from "@/lib/sap/types";
+import type {
+  SapCurriculumOverview,
+  SapPlacementProfile,
+  SapProgressResponse,
+} from "@/lib/sap/types";
 
 export default function SapHubPage() {
+  // Authoritative curriculum (9 phases, 100 days)
   const [curriculum, setCurriculum] = useState<SapCurriculumOverview | null>(null);
+  const [curriculumLoading, setCurriculumLoading] = useState(true);
+  const [curriculumError, setCurriculumError] = useState<string | null>(null);
+
+  // User progression & placement
+  const [progress, setProgress] = useState<SapProgressResponse | null>(null);
   const [placement, setPlacement] = useState<SapPlacementProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
 
-  const loadData = () => {
-    setLoading(true);
-    setError(null);
+  // Decoupled curriculum loading
+  const loadCurriculum = useCallback(() => {
+    setCurriculumLoading(true);
+    setCurriculumError(null);
 
-    Promise.allSettled([
-      sapApi.getCurriculum(),
-      sapApi.getPlacementProfile(),
-    ]).then(([curResult, placeResult]) => {
-      if (curResult.status === "fulfilled") {
-        setCurriculum(curResult.value);
-      } else {
-        const reason = curResult.reason;
+    sapApi
+      .getCurriculum()
+      .then((data) => {
+        setCurriculum(data);
+      })
+      .catch((err) => {
         const msg =
-          reason instanceof Error
-            ? reason.message
+          err instanceof Error
+            ? err.message
             : "Could not retrieve the SAP curriculum. Verify that backend is running.";
-        setError(msg);
-      }
-
-      if (placeResult.status === "fulfilled") {
-        setPlacement(placeResult.value);
-      }
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    loadData();
+        setCurriculumError(msg);
+      })
+      .finally(() => {
+        setCurriculumLoading(false);
+      });
   }, []);
 
+  // Decoupled user state loading
+  const loadUserData = useCallback(() => {
+    Promise.allSettled([
+      sapApi.getProgress(),
+      sapApi.getPlacementProfile(),
+    ]).then(([progRes, placeRes]) => {
+      if (progRes.status === "fulfilled") {
+        setProgress(progRes.value);
+      }
+      if (placeRes.status === "fulfilled") {
+        setPlacement(placeRes.value);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    loadCurriculum();
+    loadUserData();
+  }, [loadCurriculum, loadUserData]);
+
+  // Learner Classification for Permanent Primary CTA
+  const hasPlacement = Boolean(placement && placement.recommended_start_day);
+  const hasProgress = Boolean(
+    progress &&
+      (progress.completed_days.length > 0 ||
+        progress.current_day > 1 ||
+        Object.values(progress.day_states || {}).some(
+          (s) => s.lesson_completed || s.practice_completed || s.completed
+        ))
+  );
+
+  const isNewLearner = !hasPlacement && !hasProgress;
+  const currentDay = progress?.current_day || placement?.recommended_start_day || 1;
+  const primaryCtaHref = isNewLearner
+    ? "/sap/placement"
+    : `/sap/learning/day/${currentDay}`;
+  const primaryCtaLabel = isNewLearner
+    ? "START SAP LEARNING"
+    : `CONTINUE LEARNING — DAY ${currentDay}`;
+
+  // Waived days set (must not count towards completed days)
+  const waivedSet = new Set<number>([
+    ...(progress?.waived_days || []),
+    ...(placement?.waived_days || []),
+  ]);
+
+  // Per-day state helper for preview cards
+  const getDayDetails = (dayNumber: number) => {
+    const dayState = progress?.day_states?.[String(dayNumber)];
+    const isWaived = Boolean(
+      dayState?.status === "waived_by_placement" ||
+        dayState?.waived ||
+        waivedSet.has(dayNumber)
+    );
+
+    if (isWaived) {
+      return {
+        ctaState: "REVIEW DAY" as const,
+        isWaived: true,
+        isClickable: true,
+        badge: (
+          <span className="border border-ink bg-sky-200 text-ink px-1.5 py-0.5 text-[10px] font-bold uppercase font-mono">
+            WAIVED BY PLACEMENT
+          </span>
+        ),
+        buttonClass:
+          "border border-ink bg-sky-200 hover:bg-sky-300 text-ink font-bold",
+        cardClass:
+          "border-2 border-dashed border-sky-600 bg-sky-50/70 shadow-[3px_3px_0px_0px_rgba(2,132,199,0.35)]",
+      };
+    }
+
+    if (dayState?.completed) {
+      return {
+        ctaState: "REVIEW DAY" as const,
+        isWaived: false,
+        isClickable: true,
+        badge: (
+          <span className="border border-ink bg-emerald-400 text-ink px-1.5 py-0.5 text-[10px] font-bold uppercase">
+            ✓ COMPLETED
+          </span>
+        ),
+        buttonClass:
+          "border border-ink bg-emerald-300 hover:bg-emerald-400 text-ink font-bold",
+        cardClass:
+          "border-2 border-ink bg-emerald-50/30 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+      };
+    }
+
+    const hasStarted = Boolean(
+      dayState?.status === "in_progress" ||
+        dayState?.lesson_completed ||
+        dayState?.practice_completed ||
+        (dayNumber === currentDay &&
+          (dayState?.lesson_completed || dayState?.practice_completed))
+    );
+
+    if (hasStarted) {
+      return {
+        ctaState: "CONTINUE DAY" as const,
+        isWaived: false,
+        isClickable: true,
+        badge: (
+          <span className="border border-ink bg-amber-300 text-ink px-1.5 py-0.5 text-[10px] font-bold uppercase animate-pulse">
+            IN PROGRESS
+          </span>
+        ),
+        buttonClass:
+          "border border-ink bg-amber-300 hover:bg-amber-400 text-ink font-bold",
+        cardClass:
+          "border-2 border-ink bg-surface shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+      };
+    }
+
+    const isAvailable = Boolean(
+      dayState?.unlocked ||
+        dayState?.status === "available" ||
+        (dayState?.status === "current" && !hasStarted) ||
+        (!progress && dayNumber === 1) ||
+        (dayNumber === currentDay && !hasStarted) ||
+        (dayNumber === 1 && !dayState?.completed)
+    );
+
+    if (isAvailable) {
+      return {
+        ctaState: "START DAY" as const,
+        isWaived: false,
+        isClickable: true,
+        badge: (
+          <span className="border border-ink bg-cyan-200 text-ink px-1.5 py-0.5 text-[10px] font-bold uppercase">
+            AVAILABLE
+          </span>
+        ),
+        buttonClass:
+          "border border-ink bg-cyan-300 hover:bg-cyan-400 text-ink font-bold",
+        cardClass:
+          "border-2 border-ink bg-surface shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+      };
+    }
+
+    return {
+      ctaState: "LOCKED" as const,
+      isWaived: false,
+      isClickable: false,
+      badge: (
+        <span className="border border-ink bg-surface-raised text-muted px-1.5 py-0.5 text-[10px] font-mono">
+          LOCKED
+        </span>
+      ),
+      buttonClass:
+        "border border-ink/40 bg-gray-200 text-gray-400 font-mono font-bold cursor-not-allowed",
+      cardClass: "border-2 border-ink/30 bg-surface-raised opacity-60",
+    };
+  };
+
   const activePhaseObj = curriculum?.phases.find((p) => p.phase_number === selectedPhase);
-  const phaseDays = curriculum?.days.filter((d) => d.phase_number === selectedPhase) || [];
+  const phaseDays =
+    curriculum?.days.filter((d) => d.phase_number === selectedPhase) || [];
 
   return (
     <AppShell>
       <div className="mx-auto max-w-[1400px] px-4 py-8">
-        {/* Learning Mode Switcher Bar */}
+        {/* Learning Track Switcher Bar */}
         <div className="mb-6 border-3 border-ink bg-surface p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase text-muted">SAP LEARNING TRACK:</span>
+            <span className="text-xs font-mono font-bold uppercase text-muted">
+              SAP LEARNING TRACK:
+            </span>
             <div className="flex rounded border border-ink overflow-hidden">
               <Link
                 href="/sap/learning"
@@ -70,31 +228,43 @@ export default function SapHubPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase text-muted">PERSISTENT DIGITAL TWIN:</span>
+            <span className="text-xs font-mono font-bold uppercase text-muted">
+              PERSISTENT DIGITAL TWIN:
+            </span>
             <span className="border border-ink bg-sky-100 text-ink px-2.5 py-0.5 text-xs font-bold font-mono">
               Nova Manufacturing (NM01)
             </span>
           </div>
         </div>
 
-        {/* Hero Section */}
+        {/* Hero Section with Permanent Primary CTA */}
         <div className="border-4 border-ink bg-surface p-6 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="max-w-3xl">
               <div className="inline-block border-2 border-ink bg-amber-300 px-3 py-1 text-xs font-bold uppercase tracking-wider text-ink mb-3">
                 Enterprise S/4HANA & ABAP Cloud Engine
               </div>
               <h1 className="text-3xl font-black tracking-tight sm:text-4xl text-ink">
                 100-Day S/4HANA Enterprise Track
               </h1>
-              <p className="mt-2 max-w-2xl text-sm sm:text-base text-muted">
-                A data-driven, adaptive knowledge graph curriculum spanning ERP Architecture, In-Memory Data Semantics, End-to-End Business Processes, Fiori Elements, Clean Core, RAP, and BTP Integration.
+              <p className="mt-2 text-sm sm:text-base text-muted">
+                A data-driven, adaptive knowledge graph curriculum spanning ERP Architecture,
+                In-Memory Data Semantics, End-to-End Business Processes, Fiori Elements,
+                Clean Core, RAP, and BTP Integration.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
+
+            {/* Permanent Primary CTA & Secondary Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href={primaryCtaHref}
+                className="border-3 border-ink bg-emerald-400 hover:bg-emerald-300 px-5 py-3 text-sm sm:text-base font-black text-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                {primaryCtaLabel} →
+              </Link>
               <Link
                 href="/sap/learning"
-                className="border-2 border-ink bg-emerald-400 px-4 py-2.5 text-sm font-bold text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                className="border-2 border-ink bg-surface px-4 py-2.5 text-sm font-bold text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
               >
                 100-Day Roadmap →
               </Link>
@@ -117,11 +287,15 @@ export default function SapHubPage() {
           <div className="mt-6 grid grid-cols-2 gap-3 border-t-2 border-ink pt-6 sm:grid-cols-4">
             <div className="border-2 border-ink bg-surface-raised p-3">
               <div className="text-xs uppercase text-muted font-bold">Total Milestones</div>
-              <div className="text-2xl font-black text-ink">{curriculum?.total_days || 100} Days</div>
+              <div className="text-2xl font-black text-ink">
+                {curriculum?.total_days || 100} Days
+              </div>
             </div>
             <div className="border-2 border-ink bg-surface-raised p-3">
               <div className="text-xs uppercase text-muted font-bold">Curricular Phases</div>
-              <div className="text-2xl font-black text-ink">{curriculum?.phases.length || 9} Phases</div>
+              <div className="text-2xl font-black text-ink">
+                {curriculum?.phases.length || 9} Phases
+              </div>
             </div>
             <div className="border-2 border-ink bg-surface-raised p-3">
               <div className="text-xs uppercase text-muted font-bold">Knowledge Model</div>
@@ -134,16 +308,18 @@ export default function SapHubPage() {
           </div>
         </div>
 
-        {/* Error State Banner */}
-        {error && (
+        {/* Curriculum Error State Banner */}
+        {curriculumError && !curriculum && (
           <div className="border-3 border-ink bg-red-50 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-xl">⚠️</span>
-              <h3 className="text-base font-black text-red-900 uppercase">Unable to Load SAP Curriculum</h3>
+              <h3 className="text-base font-black text-red-900 uppercase">
+                Unable to Load SAP Curriculum
+              </h3>
             </div>
-            <p className="text-sm text-red-800 mb-4 font-mono">{error}</p>
+            <p className="text-sm text-red-800 mb-4 font-mono">{curriculumError}</p>
             <button
-              onClick={() => loadData()}
+              onClick={loadCurriculum}
               className="border-2 border-ink bg-emerald-400 px-4 py-2 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 transition-all"
             >
               Retry Loading Curriculum
@@ -152,22 +328,29 @@ export default function SapHubPage() {
         )}
 
         {/* Loading Skeleton */}
-        {loading && !error && (
+        {curriculumLoading && !curriculum && (
           <div className="border-3 border-dashed border-ink bg-surface p-12 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
             <div className="inline-block animate-spin text-2xl mb-2">⚙️</div>
-            <div className="text-base font-black text-ink">Loading Authoritative SAP Curriculum Manifest…</div>
-            <p className="text-xs text-muted mt-1 font-mono">Fetching 9 phases, 100 days, and adaptive DAG nodes from active backend</p>
+            <div className="text-base font-black text-ink">
+              Loading Authoritative SAP Curriculum Manifest…
+            </div>
+            <p className="text-xs text-muted mt-1 font-mono">
+              Fetching 9 phases, 100 days, and adaptive DAG nodes from active backend
+            </p>
           </div>
         )}
 
         {/* Phase Breakdown (All 9 Phases) */}
-        {!loading && curriculum && (
+        {!curriculumLoading && curriculum && (
           <>
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-black text-ink uppercase tracking-wide">
                 9 Curriculum Phases (Days 1–100)
               </h2>
-              <Link href="/sap/learning" className="text-xs font-bold text-muted hover:text-ink underline">
+              <Link
+                href="/sap/learning"
+                className="text-xs font-bold text-muted hover:text-ink underline"
+              >
                 Open full learning journey →
               </Link>
             </div>
@@ -228,28 +411,46 @@ export default function SapHubPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {phaseDays.map((d) => (
-                    <Link
-                      key={d.day_number}
-                      href={`/sap/learning/day/${d.day_number}`}
-                      className="group border-2 border-ink bg-surface-raised p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between text-xs font-mono font-bold text-muted mb-2">
-                          <span>DAY {d.day_number}</span>
-                          <span className="border border-ink bg-purple-100 px-1.5 py-0.5 text-[10px] text-ink">
-                            {d.env_tier}
-                          </span>
+                  {phaseDays.map((d) => {
+                    const { ctaState, isClickable, badge, buttonClass, cardClass } =
+                      getDayDetails(d.day_number);
+
+                    return (
+                      <div
+                        key={d.day_number}
+                        className={`p-4 transition-all flex flex-col justify-between ${cardClass}`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between text-xs font-mono font-bold text-muted mb-2">
+                            <span>DAY {d.day_number}</span>
+                            {badge}
+                          </div>
+                          <h4 className="text-sm font-black text-ink mb-1">{d.title}</h4>
+                          <p className="text-xs text-muted line-clamp-2 mb-3">
+                            {d.description}
+                          </p>
                         </div>
-                        <h4 className="text-sm font-black text-ink mb-1 group-hover:underline">{d.title}</h4>
-                        <p className="text-xs text-muted line-clamp-2 mb-3">{d.description}</p>
+                        <div className="border-t border-ink/40 pt-2 flex items-center justify-between text-[11px] font-mono font-bold text-muted">
+                          <span>{d.estimated_minutes} min</span>
+                          {isClickable ? (
+                            <Link
+                              href={`/sap/learning/day/${d.day_number}`}
+                              className={`px-2 py-0.5 text-[11px] font-bold ${buttonClass}`}
+                            >
+                              {ctaState} →
+                            </Link>
+                          ) : (
+                            <button
+                              disabled
+                              className={`px-2 py-0.5 text-[11px] font-bold ${buttonClass}`}
+                            >
+                              🔒 {ctaState}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="border-t border-ink/40 pt-2 flex items-center justify-between text-[11px] font-mono font-bold text-muted">
-                        <span>{d.estimated_minutes} min</span>
-                        <span className="text-ink font-bold group-hover:underline">Launch →</span>
-                      </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -259,4 +460,3 @@ export default function SapHubPage() {
     </AppShell>
   );
 }
-

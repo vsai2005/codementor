@@ -5,8 +5,20 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 from typing import Literal
+from urllib.parse import urlparse
 
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
+
+FORBIDDEN_PRODUCTION_SECRETS: frozenset[str] = frozenset({
+    "change-me-in-production",
+    "replace-with-a-long-random-string",
+    "secret",
+    "admin",
+    "password",
+    "jwt_secret",
+})
 
 
 class Settings(BaseSettings):
@@ -15,11 +27,19 @@ class Settings(BaseSettings):
     app_name: str = "CodeMentor AI"
     environment: str = "development"
 
-    database_url: str = "postgresql+psycopg://codementor:codementor@localhost:5432/codementor"
+    database_url: str = "postgresql+psycopg://codementor:codementor@localhost:5433/codementor"
 
-    jwt_secret: str = "change-me-in-production"
+    jwt_secret: str = Field(
+        default="change-me-in-production",
+        validation_alias=AliasChoices("JWT_SECRET", "jwt_secret"),
+    )
     jwt_algorithm: str = "HS256"
     jwt_expiry_hours: int = 24
+
+    redis_url: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("REDIS_URL", "redis_url"),
+    )
 
     google_client_id: str = ""
 
@@ -49,6 +69,64 @@ class Settings(BaseSettings):
 
     submission_rate_limit: int = 10
     submission_rate_window_s: int = 300
+
+    run_rate_limit: int = 30
+    run_rate_window_s: int = 60
+
+    @model_validator(mode="after")
+    def validate_production_config(self) -> Self:
+        # Normalize database_url prefix for SQLAlchemy 2.0 / psycopg3
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        self.database_url = url
+
+        if self.is_production:
+            # 1. JWT Secret Validation
+            secret = (self.jwt_secret or "").strip()
+            if not secret or secret.lower() in FORBIDDEN_PRODUCTION_SECRETS:
+                raise ValueError(
+                    "Production misconfiguration: Running with ENVIRONMENT=production requires a secure "
+                    f"JWT_SECRET. Default placeholder '{self.jwt_secret}' is strictly prohibited."
+                )
+            if len(secret) < 32:
+                raise ValueError(
+                    f"Production misconfiguration: JWT_SECRET is too short ({len(secret)} characters). "
+                    "Production JWT_SECRET must be at least 32 characters long."
+                )
+
+            # 2. Database URL Validation
+            if not url:
+                raise ValueError(
+                    "Production misconfiguration: DATABASE_URL must be set in production."
+                )
+            parsed = urlparse(url)
+            hostname = (parsed.hostname or "").lower()
+            if hostname in ("localhost", "127.0.0.1", "::1") or "localhost" in url.lower():
+                raise ValueError(
+                    f"Production misconfiguration: DATABASE_URL cannot point to localhost/loopback in production ({url})."
+                )
+
+            # 3. Redis URL Validation
+            redis_str = (self.redis_url or "").strip()
+            if not redis_str:
+                raise ValueError(
+                    "Production misconfiguration: REDIS_URL must be configured in production for distributed rate limiting."
+                )
+            parsed_redis = urlparse(redis_str)
+            if parsed_redis.scheme not in ("redis", "rediss"):
+                raise ValueError(
+                    f"Production misconfiguration: REDIS_URL must have scheme 'redis://' or 'rediss://' (got '{parsed_redis.scheme}')."
+                )
+            redis_host = (parsed_redis.hostname or "").lower()
+            if redis_host in ("localhost", "127.0.0.1", "::1") or "localhost" in redis_str.lower():
+                raise ValueError(
+                    f"Production misconfiguration: REDIS_URL cannot point to localhost/loopback in production ({redis_str})."
+                )
+
+        return self
 
     @property
     def is_production(self) -> bool:

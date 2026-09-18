@@ -6,7 +6,7 @@ unit suite stays runnable anywhere while the integration suite stays honest
 about what it needs.
 
     docker compose up -d
-    export TEST_DATABASE_URL=postgresql+psycopg://codementor:codementor@localhost:5432/codementor_test
+    export TEST_DATABASE_URL=postgresql+psycopg://codementor:codementor@localhost:5433/codementor_test
     pytest -m integration
 """
 

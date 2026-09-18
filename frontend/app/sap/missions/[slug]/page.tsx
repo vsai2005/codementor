@@ -18,6 +18,7 @@ export default function SapMissionDetailPage() {
   const [mission, setMission] = useState<SapMissionDetail | null>(null);
   const [assistanceLevel, setAssistanceLevel] = useState<SapAssistanceLevel>("TRAINING");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -25,30 +26,36 @@ export default function SapMissionDetailPage() {
   const [missionComplete, setMissionComplete] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadMission = async () => {
     if (!slug) return;
+    setLoading(true);
+    setLoadError(null);
+    setActionError(null);
 
-    sapApi
-      .getModes()
-      .then((m) => {
-        const level = m?.assistance_level || "TRAINING";
-        setAssistanceLevel(level);
-        return sapApi.getMissionDetail(slug, level);
-      })
-      .then((detail) => {
-        setMission(detail);
-        if (detail.current_attempt?.current_step_index) {
-          setCurrentStepIndex(detail.current_attempt.current_step_index);
-        }
-        if (detail.current_attempt?.status === "COMPLETED") {
-          setMissionComplete(true);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load mission:", err);
-        setLoading(false);
-      });
+    try {
+      const m = await sapApi.getModes().catch(() => null);
+      const level = m?.assistance_level || assistanceLevel;
+      if (m?.assistance_level) {
+        setAssistanceLevel(m.assistance_level);
+      }
+      const detail = await sapApi.getMissionDetail(slug, level);
+      setMission(detail);
+      if (detail.current_attempt?.current_step_index !== undefined) {
+        setCurrentStepIndex(detail.current_attempt.current_step_index);
+      }
+      if (detail.current_attempt?.status === "COMPLETED") {
+        setMissionComplete(true);
+      }
+    } catch (err: any) {
+      console.error("Failed to load mission:", err);
+      setLoadError(err?.message || "Failed to load mission scenario from server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMission();
   }, [slug]);
 
   const handleStartMission = async () => {
@@ -60,8 +67,9 @@ export default function SapMissionDetailPage() {
       setCurrentStepIndex(0);
       setStepResult(null);
       setMissionComplete(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to start mission:", err);
+      setActionError(err?.message || "Failed to start mission attempt.");
     }
   };
 
@@ -116,12 +124,39 @@ export default function SapMissionDetailPage() {
     );
   }
 
+  if (loadError) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-[1200px] px-4 py-16 text-center">
+          <div className="inline-block border-3 border-rose-500 bg-rose-50 p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-lg text-left">
+            <h1 className="text-2xl font-black text-rose-900 mb-2">Failed to Load Mission</h1>
+            <p className="text-xs text-rose-800 mb-6">{loadError}</p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={loadMission}
+                className="border-2 border-ink bg-amber-300 hover:bg-amber-400 px-4 py-2 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Retry Loading
+              </button>
+              <Link
+                href="/sap/missions"
+                className="border-2 border-ink bg-surface hover:bg-surface-raised px-4 py-2 text-xs font-bold text-ink shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              >
+                ← Back to Missions
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!mission) {
     return (
       <AppShell>
         <div className="mx-auto max-w-[1200px] px-4 py-16 text-center">
           <h1 className="text-2xl font-black text-ink">Mission Not Found</h1>
-          <p className="mt-2 text-sm text-muted">The requested mission scenario could not be loaded.</p>
+          <p className="mt-2 text-sm text-muted">The requested mission scenario could not be found.</p>
           <Link
             href="/sap/missions"
             className="mt-4 inline-block border-2 border-ink bg-amber-300 px-4 py-2 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
@@ -139,6 +174,22 @@ export default function SapMissionDetailPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-[1200px] px-4 py-8">
+        {/* Action Error Alert */}
+        {actionError && (
+          <div className="mb-6 border-3 border-rose-500 bg-rose-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between gap-3 text-rose-900">
+            <div className="text-xs font-bold">
+              <span className="uppercase font-black mr-2">Action Error:</span>
+              {actionError}
+            </div>
+            <button
+              onClick={() => setActionError(null)}
+              className="text-xs font-mono font-bold underline hover:text-rose-700 whitespace-nowrap"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Top Header */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">

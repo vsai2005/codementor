@@ -21,9 +21,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const isPublicPath =
+    pathname.startsWith("/sap") ||
+    pathname.startsWith("/learning") ||
+    pathname === "/";
+
   useEffect(() => {
-    if (!loading && !user) router.replace("/login");
-  }, [loading, user, router]);
+    if (!loading && !user && !isPublicPath) router.replace("/login");
+  }, [loading, user, router, isPublicPath]);
 
   if (loading) {
     return (
@@ -33,7 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return null;
+  if (!user && !isPublicPath) return null;
 
   return (
     <div className="min-h-screen">
@@ -61,9 +66,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <ThemeToggle className="ml-auto" />
-          <button type="button" onClick={signOut} className="btn px-2 py-1 text-xs">
-            Sign out
-          </button>
+          {user ? (
+            <button type="button" onClick={signOut} className="btn px-2 py-1 text-xs">
+              Sign out
+            </button>
+          ) : (
+            <Link href="/login" className="btn px-2 py-1 text-xs">
+              Sign in
+            </Link>
+          )}
         </div>
       </header>
 

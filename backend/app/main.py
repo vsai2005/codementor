@@ -12,7 +12,10 @@ from sqlalchemy.exc import OperationalError
 
 from app.api.routes import auth, learning, problems, progress, submissions, tutor
 from app.api.routes.sap import sap_router
+from contextlib import asynccontextmanager
+from sqlalchemy import text
 from app.config import get_settings
+from app.database import engine
 from app.schemas.api import HealthResponse
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +27,22 @@ if "*" in origins:
         "CORS misconfiguration: allow_origins cannot contain '*' when allow_credentials=True"
     )
 
-app = FastAPI(title=settings.app_name, version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Verify DB connectivity on boot in production
+    if settings.is_production:
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            logging.info("Database connectivity check passed.")
+        except Exception as exc:
+            logging.error("Database connection check failed on startup: %s", exc)
+            raise RuntimeError(f"Database connection check failed on startup: {exc}") from exc
+    yield
+
+
+app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

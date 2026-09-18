@@ -104,6 +104,40 @@ class RedisRateLimiter(BaseRateLimiter):
 
 _default: BaseRateLimiter | None = None
 _tutor_limiter: BaseRateLimiter | None = None
+_run_limiter: BaseRateLimiter | None = None
+
+
+def _get_redis_client():
+    from app.config import get_settings
+
+    settings = get_settings()
+    redis_url = settings.redis_url or os.getenv("REDIS_URL")
+
+    if settings.is_production:
+        if not redis_url:
+            raise RuntimeError(
+                "Production misconfiguration: REDIS_URL must be configured in production."
+            )
+        try:
+            import redis
+            client = redis.from_url(redis_url)
+            client.ping()
+            return client
+        except Exception as exc:
+            raise RuntimeError(
+                f"Production misconfiguration: Failed to connect to Redis at {redis_url}: {exc}"
+            ) from exc
+
+    if redis_url:
+        try:
+            import redis
+            client = redis.from_url(redis_url)
+            client.ping()
+            return client
+        except Exception:
+            return None
+
+    return None
 
 
 def get_rate_limiter() -> BaseRateLimiter:
@@ -112,38 +146,43 @@ def get_rate_limiter() -> BaseRateLimiter:
         from app.config import get_settings
 
         settings = get_settings()
-        redis_url = os.getenv("REDIS_URL")
+        client = _get_redis_client()
 
-        if redis_url:
-            try:
-                import redis
-                client = redis.from_url(redis_url)
-                _default = RedisRateLimiter(
-                    client, settings.submission_rate_limit, settings.submission_rate_window_s
-                )
-                return _default
-            except Exception:
-                pass
-
-        _default = InMemoryRateLimiter(
-            settings.submission_rate_limit, settings.submission_rate_window_s
-        )
+        if client is not None:
+            _default = RedisRateLimiter(
+                client, settings.submission_rate_limit, settings.submission_rate_window_s
+            )
+        else:
+            _default = InMemoryRateLimiter(
+                settings.submission_rate_limit, settings.submission_rate_window_s
+            )
     return _default
 
 
 def get_tutor_rate_limiter() -> BaseRateLimiter:
     global _tutor_limiter
     if _tutor_limiter is None:
-        redis_url = os.getenv("REDIS_URL")
+        client = _get_redis_client()
         limit = int(os.getenv("TUTOR_RATE_LIMIT", "20"))
         window = int(os.getenv("TUTOR_RATE_WINDOW_S", "300"))
-        if redis_url:
-            try:
-                import redis
-                client = redis.from_url(redis_url)
-                _tutor_limiter = RedisRateLimiter(client, limit, window)
-                return _tutor_limiter
-            except Exception:
-                pass
-        _tutor_limiter = InMemoryRateLimiter(limit, window)
+        if client is not None:
+            _tutor_limiter = RedisRateLimiter(client, limit, window)
+        else:
+            _tutor_limiter = InMemoryRateLimiter(limit, window)
     return _tutor_limiter
+
+
+def get_run_rate_limiter() -> BaseRateLimiter:
+    global _run_limiter
+    if _run_limiter is None:
+        from app.config import get_settings
+
+        settings = get_settings()
+        client = _get_redis_client()
+        limit = settings.run_rate_limit
+        window = settings.run_rate_window_s
+        if client is not None:
+            _run_limiter = RedisRateLimiter(client, limit, window)
+        else:
+            _run_limiter = InMemoryRateLimiter(limit, window)
+    return _run_limiter
