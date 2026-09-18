@@ -1,4 +1,4 @@
-"""Adversarial and Integrity Test Suite for SAP Assessments and Progression Gating.
+"""Adversarial and Integrity Test Suite for SAP Assessments, Progression Gating and Lesson Access.
 
 Verifies:
 1. Forged Rubric Bypass Blocked: Client cannot pass forged questions, options, or pass scores to achieve 100%.
@@ -10,6 +10,8 @@ Verifies:
 7. Mandatory Practice Requirement: Day is NOT completed and next day is NOT unlocked without practice completion.
 8. Assessment Retry Idempotency: Retrying an already passed assessment does not double-advance days or double-count completion.
 9. Normal Full Progression: Lesson + Practice + Assessment unlocks Day 2 correctly.
+10. Locked Lesson Access Blocked: GET /api/sap/learning/lessons/{day} requires auth and locked/waived days return 403.
+11. Completed Day Lesson Accessible: Completed days still return 200 (review access).
 """
 
 from __future__ import annotations
@@ -363,3 +365,110 @@ def test_assessment_retry_idempotency_does_not_double_advance(client_auth, mock_
     db_session.refresh(user_state)
     assert user_state.completed_days_count == 1
     assert user_state.current_recommended_day == 2
+
+
+# =============================================================================
+# 4. Server-Protected Lesson Content: GET /api/sap/learning/lessons/{day}
+# =============================================================================
+
+
+class TestLockedLessonAccess:
+    """Verifies that GET /api/sap/learning/lessons/{day_number} enforces
+    server-side authentication and progression-based access control."""
+
+    def test_unauthenticated_lesson_access_is_rejected(self, db_session):
+        """An unauthenticated request must be rejected (401 or 403), never 200."""
+        # No auth override — raw TestClient with no user
+        def override_get_db():
+            yield db_session
+
+        app.dependency_overrides[get_db] = override_get_db
+        # Explicitly do NOT override get_current_user — it will try to read a real token
+        app.dependency_overrides.pop(get_current_user, None)
+
+        try:
+            with TestClient(app, raise_server_exceptions=False) as anon_client:
+                resp = anon_client.get("/api/sap/learning/lessons/1")
+            # FastAPI's dependency will raise 401 or 403 without a valid session
+            assert resp.status_code in (401, 403), (
+                f"Expected 401 or 403 for unauthenticated access, got {resp.status_code}"
+            )
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_locked_future_day_lesson_returns_403(self, client_auth):
+        """An authenticated user on Day 1 cannot fetch lesson content for locked Day 25."""
+        resp = client_auth.get("/api/sap/learning/lessons/25")
+        assert resp.status_code == 403, (
+            f"Expected 403 for locked Day 25, got {resp.status_code}: {resp.json()}"
+        )
+        assert "locked" in resp.json()["detail"].lower()
+
+    def test_current_day_lesson_returns_200(self, client_auth):
+        """An authenticated user can access the lesson for their current/unlocked Day 1."""
+        resp = client_auth.get("/api/sap/learning/lessons/1")
+        assert resp.status_code == 200, (
+            f"Expected 200 for unlocked Day 1, got {resp.status_code}: {resp.json()}"
+        )
+        data = resp.json()
+        assert data["day_number"] == 1
+        assert "steps" in data
+        assert len(data["steps"]) > 0
+
+    def test_waived_day_lesson_returns_403(self, client_auth, mock_user, db_session):
+        """A day waived by diagnostic placement must return 403 on lesson content access."""
+        # Mark Day 1 as waived
+        day_state = db_session.execute(
+            select(SAPUserDayState).where(
+                SAPUserDayState.user_id == mock_user.id,
+                SAPUserDayState.day_number == 1,
+            )
+        ).scalar_one_or_none()
+
+        if day_state is None:
+            day_state = SAPUserDayState(
+                user_id=mock_user.id,
+                day_number=1,
+                status=SAPDayStatus.WAIVED_BY_PLACEMENT.value,
+                waived=True,
+            )
+            db_session.add(day_state)
+        else:
+            day_state.waived = True
+            day_state.status = SAPDayStatus.WAIVED_BY_PLACEMENT.value
+        db_session.commit()
+
+        resp = client_auth.get("/api/sap/learning/lessons/1")
+        assert resp.status_code == 403, (
+            f"Expected 403 for waived Day 1, got {resp.status_code}: {resp.json()}"
+        )
+        assert "waived" in resp.json()["detail"].lower()
+
+    def test_completed_day_lesson_remains_accessible(self, client_auth, mock_user, db_session):
+        """A completed day's lesson content must still be accessible (for review)."""
+        # Complete Day 1 fully: practice + lesson + assessment
+        client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
+        client_auth.post(
+            "/api/sap/assessments/submit",
+            json={
+                "day_number": 1,
+                "assessment_id": "d1_s6_assessment",
+                "assessment_type": "mcq",
+                "submission_payload": {"answers": {"q1": "q1_a", "q2": "q2_a"}},
+            },
+        )
+
+        # Completed day lesson should still return 200 (review access)
+        resp = client_auth.get("/api/sap/learning/lessons/1")
+        assert resp.status_code == 200, (
+            f"Expected 200 for completed Day 1 (review access), got {resp.status_code}"
+        )
+        data = resp.json()
+        assert data["day_number"] == 1
+
+    def test_nonexistent_lesson_day_returns_404(self, client_auth):
+        """Requesting lesson content for a day beyond the authored range returns 404."""
+        resp = client_auth.get("/api/sap/learning/lessons/999")
+        # Day 999 is far beyond the authored range — must return 404 (not 403)
+        assert resp.status_code == 404

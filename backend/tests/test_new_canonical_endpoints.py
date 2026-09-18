@@ -83,13 +83,25 @@ def test_sap_curriculum_day_detail():
     assert len(data["atomic_concepts"]) >= 1
 
 
-def test_sap_lesson_content():
-    """Verify GET /api/sap/learning/lessons/1 returns 8-step pedagogical lesson."""
-    res = client.get("/api/sap/learning/lessons/1")
-    assert res.status_code == 200
-    data = res.json()
-    assert data["day_number"] == 1
-    assert len(data["steps"]) == 8
+def test_sap_lesson_content(mock_user):
+    """Verify GET /api/sap/learning/lessons/1 returns 8-step pedagogical lesson for an authenticated user."""
+    # Use a SAP-specific mock DB — returns None for placement/state queries so
+    # compute_user_progress treats Day 1 as unlocked (default new-user state).
+    sap_db = MagicMock()
+    sap_db.execute.return_value.scalar_one_or_none.return_value = None
+    sap_db.execute.return_value.scalars.return_value.all.return_value = []
+
+    app.dependency_overrides[get_current_user] = lambda: mock_user
+    app.dependency_overrides[get_db] = lambda: sap_db
+    try:
+        res = client.get("/api/sap/learning/lessons/1")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["day_number"] == 1
+        assert len(data["steps"]) == 8
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_db, None)
 
 
 def test_problem_reference_solution(mock_user, mock_db):

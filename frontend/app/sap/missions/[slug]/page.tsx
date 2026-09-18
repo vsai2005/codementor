@@ -19,6 +19,7 @@ export default function SapMissionDetailPage() {
   const [assistanceLevel, setAssistanceLevel] = useState<SapAssistanceLevel>("TRAINING");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [modesError, setModesError] = useState<string | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -32,12 +33,24 @@ export default function SapMissionDetailPage() {
     setLoadError(null);
     setActionError(null);
 
+    // Phase 1: fetch assistance level — non-blocking; failure shows warning banner
+    let level: SapAssistanceLevel = assistanceLevel;
     try {
-      const m = await sapApi.getModes().catch(() => null);
-      const level = m?.assistance_level || assistanceLevel;
+      const m = await sapApi.getModes();
       if (m?.assistance_level) {
+        level = m.assistance_level;
         setAssistanceLevel(m.assistance_level);
+        setModesError(null); // clear previous warning if retry succeeded
       }
+    } catch {
+      setModesError(
+        "Could not load your assistance level — using Training mode. Mission content is still available."
+      );
+      // proceed with cached/default level
+    }
+
+    // Phase 2: fetch mission detail — failure is blocking (nothing to show without it)
+    try {
       const detail = await sapApi.getMissionDetail(slug, level);
       setMission(detail);
       if (detail.current_attempt?.current_step_index !== undefined) {
@@ -47,10 +60,21 @@ export default function SapMissionDetailPage() {
         setMissionComplete(true);
       }
     } catch (err: any) {
-      console.error("Failed to load mission:", err);
       setLoadError(err?.message || "Failed to load mission scenario from server.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const retryModes = async () => {
+    try {
+      const m = await sapApi.getModes();
+      if (m?.assistance_level) {
+        setAssistanceLevel(m.assistance_level);
+        setModesError(null);
+      }
+    } catch {
+      setModesError("Still unable to load assistance level. Using Training mode.");
     }
   };
 
@@ -174,6 +198,22 @@ export default function SapMissionDetailPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-[1200px] px-4 py-8">
+        {/* Modes Warning Banner — non-blocking, shown when getModes() fails */}
+        {modesError && (
+          <div className="mb-4 border-2 border-amber-500 bg-amber-50 px-4 py-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between gap-4 text-amber-800">
+            <div className="text-xs font-bold">
+              <span className="uppercase font-black mr-2">⚠ Assistance Level:</span>
+              {modesError}
+            </div>
+            <button
+              onClick={retryModes}
+              className="border-2 border-amber-700 bg-amber-100 px-3 py-1 text-xs font-black uppercase text-amber-900 hover:bg-amber-200 whitespace-nowrap shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Action Error Alert */}
         {actionError && (
           <div className="mb-6 border-3 border-rose-500 bg-rose-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between gap-3 text-rose-900">

@@ -369,24 +369,71 @@ class TestEnterpriseMissionsExpansion:
 class TestSAPLearningSliceAPI:
     """Test API endpoints for Days 1–8 Guided Learning."""
 
-    def test_get_authored_lesson_content(self):
-        # Day 1
-        res = client.get("/api/sap/learning/lessons/1")
-        assert res.status_code == 200
-        data = res.json()
-        assert data["day_number"] == 1
-        assert len(data["steps"]) == 8
-        assert data["recommended_mission_slug"] == "nova-purchase-flow-trace"
+    @pytest.fixture
+    def mock_user(self):
+        return User(
+            id=uuid.uuid4(),
+            email="sap_lesson_test@example.com",
+            name="SAP Lesson Tester",
+        )
 
-        # Day 8 Capstone
-        res8 = client.get("/api/sap/learning/lessons/8")
-        assert res8.status_code == 200
-        data8 = res8.json()
-        assert data8["day_number"] == 8
-        assert len(data8["steps"]) == 8
-        assert data8["steps"][5]["is_capstone"] is True
+    @pytest.fixture
+    def sap_mock_db(self):
+        """Mock DB that returns completed days 1–7 so Day 1 (review) and Day 8 are unlocked."""
+        mock_states = [
+            MagicMock(
+                day_number=d,
+                lesson_started=True,
+                lesson_completed=True,
+                practice_completed=True,
+                assessment_passed=True,
+                completed=True,
+                waived=False,
+                lesson_completed_at=None,
+                practice_completed_at=None,
+                assessment_passed_at=None,
+                completed_at=None,
+                status="completed",
+            )
+            for d in range(1, 8)
+        ]
+        db = MagicMock()
+        db.execute.return_value.scalar_one_or_none.return_value = None
+        db.execute.return_value.scalars.return_value.all.return_value = mock_states
+        return db
 
-    def test_get_unauthored_day_returns_404(self):
-        res = client.get("/api/sap/learning/lessons/101")
-        assert res.status_code == 404
-        assert "not authored yet" in res.json()["detail"]
+    def test_get_authored_lesson_content(self, mock_user, sap_mock_db):
+        # Lesson endpoint now requires auth — inject minimal mock user + db
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[get_db] = lambda: sap_mock_db
+        try:
+            # Day 1
+            res = client.get("/api/sap/learning/lessons/1")
+            assert res.status_code == 200
+            data = res.json()
+            assert data["day_number"] == 1
+            assert len(data["steps"]) == 8
+            assert data["recommended_mission_slug"] == "nova-purchase-flow-trace"
+
+            # Day 8 Capstone
+            res8 = client.get("/api/sap/learning/lessons/8")
+            assert res8.status_code == 200
+            data8 = res8.json()
+            assert data8["day_number"] == 8
+            assert len(data8["steps"]) == 8
+            assert data8["steps"][5]["is_capstone"] is True
+        finally:
+            app.dependency_overrides.pop(get_current_user, None)
+            app.dependency_overrides.pop(get_db, None)
+
+    def test_get_unauthored_day_returns_404(self, mock_user, sap_mock_db):
+        # 404 fires before the progression/access check, so auth is still needed
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[get_db] = lambda: sap_mock_db
+        try:
+            res = client.get("/api/sap/learning/lessons/101")
+            assert res.status_code == 404
+            assert "not authored yet" in res.json()["detail"]
+        finally:
+            app.dependency_overrides.pop(get_current_user, None)
+            app.dependency_overrides.pop(get_db, None)

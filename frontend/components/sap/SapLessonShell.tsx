@@ -102,6 +102,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
   // Lesson Completion State
   const [completingLesson, setCompletingLesson] = useState<boolean>(false);
   const [lessonCompleted, setLessonCompleted] = useState<boolean>(Boolean(initialDayState?.completed));
+  const [lessonError, setLessonError] = useState<string | null>(null);
 
   // Sync maxUnlockedIdx changes to localStorage
   useEffect(() => {
@@ -251,6 +252,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
   // Complete Day
   const handleFinishLesson = async () => {
     setCompletingLesson(true);
+    setLessonError(null);
     try {
       await sapApi.completeLesson(lesson.day_number);
       setLessonCompleted(true);
@@ -261,7 +263,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
         router.push("/sap/learning");
       }, 1200);
     } catch (err: any) {
-      alert(err.message || "Failed to complete lesson.");
+      setLessonError(err.message || "Failed to complete lesson. Please try again.");
     } finally {
       setCompletingLesson(false);
     }
@@ -928,14 +930,29 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
                   ✓ Day progression successfully saved! Returning to roadmap…
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleFinishLesson}
-                  disabled={completingLesson}
-                  className="border-3 border-ink bg-emerald-400 px-8 py-3 text-sm font-black uppercase tracking-wider text-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 hover:translate-x-0.5 hover:translate-y-0.5 transition-all disabled:opacity-50"
-                >
-                  {completingLesson ? "Saving Day Progression…" : "Mark Day Complete & Unlock Next Milestone →"}
-                </button>
+                <>
+                  {lessonError && (
+                    <div className="border-2 border-red-600 bg-red-50 px-4 py-3 text-xs font-bold text-red-700 shadow-[2px_2px_0px_0px_rgba(185,28,28,1)] flex items-center justify-between gap-4">
+                      <span>⚠ {lessonError}</span>
+                      <button
+                        type="button"
+                        onClick={handleFinishLesson}
+                        disabled={completingLesson}
+                        className="border-2 border-red-700 bg-red-100 px-3 py-1 text-xs font-black uppercase text-red-800 hover:bg-red-200 disabled:opacity-50"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleFinishLesson}
+                    disabled={completingLesson}
+                    className="border-3 border-ink bg-emerald-400 px-8 py-3 text-sm font-black uppercase tracking-wider text-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 hover:translate-x-0.5 hover:translate-y-0.5 transition-all disabled:opacity-50"
+                  >
+                    {completingLesson ? "Saving Day Progression…" : "Mark Day Complete & Unlock Next Milestone →"}
+                  </button>
+                </>
               )}
             </div>
 
