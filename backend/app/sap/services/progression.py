@@ -54,8 +54,8 @@ class SAPProgressionService:
             practice_done = bool(r.practice_completed) if r else False
             is_waived = (day in waived_by_placement) or (bool(r.waived) if r else False)
 
-            # Strictly completed ONLY if both lesson and assessment were passed and not waived
-            is_completed = lesson_done and assessment_done and not is_waived
+            # Strictly completed ONLY if lesson, practice, and assessment were passed and not waived
+            is_completed = lesson_done and practice_done and assessment_done and not is_waived
 
             if is_completed:
                 completed_days.append(day)
@@ -150,28 +150,43 @@ class SAPProgressionService:
             if not r.completed and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
                 r.status = SAPDayStatus.IN_PROGRESS.value
 
-        if r.assessment_passed and not r.completed and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
+        was_already_completed = bool(r.completed)
+        can_complete = bool(
+            r.lesson_completed
+            and r.practice_completed
+            and r.assessment_passed
+            and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value
+        )
+
+        if can_complete and not was_already_completed:
             r.completed = True
             r.completed_at = now
             r.status = SAPDayStatus.COMPLETED.value
 
-        # Update or create macro SAPUserState
-        user_state = db.execute(
-            select(SAPUserState).where(SAPUserState.user_id == user_id)
-        ).scalar_one_or_none()
-        if user_state is None:
-            user_state = SAPUserState(
-                user_id=user_id,
-                current_recommended_day=min(cls.TOTAL_DAYS, day_number + 1 if r.completed else day_number),
-                completed_days_count=1 if r.completed else 0,
-                last_active_at=now,
-            )
-            db.add(user_state)
+        # Update or create macro SAPUserState only if newly completed
+        if can_complete and not was_already_completed:
+            user_state = db.execute(
+                select(SAPUserState).where(SAPUserState.user_id == user_id)
+            ).scalar_one_or_none()
+            if user_state is None:
+                user_state = SAPUserState(
+                    user_id=user_id,
+                    current_recommended_day=min(cls.TOTAL_DAYS, day_number + 1),
+                    completed_days_count=1,
+                    last_active_at=now,
+                )
+                db.add(user_state)
+            else:
+                user_state.last_active_at = now
+                if day_number == user_state.current_recommended_day:
+                    user_state.current_recommended_day = min(cls.TOTAL_DAYS, day_number + 1)
+                    user_state.completed_days_count += 1
         else:
-            user_state.last_active_at = now
-            if r.completed and day_number == user_state.current_recommended_day:
-                user_state.current_recommended_day = min(cls.TOTAL_DAYS, day_number + 1)
-                user_state.completed_days_count += 1
+            user_state = db.execute(
+                select(SAPUserState).where(SAPUserState.user_id == user_id)
+            ).scalar_one_or_none()
+            if user_state:
+                user_state.last_active_at = now
 
         db.commit()
         db.refresh(r)
@@ -194,6 +209,9 @@ class SAPProgressionService:
 
         if not day_info or not day_info["unlocked"]:
             raise ValueError(f"SAP Day {day_number} is locked. Complete Day {day_number - 1} or diagnostic placement first.")
+
+        if day_info.get("waived"):
+            raise ValueError(f"SAP Day {day_number} was waived by diagnostic placement.")
 
         r = db.execute(
             select(SAPUserDayState).where(
@@ -220,9 +238,53 @@ class SAPProgressionService:
             if not r.completed and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
                 r.status = SAPDayStatus.IN_PROGRESS.value
 
+        was_already_completed = bool(r.completed)
+        can_complete = bool(
+            r.lesson_completed
+            and r.practice_completed
+            and r.assessment_passed
+            and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value
+        )
+
+        if can_complete and not was_already_completed:
+            r.completed = True
+            r.completed_at = now
+            r.status = SAPDayStatus.COMPLETED.value
+
+        # Update macro SAPUserState only if newly completed
+        if can_complete and not was_already_completed:
+            user_state = db.execute(
+                select(SAPUserState).where(SAPUserState.user_id == user_id)
+            ).scalar_one_or_none()
+            if user_state is None:
+                user_state = SAPUserState(
+                    user_id=user_id,
+                    current_recommended_day=min(cls.TOTAL_DAYS, day_number + 1),
+                    completed_days_count=1,
+                    last_active_at=now,
+                )
+                db.add(user_state)
+            else:
+                user_state.last_active_at = now
+                if day_number == user_state.current_recommended_day:
+                    user_state.current_recommended_day = min(cls.TOTAL_DAYS, day_number + 1)
+                    user_state.completed_days_count += 1
+        else:
+            user_state = db.execute(
+                select(SAPUserState).where(SAPUserState.user_id == user_id)
+            ).scalar_one_or_none()
+            if user_state:
+                user_state.last_active_at = now
+
         db.commit()
         db.refresh(r)
+
+        updated = cls.compute_user_progress(db, user_id)
         return {
             "day_number": day_number,
             "practice_completed": True,
+            "day_completed": r.completed,
+            "unlocked_next_day": r.completed and day_number < cls.TOTAL_DAYS,
+            "current_day": updated["current_day"],
+            "day_state": updated["day_states"][str(day_number)],
         }

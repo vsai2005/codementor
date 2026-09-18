@@ -84,6 +84,13 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
     return 0; // Fresh lesson begins strictly at Step 0
   });
 
+  // Practice State
+  const [practiceCompleted, setPracticeCompleted] = useState<boolean>(
+    Boolean(initialDayState?.practice_completed || initialDayState?.completed)
+  );
+  const [recordingPractice, setRecordingPractice] = useState<boolean>(false);
+  const [practiceError, setPracticeError] = useState<string | null>(null);
+
   // Assessment State
   const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
   const [submittingAssessment, setSubmittingAssessment] = useState<boolean>(false);
@@ -109,6 +116,9 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
 
   // If initial day state arrives late and indicates passed/completed, unlock all
   useEffect(() => {
+    if (initialDayState?.practice_completed || initialDayState?.completed) {
+      setPracticeCompleted(true);
+    }
     if (isAlreadyPassed) {
       setMaxUnlockedIdx(steps.length - 1);
       if (!assessmentResult) {
@@ -132,6 +142,9 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
   );
 
   const handleAdvanceTo = (targetIdx: number) => {
+    if (targetIdx >= 5 && !practiceCompleted && !initialDayState?.completed) {
+      return;
+    }
     if (targetIdx > 5 && !isAssessmentPassed) {
       return;
     }
@@ -145,6 +158,9 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
   const handleNext = () => {
     if (currentStepIdx < steps.length - 1) {
       const nextIdx = currentStepIdx + 1;
+      if (nextIdx >= 5 && !practiceCompleted && !initialDayState?.completed) {
+        return;
+      }
       if (nextIdx > 5 && !isAssessmentPassed) {
         return;
       }
@@ -160,12 +176,31 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
   };
 
   const handleStepJump = (idx: number) => {
+    if (idx >= 5 && !practiceCompleted && !initialDayState?.completed) {
+      return;
+    }
     if (idx > 5 && !isAssessmentPassed) {
       return;
     }
     if (idx <= maxUnlockedIdx) {
       setCurrentStepIdx(idx);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleCompletePractice = async () => {
+    setRecordingPractice(true);
+    setPracticeError(null);
+    try {
+      await sapApi.completePractice(lesson.day_number);
+      setPracticeCompleted(true);
+      handleAdvanceTo(4);
+    } catch (err: any) {
+      const msg = err?.message || "Failed to record practice completion. Please retry.";
+      setPracticeError(msg);
+      setPracticeCompleted(false);
+    } finally {
+      setRecordingPractice(false);
     }
   };
 
@@ -181,6 +216,12 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
       const qKey = q.question_id || q.id;
       payloadAnswers[qKey] = assessmentAnswers[qKey] || "";
     });
+
+    if (questions.length > 0 && !Object.values(payloadAnswers).some((v) => v && v.trim() !== "")) {
+      setAssessmentError("Please answer the assessment questions before submitting.");
+      setSubmittingAssessment(false);
+      return;
+    }
 
     try {
       const res = await sapApi.submitAssessment({
@@ -526,19 +567,36 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
 
             {renderPracticeComponent(currentStep)}
 
+            {practiceError && (
+              <div className="border-2 border-red-500 bg-red-50 text-red-800 p-3 text-xs font-mono font-bold flex items-center justify-between shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]">
+                <span>⚠️ {practiceError}</span>
+                <button
+                  type="button"
+                  onClick={handleCompletePractice}
+                  className="underline ml-2 hover:text-red-950"
+                >
+                  Retry Practice Save
+                </button>
+              </div>
+            )}
+
             <div className="border-3 border-ink bg-surface p-4 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               <div className="text-xs font-mono font-bold text-ink">
-                Completed hands-on configuration or process tracing?
+                {practiceCompleted
+                  ? "✓ Interactive practice successfully verified and logged."
+                  : "Completed hands-on configuration or process tracing?"}
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  sapApi.completePractice(lesson.day_number).catch(() => {});
-                  handleAdvanceTo(4);
-                }}
-                className="border-2 border-ink bg-emerald-400 hover:bg-emerald-300 text-ink px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                disabled={recordingPractice}
+                onClick={handleCompletePractice}
+                className="border-2 border-ink bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-ink px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
               >
-                Log Practice & Proceed to Scenario Challenge →
+                {recordingPractice
+                  ? "Logging Practice..."
+                  : practiceCompleted
+                  ? "Re-verify Practice & Proceed →"
+                  : "Log Practice & Proceed to Scenario Challenge →"}
               </button>
             </div>
           </div>
@@ -553,11 +611,18 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
               options={currentStep.options || []}
             />
 
-            <div className="border-3 border-ink bg-surface p-4 flex justify-end shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+            <div className="border-3 border-ink bg-surface p-4 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              {!practiceCompleted && !initialDayState?.completed && (
+                <div className="text-xs font-mono font-bold text-red-600">
+                  ⚠️ Interactive practice must be completed before entering the milestone assessment.
+                </div>
+              )}
+              <div className="flex-1" />
               <button
                 type="button"
+                disabled={!practiceCompleted && !initialDayState?.completed}
                 onClick={() => handleAdvanceTo(5)}
-                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
               >
                 Proceed to Milestone Assessment (Step 6) →
               </button>

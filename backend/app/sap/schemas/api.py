@@ -116,6 +116,10 @@ class SAPCompletePracticeRequest(BaseModel):
 class SAPCompletePracticeResponse(BaseModel):
     day_number: int
     practice_completed: bool
+    day_completed: bool = False
+    unlocked_next_day: bool = False
+    current_day: int | None = None
+    day_state: SAPDayStateDetail | None = None
 
 
 # --- Concept Mastery Schemas ---

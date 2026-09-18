@@ -76,6 +76,24 @@ export interface SapProgressResponse {
   day_states: Record<string, SapDayStateDetail>;
 }
 
+export interface SapCompletePracticeResponse {
+  day_number: number;
+  practice_completed: boolean;
+  day_completed?: boolean;
+  unlocked_next_day?: boolean;
+  current_day?: number | null;
+  day_state?: SapDayStateDetail | null;
+}
+
+export interface SapCompleteLessonResponse {
+  day_number: number;
+  lesson_completed: boolean;
+  day_completed: boolean;
+  unlocked_next_day: boolean;
+  current_day: number;
+  day_state: SapDayStateDetail;
+}
+
 export interface PlacementQuestionOption {
   id: string;
   text: string;

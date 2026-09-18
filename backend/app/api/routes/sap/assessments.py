@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -14,6 +14,7 @@ from app.sap.schemas.api import (
     SAPRemediationCapsuleDetail,
 )
 from app.sap.services.assessment import SAPAssessmentService
+from app.sap.services.progression import SAPProgressionService
 
 router = APIRouter()
 
@@ -24,15 +25,46 @@ def submit_assessment(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> SAPAssessmentSubmitResponse:
-    result = SAPAssessmentService.evaluate(
-        db=db,
-        user_id=user.id,
-        day_number=payload.day_number,
-        assessment_id=payload.assessment_id,
-        assessment_type=payload.assessment_type,
-        rubric_spec=payload.rubric_spec,
-        submission_payload=payload.submission_payload,
-    )
+    # 1. Authoritative access and gating check
+    progress = SAPProgressionService.compute_user_progress(db, user.id)
+    day_info = progress["day_states"].get(str(payload.day_number))
+    if not day_info:
+        raise HTTPException(
+            status_code=404,
+            detail=f"SAP Day {payload.day_number} does not exist.",
+        )
+
+    if day_info.get("waived"):
+        raise HTTPException(
+            status_code=403,
+            detail=f"SAP Day {payload.day_number} was waived by diagnostic placement and cannot be submitted.",
+        )
+
+    if not day_info.get("unlocked") or day_info.get("status") == "locked":
+        raise HTTPException(
+            status_code=403,
+            detail=f"SAP Day {payload.day_number} is locked. Complete prerequisite days first.",
+        )
+
+    # 2. Mandatory practice requirement before assessment attempt
+    if not day_info.get("practice_completed") and not day_info.get("completed"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Interactive practice is mandatory. Complete Day {payload.day_number} practice before attempting assessment.",
+        )
+
+    try:
+        result = SAPAssessmentService.evaluate(
+            db=db,
+            user_id=user.id,
+            day_number=payload.day_number,
+            assessment_id=payload.assessment_id,
+            assessment_type=payload.assessment_type,
+            rubric_spec=payload.rubric_spec,
+            submission_payload=payload.submission_payload,
+        )
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
 
     remed_capsule = None
     if result.get("remediation_capsule"):

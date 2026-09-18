@@ -7,6 +7,8 @@ import type {
   PlacementQuestion,
   SapAssessmentSubmitRequest,
   SapAssessmentSubmitResponse,
+  SapCompleteLessonResponse,
+  SapCompletePracticeResponse,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -52,14 +54,14 @@ export const sapApi = {
   getProgress: (): Promise<SapProgressResponse> =>
     request<SapProgressResponse>("/api/sap/learning/progress"),
 
-  completeLesson: (dayNumber: number): Promise<any> =>
-    request<any>("/api/sap/learning/complete-lesson", {
+  completeLesson: (dayNumber: number): Promise<SapCompleteLessonResponse> =>
+    request<SapCompleteLessonResponse>("/api/sap/learning/complete-lesson", {
       method: "POST",
       body: JSON.stringify({ day_number: dayNumber }),
     }),
 
-  completePractice: (dayNumber: number): Promise<any> =>
-    request<any>("/api/sap/learning/complete-practice", {
+  completePractice: (dayNumber: number): Promise<SapCompletePracticeResponse> =>
+    request<SapCompletePracticeResponse>("/api/sap/learning/complete-practice", {
       method: "POST",
       body: JSON.stringify({ day_number: dayNumber }),
     }),
