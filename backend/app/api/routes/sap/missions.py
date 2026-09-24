@@ -98,4 +98,7 @@ def submit_step_attempt(
         )
         return SAPMissionStepAttemptResponse(**result)
     except ValueError as err:
-        raise HTTPException(status_code=400, detail=str(err))
+        err_msg = str(err)
+        if "not found" in err_msg.lower():
+            raise HTTPException(status_code=404, detail=err_msg)
+        raise HTTPException(status_code=400, detail=err_msg)

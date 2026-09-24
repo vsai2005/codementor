@@ -750,9 +750,9 @@ You are now fully prepared to tackle:
 - **Mission 1**: *Design Nova Manufacturing's Organizational Structure*
 - **Mission 2**: *Nova Manufacturing Opens Plant PL02*""",
                 "recommended_mission": {
-                    "slug": "nova-plant-expansion",
-                    "title": "Mission: Nova Manufacturing Opens Plant PL02",
-                    "description": "Configure the complete enterprise integration for Nova's Austin facility, assigning plants, storage locations, and purchasing orgs.",
+                    "slug": "nova-org-structure-design",
+                    "title": "Mission: Design Nova Manufacturing's Core Organizational Hierarchy",
+                    "description": "Configure the organizational hierarchy linking Client, Company Code, Plants, and Procurement/Sales Organizations according to S/4HANA best practices.",
                 },
             },
         ],

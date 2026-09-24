@@ -275,7 +275,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                              'title': 'Day 96 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd96_s8_completion',
-                             'recommended_mission': {'slug': 'nova-capstone-discovery-fit', 'title': 'Capstone: Process Scoping & Fit-to-Standard', 'description': 'Finalize enterprise business architecture and scope matrix.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! The process architecture is locked and approved. Tomorrow, '
                                            'you will implement the data semantic layer: **Capstone CDS Data Modeling & '
@@ -549,7 +549,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                              'title': 'Day 97 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd97_s8_completion',
-                             'recommended_mission': {'slug': 'nova-capstone-cds-vdm-design', 'title': 'Capstone: CDS VDM & Data Semantics', 'description': 'Model enterprise data layer with CDS View Entities and security.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! The data semantic foundation is complete and secure. '
                                            'Tomorrow, you will implement transactional behavior: **Capstone RAP '
@@ -818,7 +818,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                              'title': 'Day 98 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd98_s8_completion',
-                             'recommended_mission': {'slug': 'nova-capstone-abap-rap-build', 'title': 'Capstone: ABAP Cloud RAP Implementation', 'description': 'Code and test complete managed RAP business object.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! The transactional core is complete, tested, and robust. '
                                            'Tomorrow, you will assemble the frontend and cloud integration: **Capstone '
@@ -1087,7 +1087,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                              'title': 'Day 99 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd99_s8_completion',
-                             'recommended_mission': {'slug': 'nova-capstone-fiori-btp-assembly', 'title': 'Capstone: Fiori & BTP Integration Assembly', 'description': 'Assemble Fiori Elements front-end with BTP Event Mesh integration.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! The complete enterprise application stack is fully assembled '
                                            'and operational. Tomorrow, you will face the final challenge of the '
@@ -1417,7 +1417,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                               'title': 'Day 100 Mastery Evidence & Program Completion Certification'},
                           {   'recommended_mission': None,
                               'step_id': 'd100_s8_completion',
-                             'recommended_mission': {'slug': 'nova-capstone-final-defense', 'title': 'Capstone: Architecture Defense & Master Certification', 'description': 'Defend comprehensive architecture before enterprise advisory board.'},
+                             
                               'step_type': 'completion',
                               'summary_md': '🎉 **CONGRATULATIONS! YOU HAVE COMPLETED THE ENTIRE 100-DAY SAP S/4HANA '
                                             'CURRICULUM!**\n'

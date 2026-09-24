@@ -264,7 +264,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 77 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd77_s8_completion',
-                             'recommended_mission': {'slug': 'nova-abap-cloud-syntax-guard', 'title': 'ABAP Cloud Syntax & Governance Guard', 'description': 'Refactor legacy ABAP constructs into released Tier 1 ABAP Cloud syntax.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You understand the foundational rules of ABAP Cloud. '
                                            'Tomorrow, you will master modern clean coding techniques: **Modern ABAP '
@@ -542,7 +542,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 78 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd78_s8_completion',
-                             'recommended_mission': {'slug': 'nova-abap-unit-test-double', 'title': 'ABAP Unit & Test Double Framework', 'description': 'Write isolated unit tests with test doubles for business logic.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You have modern clean-coding techniques down. Tomorrow, you '
                                            'will step into the core architectural pillar of modern SAP engineering: '
@@ -818,7 +818,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 79 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd79_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-bo-modeling-scaffold', 'title': 'RAP Business Object Architecture Scaffold', 'description': 'Design root and child entity compositions for production tracking.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You understand the RAP architectural foundation. Tomorrow, '
                                            'you will build the relational foundation: **RAP Business Object Modeling, '
@@ -1092,7 +1092,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 80 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd80_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-composition-binding', 'title': 'RAP BO Composition & Child Navigation', 'description': 'Define compositions of child items with associations to parent.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to model multi-tier entities. Tomorrow, you will '
                                            'define their transactional behavior: **Behavior Definitions (BDEF) - '
@@ -1366,7 +1366,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 81 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd81_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-managed-bdef-setup', 'title': 'Managed RAP Behavior Definition Setup', 'description': 'Configure transactional characteristics in managed BDEF.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to define transactional contracts. Tomorrow, you '
                                            'will master the lifecycle that governs commits: **The RAP Transactional '
@@ -1627,7 +1627,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 82 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd82_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-unmanaged-bdef-handler', 'title': 'Unmanaged RAP Save Handler', 'description': 'Implement custom transactional save sequence in unmanaged BDEF.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand the transactional save engine. Tomorrow, you '
                                            'will master automated business calculations: **RAP Determinations**.',
@@ -1878,7 +1878,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 83 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd83_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-save-sequence-trace', 'title': 'RAP Save Sequence Execution Trace', 'description': 'Trace finalize, check_before_save, and adjust_numbers stages.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You know how to automate calculations. Tomorrow, you will '
                                            'master business validation and error messaging: **RAP Validations & State '
@@ -2139,7 +2139,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 84 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd84_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-determinations-validations', 'title': 'RAP Determinations & Validations Implementation', 'description': 'Enforce business validations and auto-determinations with state messages.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to validate and protect data. Tomorrow, you will '
                                            'master custom business operations: **RAP Actions & Entity Manipulation '
@@ -2401,7 +2401,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 85 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd85_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-custom-actions-eml', 'title': 'RAP Custom Actions & EML Operations', 'description': 'Implement custom business action invoked via EML MODIFY ENTITY.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to implement custom business logic. Tomorrow, '
                                            'you will master the technology that enables enterprise autosaving: **RAP '
@@ -2663,7 +2663,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 86 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd86_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-draft-handling-setup', 'title': 'Draft Handling & Auto-Save Configuration', 'description': 'Configure draft table and optimistic locking on RAP business object.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to implement enterprise autosaving. Tomorrow, '
                                            'you will master concurrency and locking: **Optimistic Locking via ETags & '
@@ -2912,7 +2912,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 87 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd87_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-etag-concurrency-control', 'title': 'ETag Optimistic Concurrency Control', 'description': 'Validate total ETag checks preventing lost updates during editing.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand concurrency control. Tomorrow, you will master '
                                            'document numbering and security: **Numbering Strategies & Authorization '
@@ -3169,7 +3169,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 88 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd88_s8_completion',
-                             'recommended_mission': {'slug': 'nova-rap-early-late-numbering', 'title': 'Early vs Late Numbering Strategies', 'description': 'Implement adjust_numbers logic for legal document sequence generation.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You have mastered all core building blocks of RAP. Tomorrow, '
                                            'you will synthesize everything in the comprehensive **Phase 7 ABAP Cloud & '
@@ -3438,7 +3438,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Phase 7 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd89_s8_completion',
-                             'recommended_mission': {'slug': 'nova-abap-cloud-rap-capstone', 'title': 'ABAP Cloud & RAP Enterprise Capstone', 'description': 'Architect, test, and activate end-to-end RAP BO for Nova manufacturing.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Congratulations! You have completed Phase 7: ABAP Cloud & RAP. You possess '
                                            'deep, state-of-the-art pro-code engineering skills. In **Phase 8 (Days '

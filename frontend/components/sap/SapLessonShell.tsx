@@ -957,7 +957,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
             </div>
 
             {/* Companion Mission Recommendation Card */}
-            {currentStep.recommended_mission && (
+            {currentStep.recommended_mission && currentStep.recommended_mission.slug && (
               <MissionRecommendation
                 mission={currentStep.recommended_mission}
               />

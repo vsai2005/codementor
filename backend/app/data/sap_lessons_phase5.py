@@ -296,7 +296,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 55 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd55_s8_completion',
-                             'recommended_mission': {'slug': 'nova-fiori-design-audit', 'title': 'Fiori Design Principles & UX Audit', 'description': 'Evaluate Nova Manufacturing procurement UI against SAP Fiori design standards.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Congratulations! You have mastered the foundational UX strategy and '
                                            'application taxonomy of SAP S/4HANA. Tomorrow, you will configure the '
@@ -574,7 +574,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 56 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd56_s8_completion',
-                             'recommended_mission': {'slug': 'nova-flp-spaces-pages-config', 'title': 'Configure FLP Spaces & Pages for Plant Ops', 'description': 'Organize production and procurement pages for Heidelberg plant managers.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand the operational entry point of S/4HANA. '
                                            'Tomorrow, you will dive into the underlying client-side engine: the '
@@ -851,7 +851,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 57 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd57_s8_completion',
-                             'recommended_mission': {'slug': 'nova-ui5-controller-debugging', 'title': 'SAPUI5 Component & Controller Diagnostic', 'description': 'Trace two-way data binding and lifecycle events in custom manufacturing app.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You now understand the frontend runtime engine. Tomorrow, you '
                                            'will master the communication protocol that connects UI5 to the backend: '
@@ -1124,7 +1124,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 58 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd58_s8_completion',
-                             'recommended_mission': {'slug': 'nova-odata-v4-optimization', 'title': 'OData V4 Batch Optimization', 'description': 'Refactor inventory queries into efficient OData V4 compound batch operations.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Excellent progress! You understand the transport protocol between frontend '
                                            'and backend. Tomorrow, you will learn how to publish backend CDS views as '
@@ -1376,7 +1376,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 59 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd59_s8_completion',
-                             'recommended_mission': {'slug': 'nova-gateway-service-exposure', 'title': 'Publish Gateway Service for Sales Portal', 'description': 'Register and activate SAP Gateway service for external dealer portal.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Well done! You can now publish any CDS view as a live OData V4 service. '
                                            'Tomorrow, you will unlock the superpower of modern SAP frontend '
@@ -1649,7 +1649,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 60 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd60_s8_completion',
-                             'recommended_mission': {'slug': 'nova-fiori-elements-eval', 'title': 'Fiori Elements vs Freestyle Strategy', 'description': 'Conduct architectural appraisal for new shop floor tablet UI.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Phenomenal achievement! You understand how annotations generate enterprise '
                                            'UIs. Tomorrow, you will master the specific annotations that govern tables '
@@ -1934,7 +1934,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 61 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd61_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cds-ui-annotations-refactor', 'title': 'CDS UI Annotation Refactoring', 'description': 'Enhance List Report metadata with dynamic line items and selection fields.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You can now generate production-grade list and filter views. '
                                            'Tomorrow, you will combine the List Report with its companion floorplan: '
@@ -2209,7 +2209,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 62 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd62_s8_completion',
-                             'recommended_mission': {'slug': 'nova-list-report-object-page-flow', 'title': 'List Report to Object Page Flow', 'description': 'Wire end-to-end drill-down navigation for DXTR-1000 manufacturing records.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You have mastered the core workhorse floorplan of S/4HANA. '
                                            'Tomorrow, you will learn how to build executive visual dashboards using '
@@ -2488,7 +2488,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Day 63 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd63_s8_completion',
-                             'recommended_mission': {'slug': 'nova-ovp-dashboard-assembly', 'title': 'Overview Page Cards Assembly', 'description': 'Design multi-card analytical dashboard for plant executive review.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Brilliant work! You now understand the full suite of Fiori Elements '
                                            'floorplans. Tomorrow, you will tackle the comprehensive **Phase 5 Capstone '
@@ -2781,7 +2781,7 @@ PHASE_5_DAYS_CONTENT: dict[int, dict[str, Any]] = {   55: {   'atomic_concepts':
                              'title': 'Phase 5 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd64_s8_completion',
-                             'recommended_mission': {'slug': 'nova-enterprise-ux-capstone', 'title': 'Enterprise UX & Fiori Capstone', 'description': 'Final validation and deployment defense of Nova UX suite.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Congratulations! You have completed Phase 5: SAP Fiori & Enterprise UX. '
                                            'You now possess deep, end-to-end expertise in modern enterprise user '

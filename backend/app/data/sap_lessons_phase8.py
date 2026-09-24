@@ -256,7 +256,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 90 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd90_s8_completion',
-                             'recommended_mission': {'slug': 'nova-btp-account-governance', 'title': 'BTP Subaccount & Entitlement Governance', 'description': 'Establish multi-region BTP subaccount structure with Cloud Foundry & Kyma.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand the BTP foundation. Tomorrow, you will master '
                                            'the enterprise integration engine: **SAP Integration Suite & Cloud '
@@ -525,7 +525,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 91 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd91_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cpi-iflow-development', 'title': 'Cloud Integration iFlow Development', 'description': 'Build message flow routing supplier notifications via Cloud Integration.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand message orchestration. Tomorrow, you will dive '
                                            'into message payload transformations: **CPI Message Transformations & '
@@ -781,7 +781,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 92 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd92_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cpi-groovy-message-mapping', 'title': 'CPI Message Transformations & Groovy Scripting', 'description': 'Implement complex XML-to-JSON transformations with Groovy scripts.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to manipulate message payloads. Tomorrow, you '
                                            'will master real-time asynchronous notifications: **Event-Driven '
@@ -1025,7 +1025,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 93 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd93_s8_completion',
-                             'recommended_mission': {'slug': 'nova-event-mesh-pubsub', 'title': 'SAP Event Mesh Asynchronous Pub-Sub', 'description': 'Publish and consume CloudEvents topics across distributed systems.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to publish and route business events. Tomorrow, '
                                            'you will connect S/4HANA to Event Mesh and secure hybrid networks: '
@@ -1296,7 +1296,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 94 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd94_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cloud-connector-secure-tunnel', 'title': 'Cloud Connector Secure Hybrid Tunnel', 'description': 'Establish encrypted reverse-invoke tunnel connecting on-prem to BTP.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand secure hybrid connectivity. Tomorrow, you will '
                                            'synthesize all integration knowledge in the **Phase 8 BTP & Enterprise '
@@ -1562,7 +1562,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Phase 8 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd95_s8_completion',
-                             'recommended_mission': {'slug': 'nova-btp-integration-capstone', 'title': 'BTP Enterprise Integration Capstone', 'description': 'Deploy unified hybrid integration scenario with Event Mesh and CPI.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Congratulations! You have completed Phase 8: SAP BTP & Enterprise '
                                            'Integration. You now possess world-class enterprise integration '

@@ -595,8 +595,73 @@ SEED_MISSIONS: list[dict[str, Any]] = [
     },
 ]
 
-# Merge Phase 2, Phase 3, and Phase 4 missions into SEED_MISSIONS
-SEED_MISSIONS = SEED_MISSIONS[:5] + PHASE_2_SEED_MISSIONS + PHASE_3_SEED_MISSIONS + PHASE_4_SEED_MISSIONS
+# =============================================================================
+# Authoritative Mission Registry Across All Supported Phases
+# =============================================================================
+
+class SAPMissionRegistry:
+    """Authoritative mission registry across all supported curriculum phases.
+
+    Enforces uniqueness of mission slugs, prevents duplicate definitions, and guarantees
+    every registered mission is retrievable by canonical slug.
+    """
+
+    _missions: list[dict[str, Any]] = []
+    _by_slug: dict[str, dict[str, Any]] = {}
+    _initialized: bool = False
+
+    @classmethod
+    def initialize(cls) -> None:
+        """Initializes the registry from all supported phases and validates uniqueness."""
+        if cls._initialized:
+            return
+        raw_missions = (
+            SEED_MISSIONS_PHASE_1
+            + PHASE_2_SEED_MISSIONS
+            + PHASE_3_SEED_MISSIONS
+            + PHASE_4_SEED_MISSIONS
+        )
+        seen_slugs: set[str] = set()
+        cls._missions = []
+        cls._by_slug = {}
+        for m in raw_missions:
+            slug = m["slug"]
+            if slug in seen_slugs:
+                raise ValueError(f"Duplicate mission slug detected in registry: '{slug}'")
+            seen_slugs.add(slug)
+            cls._missions.append(m)
+            cls._by_slug[slug] = m
+        cls._initialized = True
+
+    @classmethod
+    def get_all(cls) -> list[dict[str, Any]]:
+        cls.initialize()
+        return list(cls._missions)
+
+    @classmethod
+    def get(cls, slug: str) -> dict[str, Any] | None:
+        cls.initialize()
+        return cls._by_slug.get(slug)
+
+    @classmethod
+    def contains(cls, slug: str) -> bool:
+        cls.initialize()
+        return slug in cls._by_slug
+
+    @classmethod
+    def count(cls) -> int:
+        cls.initialize()
+        return len(cls._missions)
+
+    @classmethod
+    def get_slugs(cls) -> set[str]:
+        cls.initialize()
+        return set(cls._by_slug.keys())
+
+
+SEED_MISSIONS_PHASE_1 = SEED_MISSIONS[:5]
+SAPMissionRegistry.initialize()
+SEED_MISSIONS = SAPMissionRegistry.get_all()
 
 
 class SAPMissionService:
@@ -737,11 +802,14 @@ class SAPMissionService:
         assistance_level: str = SAPAssistanceLevel.TRAINING.value,
     ) -> dict[str, Any]:
         """Retrieves complete mission details with company context and assistance rules filtered by level."""
-        cls.seed_missions_if_needed(db)
-
         mission = db.execute(
             select(SAPMission).where(SAPMission.slug == slug)
         ).scalar_one_or_none()
+        if not mission:
+            cls.seed_missions_if_needed(db)
+            mission = db.execute(
+                select(SAPMission).where(SAPMission.slug == slug)
+            ).scalar_one_or_none()
         if not mission:
             raise ValueError(f"Mission '{slug}' not found.")
 
@@ -804,10 +872,14 @@ class SAPMissionService:
         assistance_level: str = SAPAssistanceLevel.TRAINING.value,
     ) -> SAPMissionAttempt:
         """Starts or resumes a mission attempt."""
-        cls.seed_missions_if_needed(db)
         mission = db.execute(
             select(SAPMission).where(SAPMission.slug == slug)
         ).scalar_one_or_none()
+        if not mission:
+            cls.seed_missions_if_needed(db)
+            mission = db.execute(
+                select(SAPMission).where(SAPMission.slug == slug)
+            ).scalar_one_or_none()
         if not mission:
             raise ValueError(f"Mission '{slug}' not found.")
 

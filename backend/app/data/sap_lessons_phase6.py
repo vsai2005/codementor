@@ -274,7 +274,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 65 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd65_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cloud-edition-selection', 'title': 'Public vs Private Cloud Decision Matrix', 'description': 'Analyze regulatory and customization requirements for Nova expansion.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand the cloud deployment landscape. Tomorrow, you '
                                            'will master the cardinal architectural rule of modern SAP engineering: '
@@ -540,7 +540,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 66 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd66_s8_completion',
-                             'recommended_mission': {'slug': 'nova-clean-core-audit', 'title': 'Clean Core Governance & C1 API Audit', 'description': 'Audit custom Z-code portfolio against SAP Clean Core criteria.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! Clean Core is the bedrock of modern SAP consulting. Tomorrow, '
                                            'you will master the delivery framework that executes Clean Core '
@@ -801,7 +801,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 67 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd67_s8_completion',
-                             'recommended_mission': {'slug': 'nova-activate-methodology-gate', 'title': 'SAP Activate Quality Gate Review', 'description': 'Lead Explore-to-Realize phase sign-off for manufacturing deployment.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand the delivery lifecycle. Tomorrow, you will '
                                            'master the cornerstone workshop of the Explore phase: **Fit-to-Standard '
@@ -1073,7 +1073,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 68 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd68_s8_completion',
-                             'recommended_mission': {'slug': 'nova-fit-to-standard-scoping', 'title': 'Fit-to-Standard Workshop Scoping', 'description': 'Reconcile delta requirements against standard best practices.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You know how to scope standard processes. Tomorrow, you will '
                                            'configure those scope items in the cloud using **SAP Central Business '
@@ -1331,7 +1331,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 69 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd69_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cbc-org-setup', 'title': 'Central Business Configuration Org Setup', 'description': 'Provision global organizational entities in CBC.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Phenomenal work! You now understand how cloud configuration is managed '
                                            'centrally. Tomorrow, you will unlock the first tier of the Clean Core '
@@ -1583,7 +1583,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 70 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd70_s8_completion',
-                             'recommended_mission': {'slug': 'nova-key-user-custom-fields', 'title': 'Key-User Extensibility Custom Fields', 'description': 'Add regulated environmental tracking fields using Key-User tools.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You have mastered low-code in-app extensions. Tomorrow, you '
                                            'will step into professional cloud development: **Developer Extensibility '
@@ -1853,7 +1853,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 71 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd71_s8_completion',
-                             'recommended_mission': {'slug': 'nova-developer-extensibility-adt', 'title': 'On-Stack Developer Extensibility in ADT', 'description': 'Build Tier 1 ABAP Cloud extension on S/4HANA stack.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You understand on-stack cloud development. Tomorrow, you will '
                                            'master the third extensibility tier: **Side-by-Side Extensibility on SAP '
@@ -2109,7 +2109,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 72 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd72_s8_completion',
-                             'recommended_mission': {'slug': 'nova-btp-side-by-side-extension', 'title': 'Side-by-Side BTP Extension Architecture', 'description': 'Decouple dealer portal logic onto BTP Kyma runtime.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Brilliant work! You now understand all three tiers of the Clean Core '
                                            'Extensibility Framework. Tomorrow, you will master the critical data '
@@ -2366,7 +2366,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 73 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd73_s8_completion',
-                             'recommended_mission': {'slug': 'nova-migration-cockpit-staging', 'title': 'Data Migration Cockpit Staging Execution', 'description': 'Load supplier balances and material stocks via LTMC staging tables.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Superb work! You know how to migrate enterprise data. Tomorrow, you will '
                                            'master quality assurance and regression protection: **Cloud Test '
@@ -2633,7 +2633,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 74 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd74_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cloud-automated-testing', 'title': 'Cloud Test Automation Suite Configuration', 'description': 'Create automated regression test plans for quarterly release upgrades.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Outstanding! You know how to validate and protect cloud systems against '
                                            'regressions. Tomorrow, you will master the final critical operational '
@@ -2906,7 +2906,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 75 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd75_s8_completion',
-                             'recommended_mission': {'slug': 'nova-cutover-hypercare-execution', 'title': 'Cutover & Hypercare Operational Execution', 'description': 'Execute dress rehearsal cutover sequence for production launch.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Phenomenal work! You have traversed the complete deployment lifecycle. '
                                            'Tomorrow, you will synthesize all Phase 6 knowledge in the **Phase 6 Clean '
@@ -3209,7 +3209,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Phase 6 Mastery Evidence & Enterprise Synthesis'},
                          {   'recommended_mission': None,
                              'step_id': 'd76_s8_completion',
-                             'recommended_mission': {'slug': 'nova-clean-core-capstone', 'title': 'Clean Core & Cloud Architecture Capstone', 'description': 'Defend end-to-end cloud transformation architecture.'},
+                             
                              'step_type': 'completion',
                              'summary_md': 'Congratulations! You have completed Phase 6: S/4HANA Cloud & Clean Core. '
                                            'You possess the strategic and technical competence required to lead cloud '

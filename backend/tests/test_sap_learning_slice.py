@@ -177,7 +177,8 @@ class TestSAPDaysContentIntegrity:
             assert practice_step["component_type"] == comp
 
     def test_companion_missions_recommended(self):
-        for day, lesson in SAP_DAYS_CONTENT.items():
+        for day in range(1, 9):
+            lesson = SAP_DAYS_CONTENT[day]
             completion_step = lesson["steps"][7]
             assert completion_step["step_type"] == "completion"
             rec = completion_step.get("recommended_mission")

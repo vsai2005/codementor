@@ -13,6 +13,10 @@ interface MissionRecommendationProps {
 }
 
 export function MissionRecommendation({ mission }: MissionRecommendationProps) {
+  if (!mission || !mission.slug || typeof mission.slug !== "string" || !mission.slug.trim()) {
+    return null;
+  }
+
   const description = mission.description || mission.desc || "";
 
   return (

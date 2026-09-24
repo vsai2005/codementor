@@ -47,9 +47,10 @@ from app.models.sap_models import (
     SAPUserDayState,
     SAPUserState,
 )
+from app.data.sap_lessons import SAP_DAYS_CONTENT
 from app.sap.services.enterprise import NOVA_MANUFACTURING_TEMPLATE, SAPEnterpriseService
 from app.sap.services.mastery import SAPMasteryService
-from app.sap.services.missions import SEED_MISSIONS, SAPMissionService
+from app.sap.services.missions import SEED_MISSIONS, SAPMissionRegistry, SAPMissionService
 
 client = TestClient(app)
 
@@ -618,3 +619,180 @@ def test_api_modes_switch_and_fetch():
     finally:
         # Cleanup overrides
         app.dependency_overrides.clear()
+
+
+# =============================================================================
+# 9. Mission Reference & Curriculum Integrity Verification (Batch 3)
+# =============================================================================
+
+def test_every_exposed_mission_slug_exists_in_registry():
+    """Asserts that every mission slug referenced across all 100 SAP days (day-level or step-level)
+
+    strictly resolves to an authoritative registered mission in SAPMissionRegistry.
+    Zero broken references or 404 targets allowed.
+    """
+    unresolved_references: list[dict[str, Any]] = []
+    total_references = 0
+
+    for day_number in range(1, 101):
+        day_content = SAP_DAYS_CONTENT.get(day_number)
+        assert day_content is not None, f"SAP Day {day_number} must exist in curriculum"
+
+        # 1. Day-level recommendation check
+        day_slug = day_content.get("recommended_mission_slug")
+        if day_slug:
+            total_references += 1
+            if not SAPMissionRegistry.contains(day_slug):
+                unresolved_references.append({
+                    "day": day_number,
+                    "location": "day_level",
+                    "slug": day_slug,
+                })
+
+        # 2. Step-level recommendation checks
+        for step in day_content.get("steps", []):
+            rec = step.get("recommended_mission")
+            if rec and isinstance(rec, dict):
+                step_slug = rec.get("slug")
+                if step_slug:
+                    total_references += 1
+                    if not SAPMissionRegistry.contains(step_slug):
+                        unresolved_references.append({
+                            "day": day_number,
+                            "location": step.get("step_id", "unknown_step"),
+                            "slug": step_slug,
+                        })
+
+    assert total_references > 0, "Curriculum must expose mission recommendations"
+    assert len(unresolved_references) == 0, (
+        f"Detected {len(unresolved_references)} unresolved mission references: {unresolved_references}"
+    )
+
+
+def test_zero_duplicate_mission_slugs_in_registry():
+    """Asserts that all registered missions have unique, non-overlapping slugs across all phases."""
+    all_missions = SAPMissionRegistry.get_all()
+    all_slugs = [m["slug"] for m in all_missions]
+
+    assert len(all_slugs) == len(set(all_slugs)), (
+        f"Duplicate mission slugs detected: {[s for s in all_slugs if all_slugs.count(s) > 1]}"
+    )
+    assert SAPMissionRegistry.count() == len(all_slugs)
+
+
+def test_mission_phase_and_day_metadata_valid():
+    """Validates that every registered mission contains valid day relations, concepts, and metadata."""
+    for mission in SAPMissionRegistry.get_all():
+        slug = mission["slug"]
+        related_days = mission.get("related_days", [])
+        assert isinstance(related_days, list), f"Mission '{slug}' related_days must be a list"
+        assert len(related_days) > 0, f"Mission '{slug}' must have at least one related day"
+        for day in related_days:
+            assert isinstance(day, int) and 1 <= day <= 100, (
+                f"Mission '{slug}' related_day {day} is out of bounds (1-100)"
+            )
+            assert day in SAP_DAYS_CONTENT, f"Mission '{slug}' refers to unauthored Day {day}"
+
+        # Concept slugs validation
+        concept_slugs = mission.get("concept_slugs", [])
+        assert isinstance(concept_slugs, list) and len(concept_slugs) > 0, (
+            f"Mission '{slug}' must define concept_slugs"
+        )
+
+        # Steps validation
+        steps = mission.get("steps", [])
+        assert isinstance(steps, list) and len(steps) >= 1, (
+            f"Mission '{slug}' must define at least 1 interactive step"
+        )
+        for s in steps:
+            assert "step_id" in s and "instruction" in s, (
+                f"Mission '{slug}' step {s.get('step_id')} missing required fields"
+            )
+
+
+def test_missing_or_invalid_mission_slug_returns_proper_404(db, make_user):
+    """Asserts that querying or starting unknown/invalid mission slugs returns a clean 404 rather than 500."""
+    user = make_user()
+    app.dependency_overrides[get_current_user] = lambda: user
+
+    try:
+        invalid_slugs = [
+            "completely_fabricated_mission",
+            "nova-nonexistent-audit",
+            "random_slug_12345",
+        ]
+        for bad_slug in invalid_slugs:
+            # 1. Detail endpoint returns 404
+            res_detail = client.get(f"/api/sap/missions/{bad_slug}")
+            assert res_detail.status_code == 404, f"Expected 404 for GET {bad_slug}, got {res_detail.status_code}"
+            assert f"mission '{bad_slug}' not found" in res_detail.json()["detail"].lower()
+
+            # 2. Start endpoint returns 404
+            res_start = client.post(f"/api/sap/missions/{bad_slug}/start")
+            assert res_start.status_code == 404, f"Expected 404 for POST start {bad_slug}, got {res_start.status_code}"
+            assert f"mission '{bad_slug}' not found" in res_start.json()["detail"].lower()
+
+            # 3. Step attempt endpoint returns 404
+            res_attempt = client.post(
+                f"/api/sap/missions/{bad_slug}/attempt",
+                json={"step_id": "step_1", "payload": {}},
+            )
+            assert res_attempt.status_code == 404, f"Expected 404 for POST attempt {bad_slug}, got {res_attempt.status_code}"
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_every_registered_mission_retrievable_by_api(db):
+    """Asserts that all registered missions in SAPMissionRegistry can be retrieved via the GET API with valid schema."""
+    user = User(
+        id=uuid.uuid4(),
+        email=f"sap_mission_tester_{uuid.uuid4().hex[:8]}@example.com",
+        username=f"sap_m_{uuid.uuid4().hex[:8]}",
+        name="SAP Mission Tester",
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_db] = lambda: db
+
+    try:
+        all_missions = SAPMissionRegistry.get_all()
+        assert len(all_missions) == 33
+
+        for mission in all_missions:
+            slug = mission["slug"]
+            res = client.get(f"/api/sap/missions/{slug}")
+            assert res.status_code == 200, f"Failed to retrieve mission '{slug}': {res.text}"
+            data = res.json()
+
+            assert data["slug"] == slug
+            assert data["title"] == mission["title"]
+            assert data["difficulty"] == mission["difficulty"]
+            assert len(data["steps"]) >= 1
+
+            # Security: assert is_correct is NOT leaked to frontend
+            for step in data["steps"]:
+                for opt in step.get("options", []):
+                    assert "is_correct" not in opt, f"Secret is_correct leaked in mission {slug} step {step['step_id']}"
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_documented_mission_count_equals_actual_registry_count():
+    """Asserts that the numeric mission counts documented in README.md strictly match the actual registry count."""
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    readme_path = base_dir / "README.md"
+    assert readme_path.exists(), "README.md must exist"
+
+    readme_text = readme_path.read_text(encoding="utf-8")
+    actual_count = SAPMissionRegistry.count()
+
+    # Verify matching documentation claims
+    assert f"{actual_count} interactive enterprise business missions" in readme_text, (
+        f"README.md does not document '{actual_count} interactive enterprise business missions'"
+    )
+    assert f"Missions ({actual_count})" in readme_text, (
+        f"README.md does not document 'Missions ({actual_count})'"
+    )

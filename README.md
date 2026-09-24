@@ -2,7 +2,7 @@
 
 Production-grade, dual-curriculum AI engineering platform:
 1. **160-Day Python & DSA Curriculum**: 16 foundational and advanced topics (14 core curriculum sections), 178 curated LeetCode-style algorithmic challenges across 5 difficulty tiers (148 mapped directly to daily practice), Socratic AI Teacher, pgvector semantic memory, and zero-trust sandbox execution.
-2. **100-Day Enterprise SAP S/4HANA & ABAP Cloud Curriculum**: 9 architectural phases, 100 authored daily lessons with 8-step pedagogical structures, 61 interactive enterprise business missions, ECC-to-S/4HANA architectural shifts, In-Memory HANA, ACDOCA Universal Journal, MATDOC, CDS views & VDM, Clean Core extensibility, ABAP RESTful Application Programming (RAP), and final Enterprise Capstone defense.
+2. **100-Day Enterprise SAP S/4HANA & ABAP Cloud Curriculum**: 9 architectural phases, 100 authored daily lessons with 8-step pedagogical structures, 33 interactive enterprise business missions, ECC-to-S/4HANA architectural shifts, In-Memory HANA, ACDOCA Universal Journal, MATDOC, CDS views & VDM, Clean Core extensibility, ABAP RESTful Application Programming (RAP), and final Enterprise Capstone defense.
 
 ```
 Next.js 15 (App Router)  ──HTTP (Cookies)──▶  FastAPI (Backend)  ──▶  Zero-Trust Sandbox
@@ -80,7 +80,7 @@ npm run dev                               # http://localhost:3000
 - **Phase 7 (Days 77–89)**: ABAP RESTful Application Programming Model (RAP) (Managed, Unmanaged, Draft, Determinations, Validations, Actions).
 - **Phase 8 (Days 90–95)**: Enterprise Integration & Business Technology Platform (BTP) (Integration Suite, Event Mesh, Cloud Connector).
 - **Phase 9 (Days 96–100)**: Full Enterprise Capstone Project & Architectural Defense (Nova Manufacturing Corp digital twin).
-- **Missions (61)**: Interactive multi-step business missions across Phases 1–4 testing realistic enterprise ERP configuration and code.
+- **Missions (33)**: Interactive multi-step business missions across Phases 1–4 testing realistic enterprise ERP configuration and code.
 
 ---
 
