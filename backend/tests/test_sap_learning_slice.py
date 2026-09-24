@@ -433,7 +433,7 @@ class TestSAPLearningSliceAPI:
         try:
             res = client.get("/api/sap/learning/lessons/101")
             assert res.status_code == 404
-            assert "not authored yet" in res.json()["detail"]
+            assert "does not exist" in res.json()["detail"]
         finally:
             app.dependency_overrides.pop(get_current_user, None)
             app.dependency_overrides.pop(get_db, None)

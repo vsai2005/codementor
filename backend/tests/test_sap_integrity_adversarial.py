@@ -472,3 +472,145 @@ class TestLockedLessonAccess:
         resp = client_auth.get("/api/sap/learning/lessons/999")
         # Day 999 is far beyond the authored range — must return 404 (not 403)
         assert resp.status_code == 404
+        # 404 message must NOT contain stale "Days 1–54" assumption
+        detail = resp.json()["detail"]
+        assert "1–54" not in detail, f"Stale 'Days 1–54' found in 404 message: {detail}"
+        assert "does not exist" in detail
+
+    def test_day_zero_returns_404(self, client_auth):
+        """Day 0 is invalid and must return 404."""
+        resp = client_auth.get("/api/sap/learning/lessons/0")
+        assert resp.status_code == 404
+
+    def test_day_101_returns_404(self, client_auth):
+        """Day 101 is beyond the 100-day curriculum and must return 404."""
+        resp = client_auth.get("/api/sap/learning/lessons/101")
+        assert resp.status_code == 404
+
+
+# =============================================================================
+# 5. Days 55–100 Lesson Availability Regression
+# =============================================================================
+
+
+class TestDays55To100LessonAvailability:
+    """Regression tests verifying that all 100 authored days are accessible
+    when properly unlocked, and that the endpoint does not assume only
+    Days 1–54 exist.
+
+    Strategy: We manually create SAPUserDayState rows marking prior days as
+    completed so that the target day is unlocked by the progression engine.
+    """
+
+    @pytest.fixture
+    def _complete_days_up_to(self, mock_user, db_session):
+        """Returns a helper function that marks Days 1..N as completed in the DB."""
+        def _complete(n: int):
+            for d in range(1, n + 1):
+                existing = db_session.execute(
+                    select(SAPUserDayState).where(
+                        SAPUserDayState.user_id == mock_user.id,
+                        SAPUserDayState.day_number == d,
+                    )
+                ).scalar_one_or_none()
+                if existing is None:
+                    ds = SAPUserDayState(
+                        user_id=mock_user.id,
+                        day_number=d,
+                        lesson_started=True,
+                        lesson_completed=True,
+                        practice_completed=True,
+                        assessment_passed=True,
+                        completed=True,
+                        waived=False,
+                        status=SAPDayStatus.COMPLETED.value,
+                    )
+                    db_session.add(ds)
+                else:
+                    existing.lesson_completed = True
+                    existing.practice_completed = True
+                    existing.assessment_passed = True
+                    existing.completed = True
+                    existing.waived = False
+                    existing.status = SAPDayStatus.COMPLETED.value
+            # Also ensure SAPUserState reflects completion
+            user_state = db_session.execute(
+                select(SAPUserState).where(SAPUserState.user_id == mock_user.id)
+            ).scalar_one_or_none()
+            if user_state is None:
+                user_state = SAPUserState(
+                    user_id=mock_user.id,
+                    completed_days_count=n,
+                    current_recommended_day=n + 1,
+                )
+                db_session.add(user_state)
+            else:
+                user_state.completed_days_count = n
+                user_state.current_recommended_day = n + 1
+            db_session.commit()
+        return _complete
+
+    @pytest.mark.parametrize("target_day", [55, 77, 90, 100])
+    def test_unlocked_high_day_returns_200(
+        self, client_auth, _complete_days_up_to, target_day
+    ):
+        """An authenticated user who has completed all prior days can access
+        lesson content for Days 55, 77, 90, and 100."""
+        _complete_days_up_to(target_day - 1)  # complete days 1..(target-1)
+        resp = client_auth.get(f"/api/sap/learning/lessons/{target_day}")
+        assert resp.status_code == 200, (
+            f"Expected 200 for unlocked Day {target_day}, "
+            f"got {resp.status_code}: {resp.json()}"
+        )
+        data = resp.json()
+        assert data["day_number"] == target_day
+        assert "steps" in data
+        assert len(data["steps"]) == 8, (
+            f"Day {target_day} should have 8 pedagogical steps, got {len(data['steps'])}"
+        )
+
+    @pytest.mark.parametrize("target_day", [55, 77, 90, 100])
+    def test_completed_high_day_remains_accessible(
+        self, client_auth, _complete_days_up_to, target_day
+    ):
+        """A completed high day (55, 77, 90, 100) remains accessible for review."""
+        _complete_days_up_to(target_day)  # complete including target day itself
+        resp = client_auth.get(f"/api/sap/learning/lessons/{target_day}")
+        assert resp.status_code == 200, (
+            f"Expected 200 for completed Day {target_day} (review), "
+            f"got {resp.status_code}: {resp.json()}"
+        )
+        assert resp.json()["day_number"] == target_day
+
+    def test_locked_day_56_when_only_day_1_completed(
+        self, client_auth, _complete_days_up_to
+    ):
+        """Day 56 must be locked (403) when the user has only completed Day 1."""
+        _complete_days_up_to(1)
+        resp = client_auth.get("/api/sap/learning/lessons/56")
+        assert resp.status_code == 403, (
+            f"Expected 403 for locked Day 56, got {resp.status_code}: {resp.json()}"
+        )
+        assert "locked" in resp.json()["detail"].lower()
+
+    def test_locked_day_100_when_only_day_54_completed(
+        self, client_auth, _complete_days_up_to
+    ):
+        """Day 100 must be locked (403) when the user has only completed up to Day 54."""
+        _complete_days_up_to(54)
+        resp = client_auth.get("/api/sap/learning/lessons/100")
+        assert resp.status_code == 403, (
+            f"Expected 403 for locked Day 100, got {resp.status_code}: {resp.json()}"
+        )
+        assert "locked" in resp.json()["detail"].lower()
+
+    def test_invalid_day_101_returns_404(self, client_auth):
+        """Day 101 is beyond the 100-day curriculum — must return 404, not 403."""
+        resp = client_auth.get("/api/sap/learning/lessons/101")
+        assert resp.status_code == 404
+        detail = resp.json()["detail"]
+        assert "does not exist" in detail
+        # Verify the message references the correct max day (100)
+        assert "1–100" in detail, (
+            f"404 detail should reference valid range 1–100, got: {detail}"
+        )

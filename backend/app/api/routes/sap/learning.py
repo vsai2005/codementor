@@ -49,7 +49,7 @@ def get_lesson_content(
     if not lesson:
         raise HTTPException(
             status_code=404,
-            detail=f"Lesson content for Day {day_number} is not authored yet (Days 1–54 available).",
+            detail=f"Lesson content for Day {day_number} does not exist. Valid days are 1–{max(SAP_DAYS_CONTENT.keys())}.",
         )
 
     # Authoritative server-side access check
