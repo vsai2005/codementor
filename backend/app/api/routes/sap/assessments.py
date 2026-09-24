@@ -77,26 +77,29 @@ def submit_assessment(
     canonical_id = canonical_step_id or f"d{payload.day_number}_s6_assessment"
     valid_assessment_ids = {
         canonical_id,
-        f"day-{payload.day_number}-assessment",
         f"d{payload.day_number}_s6_assessment",
+        f"day-{payload.day_number}-assessment",
     }
     if canonical_step_id:
         valid_assessment_ids.add(canonical_step_id)
     day_slug = day_data.get("slug", "")
     if day_slug:
         valid_assessment_ids.add(f"day-{payload.day_number}-{day_slug}")
-        valid_assessment_ids.add(day_slug)
+    if payload.day_number == 8:
+        valid_assessment_ids.add("day-8-foundations-capstone")
+    elif payload.day_number == 22:
+        valid_assessment_ids.add("day-22-s4hana-capstone")
 
-    day_prefixes = (f"day-{payload.day_number}-", f"d{payload.day_number}_", f"d{payload.day_number}-", f"day{payload.day_number}_")
-    is_valid_id = (
-        payload.assessment_id in valid_assessment_ids
-        or (
-            payload.assessment_id.startswith(day_prefixes)
-            and any(term in payload.assessment_id for term in ("assessment", "capstone", "quiz", day_slug) if term)
+    if not payload.assessment_id or not payload.assessment_id.strip():
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Assessment ID mismatch for Day {payload.day_number}. "
+                f"Expected canonical ID '{canonical_id}', received empty or missing ID."
+            ),
         )
-    )
 
-    if not is_valid_id:
+    if payload.assessment_id not in valid_assessment_ids:
         raise HTTPException(
             status_code=400,
             detail=(

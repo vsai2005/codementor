@@ -37,6 +37,7 @@ from app.models.sap_models import (
     SAPAssessmentAttempt,
     SAPDayStatus,
     SAPPlacementProfile,
+    SAPSkillEvidence,
     SAPUserDayState,
 )
 from app.sap.services.progression import SAPProgressionService
@@ -211,28 +212,114 @@ def test_waived_vs_completed_state_lifecycle(test_user, db):
 # 2. Server-Bound Assessment Identity Tests
 # =============================================================================
 
-def test_forged_assessment_id_rejected(test_user, db):
-    """Submitting an assessment with an arbitrary client-chosen ID returns 400."""
+def test_tightened_assessment_identity_adversarial(test_user, db):
+    """Tightened assessment identity rejects d1_fake, day-1-anything, other day's valid ID,
+
+    and missing ID with 400 and zero DB mutation, while accepting the exact canonical ID.
+    """
     override_auth(test_user, db)
     try:
-        client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        # Complete practice first to satisfy Day 1 practice gating
+        p_res = client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        assert p_res.status_code == 200
 
-        for forged_id in ("hacked_assessment_id", "random_quiz_99", "admin_bypass", ""):
-            resp = client.post(
-                "/api/sap/assessments/submit",
-                json={
-                    "day_number": 1,
-                    "assessment_id": forged_id,
-                    "assessment_type": "mcq",
-                    "submission_payload": {"answers": {"q1": "q1_a", "q2": "q2_a"}},
-                },
-            )
-            assert resp.status_code == 400
-            assert "assessment id mismatch" in resp.json()["detail"].lower()
+        # Snapshot DB state before invalid submissions
+        initial_attempts = db.query(SAPAssessmentAttempt).filter_by(user_id=test_user.id).count()
+        initial_evidence = db.query(SAPSkillEvidence).filter_by(user_id=test_user.id).count()
+        day1_state_before = db.query(SAPUserDayState).filter_by(user_id=test_user.id, day_number=1).first()
+        assert initial_attempts == 0
+        assert initial_evidence == 0
+        assert day1_state_before is not None
+        assert day1_state_before.completed is False
+        assert day1_state_before.assessment_passed is not True
 
-        # Verify zero assessment attempts recorded in DB
-        attempts = db.query(SAPAssessmentAttempt).filter_by(user_id=test_user.id).all()
-        assert len(attempts) == 0
+        valid_answers = {"answers": {"q1": "q1_a", "q2": "q2_a"}}
+
+        # 1. Test vector: "d1_fake"
+        res_d1_fake = client.post(
+            "/api/sap/assessments/submit",
+            json={
+                "day_number": 1,
+                "assessment_id": "d1_fake",
+                "assessment_type": "mcq",
+                "submission_payload": valid_answers,
+            },
+        )
+        assert res_d1_fake.status_code == 400
+        assert "assessment id mismatch" in res_d1_fake.json()["detail"].lower()
+
+        # 2. Test vector: "day-1-anything"
+        res_day1_anything = client.post(
+            "/api/sap/assessments/submit",
+            json={
+                "day_number": 1,
+                "assessment_id": "day-1-anything",
+                "assessment_type": "mcq",
+                "submission_payload": valid_answers,
+            },
+        )
+        assert res_day1_anything.status_code == 400
+        assert "assessment id mismatch" in res_day1_anything.json()["detail"].lower()
+
+        # 3. Test vector: another day's valid ID ("d2_s6_assessment" submitted for Day 1)
+        res_other_day = client.post(
+            "/api/sap/assessments/submit",
+            json={
+                "day_number": 1,
+                "assessment_id": "d2_s6_assessment",
+                "assessment_type": "mcq",
+                "submission_payload": valid_answers,
+            },
+        )
+        assert res_other_day.status_code == 400
+        assert "assessment id mismatch" in res_other_day.json()["detail"].lower()
+
+        # 4. Test vectors: missing ID (empty string, whitespace, None, and omitted)
+        missing_cases = [
+            {"assessment_id": ""},
+            {"assessment_id": "   "},
+            {"assessment_id": None},
+            {},  # omitted completely
+        ]
+        for missing_payload in missing_cases:
+            payload = {
+                "day_number": 1,
+                "assessment_type": "mcq",
+                "submission_payload": valid_answers,
+                **missing_payload,
+            }
+            res_missing = client.post("/api/sap/assessments/submit", json=payload)
+            assert res_missing.status_code == 400, f"Expected 400 for payload {missing_payload}, got {res_missing.status_code}: {res_missing.text}"
+            assert "assessment id mismatch" in res_missing.json()["detail"].lower()
+
+        # Verify ZERO DB / Evidence mutation after all failed mismatch attempts
+        db.expire_all()
+        assert db.query(SAPAssessmentAttempt).filter_by(user_id=test_user.id).count() == 0
+        assert db.query(SAPSkillEvidence).filter_by(user_id=test_user.id).count() == 0
+        day1_state_check = db.query(SAPUserDayState).filter_by(user_id=test_user.id, day_number=1).first()
+        assert day1_state_check.completed is False
+        assert day1_state_check.assessment_passed is not True
+
+        # 5. Test vector: exact canonical ID ("d1_s6_assessment")
+        res_canonical = client.post(
+            "/api/sap/assessments/submit",
+            json={
+                "day_number": 1,
+                "assessment_id": "d1_s6_assessment",
+                "assessment_type": "mcq",
+                "submission_payload": valid_answers,
+            },
+        )
+        assert res_canonical.status_code == 200
+        canon_data = res_canonical.json()
+        assert canon_data["passed"] is True
+
+        # Verify DB / Evidence DID mutate for valid submission
+        db.expire_all()
+        assert db.query(SAPAssessmentAttempt).filter_by(user_id=test_user.id).count() == 1
+        assert db.query(SAPSkillEvidence).filter_by(user_id=test_user.id).count() >= 1
+        day1_state_after = db.query(SAPUserDayState).filter_by(user_id=test_user.id, day_number=1).first()
+        assert day1_state_after.assessment_passed is True
     finally:
         clear_auth()
 

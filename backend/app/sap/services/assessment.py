@@ -54,26 +54,20 @@ class SAPAssessmentService:
         canonical_id = canonical_step_id or f"d{day_number}_s6_assessment"
         valid_assessment_ids = {
             canonical_id,
-            f"day-{day_number}-assessment",
             f"d{day_number}_s6_assessment",
+            f"day-{day_number}-assessment",
         }
         if canonical_step_id:
             valid_assessment_ids.add(canonical_step_id)
         day_slug = day_data.get("slug", "")
         if day_slug:
             valid_assessment_ids.add(f"day-{day_number}-{day_slug}")
-            valid_assessment_ids.add(day_slug)
+        if day_number == 8:
+            valid_assessment_ids.add("day-8-foundations-capstone")
+        elif day_number == 22:
+            valid_assessment_ids.add("day-22-s4hana-capstone")
 
-        day_prefixes = (f"day-{day_number}-", f"d{day_number}_", f"d{day_number}-", f"day{day_number}_")
-        is_valid_id = (
-            assessment_id in valid_assessment_ids
-            or (
-                assessment_id.startswith(day_prefixes)
-                and any(term in assessment_id for term in ("assessment", "capstone", "quiz", day_slug) if term)
-            )
-        )
-
-        if not is_valid_id:
+        if not assessment_id or not str(assessment_id).strip() or assessment_id not in valid_assessment_ids:
             raise ValueError(
                 f"Invalid assessment_id '{assessment_id}' for SAP Day {day_number}. Expected canonical ID '{canonical_id}'."
             )

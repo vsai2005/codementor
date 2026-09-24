@@ -222,7 +222,7 @@ SAPAssessmentType = Literal[
 
 class SAPAssessmentSubmitRequest(BaseModel):
     day_number: int = Field(..., ge=1, le=100)
-    assessment_id: str
+    assessment_id: str | None = Field(default=None)
     assessment_type: SAPAssessmentType = Field(
         ...,
         description="Explicit validated curriculum assessment type: e.g. 'capstone_multi_concept', 'mcq', 'process_ordering', 'scenario_decision', 'rubric_based', 'simulation', 'troubleshooting', 'abap_challenge', 'cds_challenge', 'rap_challenge', etc."
