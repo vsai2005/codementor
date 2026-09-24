@@ -2,7 +2,7 @@
 
 Idempotent: re-running upserts by slug rather than duplicating.
 
-Inventory: Seeds 16 core computer science and DSA topics with 65 problems
+Inventory: Seeds 16 core computer science and DSA topics with 178 problems
 spanning Tiers 1-5, fully mapped across the 160-day Python curriculum.
 Includes server-authoritative reference solutions, robust test cases, and
 adaptive difficulty tier progression.
