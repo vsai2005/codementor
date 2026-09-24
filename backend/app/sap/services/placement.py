@@ -181,44 +181,12 @@ class SAPPlacementService:
                 rationale = "Foundational track recommended. Starting from Day 1 provides full step-by-step intuition across enterprise systems."
 
         else:
-            # Fallback for legacy calls passing raw domain_scores
+            # Fallback for unrecognized levels -> default to fresher
             overall_score = 0.0
             starting_day = 1
             resolved_persona = "fresher"
             waived_days = []
             rationale = "Starting from Day 1 to build complete enterprise computing foundations."
-
-        # If legacy domain_scores was passed without answers, preserve backward compatibility
-        if not answers and domain_scores:
-            erp = float(domain_scores.get("erp_basics", domain_scores.get("fundamentals", 0.0)))
-            proc = float(domain_scores.get("business_processes", erp))
-            delta = float(domain_scores.get("s4hana_delta", domain_scores.get("ddic_and_sql", 0.0)))
-            cds = float(domain_scores.get("modern_abap_cds", domain_scores.get("modern_s4hana_rap", 0.0)))
-            rap = float(domain_scores.get("rap_foundations", domain_scores.get("modern_s4hana_rap", 0.0)))
-
-            overall_score = round((erp * 0.2) + (proc * 0.2) + (delta * 0.2) + (cds * 0.2) + (rap * 0.2), 1)
-            evaluated_domain_scores = domain_scores
-
-            if rap >= 75.0 and cds >= 75.0:
-                starting_day = 77
-                resolved_persona = "experienced_s4hana"
-                waived_days = list(range(1, 77))
-                rationale = "Demonstrated mastery of S/4HANA CDS and RAP architecture. Accelerated to Day 77."
-            elif cds >= 60.0 or delta >= 60.0:
-                starting_day = 45
-                resolved_persona = "ecc_developer"
-                waived_days = list(range(1, 45))
-                rationale = "Demonstrated core data models and business processes. Accelerated to Day 45."
-            elif proc >= 50.0:
-                starting_day = 23
-                resolved_persona = "functional_user"
-                waived_days = list(range(1, 23))
-                rationale = "Demonstrated business processes. Accelerated to Day 23."
-            elif erp >= 50.0:
-                starting_day = 9
-                resolved_persona = "beginner"
-                waived_days = list(range(1, 9))
-                rationale = "Fundamental ERP demonstrated. Accelerated to Day 9."
 
         now = datetime.now(timezone.utc)
 
@@ -252,6 +220,8 @@ class SAPPlacementService:
             "experience_level": level,
             "waived_days": waived_days,
             "unlocked_days": waived_days + [starting_day],
+            "original_recommended_day": starting_day,
+            "original_waived_days": list(waived_days),
             "demonstrated_concepts": demonstrated_concepts,
             "gap_concepts": gap_concepts,
             "topic_breakdown": topic_breakdown,
@@ -304,15 +274,22 @@ class SAPPlacementService:
             user_state.placement_score = overall_score
             user_state.last_active_at = now
 
+        # Query all existing day states for this user
+        existing_day_states = db.execute(
+            select(SAPUserDayState).where(SAPUserDayState.user_id == user_id)
+        ).scalars().all()
+        existing_day_map = {ds.day_number: ds for ds in existing_day_states}
+
+        # Clear old waivers that are no longer waived
+        waived_set = set(waived_days)
+        for ds in existing_day_states:
+            if ds.day_number not in waived_set and ds.waived and not ds.completed:
+                ds.waived = False
+                ds.status = SAPDayStatus.AVAILABLE.value if ds.day_number == starting_day else SAPDayStatus.LOCKED.value
+
         # Record waived days in sap_user_day_state with explicit status
         for day_num in waived_days:
-            day_state = db.execute(
-                select(SAPUserDayState).where(
-                    SAPUserDayState.user_id == user_id,
-                    SAPUserDayState.day_number == day_num,
-                )
-            ).scalar_one_or_none()
-
+            day_state = existing_day_map.get(day_num)
             if day_state is None:
                 day_state = SAPUserDayState(
                     user_id=user_id,
@@ -332,6 +309,25 @@ class SAPPlacementService:
                     day_state.lesson_completed = False
                     day_state.assessment_passed = False
 
+        # Ensure starting day is accessible and not waived
+        start_day_state = existing_day_map.get(starting_day)
+        if start_day_state is None:
+            start_day_state = SAPUserDayState(
+                user_id=user_id,
+                day_number=starting_day,
+                status=SAPDayStatus.AVAILABLE.value,
+                waived=False,
+                lesson_started=False,
+                lesson_completed=False,
+                assessment_passed=False,
+                completed=False,
+            )
+            db.add(start_day_state)
+        else:
+            start_day_state.waived = False
+            if not start_day_state.completed and not start_day_state.lesson_started:
+                start_day_state.status = SAPDayStatus.AVAILABLE.value
+
         db.commit()
         db.refresh(profile)
         return profile
@@ -343,7 +339,22 @@ class SAPPlacementService:
         user_id: uuid.UUID,
         start_day: int,
     ) -> SAPPlacementProfile:
-        """Allows learner to override starting point (e.g. choose Day 1 instead of recommended Day X)."""
+        """Allows learner to override starting point (e.g. choose Day 1 instead of recommended Day X).
+
+        Security & Integrity rules:
+        1. User must have an existing diagnostic placement profile.
+        2. start_day must match a supported choice from the real UX:
+           - start_day == 1 ("Start from Day 1 Instead")
+           - start_day == original_recommended_day (server-assessed placement day)
+           Any other requested day (e.g. Day 50, 77, 100 without placement) is rejected with ValueError (400)
+           with ZERO mutation to user state or progression.
+        3. If start_day == 1:
+           - Clear placement waivers: waived_days = [], unlocked_days = [1].
+           - Clear/reset any SAPUserDayState rows marked WAIVED_BY_PLACEMENT back to unwaved.
+           - Ensure Day 1 is available/current and accessible.
+        4. If start_day == original_recommended_day:
+           - Restore original placement waivers and day states.
+        """
         profile = db.execute(
             select(SAPPlacementProfile).where(SAPPlacementProfile.user_id == user_id)
         ).scalar_one_or_none()
@@ -351,17 +362,122 @@ class SAPPlacementService:
         if not profile:
             raise ValueError("No diagnostic profile found for this user.")
 
+        diag_res = dict(profile.diagnostic_results or {})
+        original_recommended_day = diag_res.get("original_recommended_day")
+        if original_recommended_day is None:
+            original_recommended_day = profile.recommended_start_day or 1
+            diag_res["original_recommended_day"] = original_recommended_day
+
+        original_waived_days = diag_res.get("original_waived_days")
+        if original_waived_days is None:
+            original_waived_days = list(range(1, original_recommended_day)) if original_recommended_day > 1 else []
+            diag_res["original_waived_days"] = original_waived_days
+
+        # Strict validation: Only Day 1 or original recommended day are valid UX choices
+        allowed_start_days = {1, original_recommended_day}
+        if start_day not in allowed_start_days:
+            raise ValueError(
+                f"Invalid start day {start_day}. You may only choose Day 1 or your assessed placement day (Day {original_recommended_day})."
+            )
+
         now = datetime.now(timezone.utc)
         user_state = db.execute(
             select(SAPUserState).where(SAPUserState.user_id == user_id)
         ).scalar_one_or_none()
 
-        if user_state:
-            user_state.current_recommended_day = start_day
-            user_state.last_active_at = now
+        # Fetch existing day state records
+        day_states = db.execute(
+            select(SAPUserDayState).where(SAPUserDayState.user_id == user_id)
+        ).scalars().all()
+        day_state_map = {ds.day_number: ds for ds in day_states}
 
-        # Update profile recommended start day
-        profile.recommended_start_day = start_day
+        if start_day == 1:
+            # Clear all placement waivers
+            diag_res["waived_days"] = []
+            diag_res["unlocked_days"] = [1]
+            profile.recommended_start_day = 1
+            profile.diagnostic_results = diag_res
+
+            if user_state:
+                user_state.current_recommended_day = 1
+                user_state.last_active_at = now
+
+            for ds in day_states:
+                if ds.waived and not ds.completed:
+                    ds.waived = False
+                    if ds.day_number == 1:
+                        ds.status = SAPDayStatus.AVAILABLE.value if not ds.lesson_started else SAPDayStatus.IN_PROGRESS.value
+                    else:
+                        ds.status = SAPDayStatus.LOCKED.value
+
+            # Ensure Day 1 state exists and is accessible
+            day1_ds = day_state_map.get(1)
+            if day1_ds is None:
+                day1_ds = SAPUserDayState(
+                    user_id=user_id,
+                    day_number=1,
+                    status=SAPDayStatus.AVAILABLE.value,
+                    waived=False,
+                    lesson_started=False,
+                    lesson_completed=False,
+                    assessment_passed=False,
+                    completed=False,
+                )
+                db.add(day1_ds)
+            else:
+                day1_ds.waived = False
+                if not day1_ds.completed and not day1_ds.lesson_started:
+                    day1_ds.status = SAPDayStatus.AVAILABLE.value
+
+        else:
+            # Restore original assessed placement recommendation
+            profile.recommended_start_day = original_recommended_day
+            diag_res["waived_days"] = list(original_waived_days)
+            diag_res["unlocked_days"] = list(original_waived_days) + [original_recommended_day]
+            profile.diagnostic_results = diag_res
+
+            if user_state:
+                user_state.current_recommended_day = original_recommended_day
+                user_state.last_active_at = now
+
+            # Restore waived days in database
+            for day_num in original_waived_days:
+                ds = day_state_map.get(day_num)
+                if ds is None:
+                    ds = SAPUserDayState(
+                        user_id=user_id,
+                        day_number=day_num,
+                        status=SAPDayStatus.WAIVED_BY_PLACEMENT.value,
+                        waived=True,
+                        lesson_started=False,
+                        lesson_completed=False,
+                        assessment_passed=False,
+                        completed=False,
+                    )
+                    db.add(ds)
+                elif not ds.completed:
+                    ds.waived = True
+                    ds.status = SAPDayStatus.WAIVED_BY_PLACEMENT.value
+
+            # Ensure starting day is accessible
+            start_ds = day_state_map.get(original_recommended_day)
+            if start_ds is None:
+                start_ds = SAPUserDayState(
+                    user_id=user_id,
+                    day_number=original_recommended_day,
+                    status=SAPDayStatus.AVAILABLE.value,
+                    waived=False,
+                    lesson_started=False,
+                    lesson_completed=False,
+                    assessment_passed=False,
+                    completed=False,
+                )
+                db.add(start_ds)
+            else:
+                start_ds.waived = False
+                if not start_ds.completed and not start_ds.lesson_started:
+                    start_ds.status = SAPDayStatus.AVAILABLE.value
+
         db.commit()
         db.refresh(profile)
         return profile

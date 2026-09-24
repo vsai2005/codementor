@@ -586,49 +586,78 @@ def test_placement_evidence_routing_and_untested_concept_protection():
     fresher_prof = SAPPlacementService.evaluate_diagnostic(
         db=mock_db,
         user_id=test_user_id,
-        domain_scores={"erp_basics": 25.0, "ddic_and_sql": 15.0},
-        persona_self_select="fresher",
+        experience_level="fresher",
     )
     assert fresher_prof.recommended_start_day == 1
     assert fresher_prof.diagnostic_results["waived_days"] == []
 
-    # Case 2: Beginner with high ERP fundamentals -> waives Days 1-8, starts Day 9
+    # Case 2: Security check - forged domain_scores without answers is completely untrusted -> Day 1
+    forged_prof = SAPPlacementService.evaluate_diagnostic(
+        db=mock_db,
+        user_id=test_user_id,
+        domain_scores={"rap_foundations": 100.0, "modern_abap_cds": 100.0},
+    )
+    assert forged_prof.recommended_start_day == 1
+    assert forged_prof.diagnostic_results["waived_days"] == []
+
+    # Case 3: Beginner with authentic fundamental answers -> waives Days 1-8, starts Day 9
+    beginner_answers = {
+        "ns_fund_01": "b",
+        "ns_org_02": "b",
+        "ns_data_03": "a",
+        "ns_p2p_04": "b",
+        "ns_hana_05": "a",
+        "ns_fiori_06": "b",
+    }
     beginner_prof = SAPPlacementService.evaluate_diagnostic(
         db=mock_db,
         user_id=test_user_id,
-        domain_scores={"erp_basics": 75.0, "business_processes": 30.0},
+        experience_level="not_sure",
+        answers=beginner_answers,
     )
     assert beginner_prof.recommended_start_day == 9
     assert beginner_prof.diagnostic_results["waived_days"] == list(range(1, 9))
 
-    # Case 3: Functional User with business process evidence -> Day 45
-    func_prof = SAPPlacementService.evaluate_diagnostic(
-        db=mock_db,
-        user_id=test_user_id,
-        domain_scores={"erp_basics": 85.0, "business_processes": 85.0, "s4hana_delta": 70.0},
-    )
-    assert func_prof.recommended_start_day == 45
-    assert func_prof.diagnostic_results["waived_days"] == list(range(1, 45))
-
-    # Case 4: ECC Developer with classic ABAP & DDIC -> Day 45
+    # Case 4: ECC Developer with authentic 60% mid-score answers -> Day 45
+    mid_answers = {
+        "exp_arch_01": "b",
+        "exp_org_02": "c",
+        "exp_acdoca_03": "b",
+        "exp_matdoc_04": "a",
+        "exp_cvi_05": "b",
+        "exp_proc_06": "b",
+        "exp_vdm_07": "a",
+        "exp_assoc_08": "a",
+        "exp_rap_09": "a",
+        "exp_bdef_10": "a",
+    }
     ecc_prof = SAPPlacementService.evaluate_diagnostic(
         db=mock_db,
         user_id=test_user_id,
-        domain_scores={"classic_abap": 85.0, "ddic_and_sql": 75.0, "erp_basics": 80.0},
+        experience_level="experienced",
+        answers=mid_answers,
     )
     assert ecc_prof.recommended_start_day == 45
     assert ecc_prof.diagnostic_results["waived_days"] == list(range(1, 45))
 
-    # Case 5: Experienced S/4HANA Developer -> Day 90
+    # Case 5: Experienced S/4HANA Developer with authentic 100% answers -> Day 77
+    all_correct_answers = {
+        "exp_arch_01": "b",
+        "exp_org_02": "c",
+        "exp_acdoca_03": "b",
+        "exp_matdoc_04": "a",
+        "exp_cvi_05": "b",
+        "exp_proc_06": "b",
+        "exp_vdm_07": "b",
+        "exp_assoc_08": "b",
+        "exp_rap_09": "b",
+        "exp_bdef_10": "b",
+    }
     s4_prof = SAPPlacementService.evaluate_diagnostic(
         db=mock_db,
         user_id=test_user_id,
-        domain_scores={
-            "rap_foundations": 90.0,
-            "modern_abap_cds": 85.0,
-            "btp_integration": 80.0,
-            "erp_basics": 90.0,
-        },
+        experience_level="experienced",
+        answers=all_correct_answers,
     )
     assert s4_prof.recommended_start_day == 77
     assert s4_prof.diagnostic_results["waived_days"] == list(range(1, 77))

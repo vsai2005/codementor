@@ -272,7 +272,7 @@ def test_submit_not_sure_high_and_low_score(test_user, test_db):
 
 
 def test_choose_start_day_override(test_user, test_db):
-    """User placed at Day 77 can opt to start from Day 1."""
+    """User placed at Day 77 can opt to start from Day 1 and have waivers properly cleared."""
     override_deps(test_user, test_db)
     try:
         # Place at Day 77 first
@@ -285,6 +285,7 @@ def test_choose_start_day_override(test_user, test_db):
         res = client.post("/api/sap/placement/submit", json={"experience_level": "experienced", "answers": all_correct})
         assert res.status_code == 200
         assert res.json()["recommended_start_day"] == 77
+        assert len(res.json()["waived_days"]) == 76
 
         # User chooses Day 1
         choose_res = client.post("/api/sap/placement/choose-start", json={"start_day": 1})
@@ -293,11 +294,26 @@ def test_choose_start_day_override(test_user, test_db):
         assert choose_data["recommended_start_day"] == 1
         # Diagnostic score & answers are still preserved
         assert choose_data["diagnostic_score"] == 100.0
+        # CRITICAL: waived days must be cleared!
+        assert choose_data["waived_days"] == []
+        assert choose_data["unlocked_days"] == [1]
 
-        # Profile fetch also reflects Day 1
+        # Profile fetch also reflects Day 1 and cleared waivers
         prof_res = client.get("/api/sap/placement/profile")
         assert prof_res.status_code == 200
-        assert prof_res.json()["recommended_start_day"] == 1
+        prof_data = prof_res.json()
+        assert prof_data["recommended_start_day"] == 1
+        assert prof_data["waived_days"] == []
+
+        # Progression check: Day 1 accessible, Days 1-76 NOT waived
+        progress = SAPProgressionService.compute_user_progress(test_db, test_user.id)
+        assert progress["current_day"] == 1
+        assert progress["waived_days"] == []
+        assert progress["day_states"]["1"]["status"] in ("available", "current")
+        assert progress["day_states"]["1"]["waived"] is False
+        assert progress["day_states"]["2"]["status"] == "locked"
+        assert progress["day_states"]["77"]["status"] == "locked"
+        assert progress["day_states"]["77"]["waived"] is False
     finally:
         clear_deps()
 
@@ -336,3 +352,155 @@ def test_progress_isolation_and_waived_days(test_user, test_db):
         assert day_78_state["unlocked"] is False
     finally:
         clear_deps()
+
+
+def test_adversarial_forged_domain_scores_ignored(test_user, test_db):
+    """Client-provided domain scores must NEVER influence placement or waive days."""
+    override_deps(test_user, test_db)
+    try:
+        payload = {
+            "experience_level": "experienced",
+            "answers": {},  # No authentic answers!
+            "domain_scores": {
+                "rap_foundations": 100.0,
+                "modern_abap_cds": 100.0,
+                "business_processes": 100.0,
+                "enterprise_architecture": 100.0,
+            },
+        }
+        res = client.post("/api/sap/placement/submit", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        # Must strictly place at Day 1 with 0.0 score and zero waived days
+        assert data["recommended_start_day"] == 1
+        assert data["diagnostic_score"] == 0.0
+        assert data["waived_days"] == []
+        assert data["persona"] == "fresher"
+
+        # Progression check: Day 1 accessible, all subsequent locked
+        progress = SAPProgressionService.compute_user_progress(test_db, test_user.id)
+        assert progress["current_day"] == 1
+        assert progress["waived_days"] == []
+        assert progress["day_states"]["1"]["status"] in ("available", "current")
+        assert progress["day_states"]["77"]["status"] == "locked"
+    finally:
+        clear_deps()
+
+
+def test_adversarial_missing_and_invalid_answers(test_user, test_db):
+    """Missing, fabricated or malformed question/option IDs yield 0 score -> Day 1."""
+    override_deps(test_user, test_db)
+    try:
+        payload = {
+            "experience_level": "experienced",
+            "answers": {
+                "fake_question_99": "b",
+                "exp_arch_01": "invalid_choice_z",
+                "exp_org_02": "",
+            },
+        }
+        res = client.post("/api/sap/placement/submit", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert data["recommended_start_day"] == 1
+        assert data["diagnostic_score"] == 0.0
+        assert data["waived_days"] == []
+    finally:
+        clear_deps()
+
+
+def test_adversarial_forged_start_days_rejected(test_user, test_db):
+    """Learners cannot forge start_day values (Day 50, 77, 100). Zero state mutation on failure."""
+    override_deps(test_user, test_db)
+    try:
+        # 1. Place learner at Day 9 via not_sure assessment
+        beginner_answers = {
+            "ns_fund_01": "b", "ns_org_02": "b", "ns_data_03": "a",
+            "ns_p2p_04": "b", "ns_hana_05": "a", "ns_fiori_06": "b",
+        }
+        res = client.post("/api/sap/placement/submit", json={"experience_level": "not_sure", "answers": beginner_answers})
+        assert res.status_code == 200
+        assert res.json()["recommended_start_day"] == 9
+        assert res.json()["waived_days"] == list(range(1, 9))
+
+        # 2. Attempt forged start days (Day 50, Day 77, Day 100)
+        for forged_day in (50, 77, 100):
+            bad_res = client.post("/api/sap/placement/choose-start", json={"start_day": forged_day})
+            assert bad_res.status_code == 400
+            assert f"Invalid start day {forged_day}" in bad_res.json()["detail"]
+
+        # 3. Attempt out-of-range start days
+        assert client.post("/api/sap/placement/choose-start", json={"start_day": 0}).status_code == 422
+        assert client.post("/api/sap/placement/choose-start", json={"start_day": 101}).status_code == 422
+
+        # 4. Verify ZERO side effects / progression mutation
+        prof_res = client.get("/api/sap/placement/profile")
+        assert prof_res.status_code == 200
+        assert prof_res.json()["recommended_start_day"] == 9
+        assert prof_res.json()["waived_days"] == list(range(1, 9))
+
+        prog = SAPProgressionService.compute_user_progress(test_db, test_user.id)
+        assert prog["current_day"] == 9
+        assert prog["waived_days"] == list(range(1, 9))
+        assert prog["day_states"]["9"]["status"] in ("available", "current")
+        assert prog["day_states"]["50"]["status"] == "locked"
+        assert prog["day_states"]["77"]["status"] == "locked"
+        assert prog["day_states"]["100"]["status"] == "locked"
+    finally:
+        clear_deps()
+
+
+def test_choose_start_without_profile_rejected(test_user, test_db):
+    """Calling /choose-start without prior placement yields 400 with zero state."""
+    override_deps(test_user, test_db)
+    try:
+        res = client.post("/api/sap/placement/choose-start", json={"start_day": 1})
+        assert res.status_code == 400
+        assert "No diagnostic profile found" in res.json()["detail"]
+    finally:
+        clear_deps()
+
+
+def test_bidirectional_switch_between_recommended_and_day_one(test_user, test_db):
+    """Learners can cleanly toggle between recommended start and Day 1 with idempotent state."""
+    override_deps(test_user, test_db)
+    try:
+        # Place at Day 77
+        all_correct = {
+            "exp_arch_01": "b", "exp_org_02": "c", "exp_acdoca_03": "b",
+            "exp_matdoc_04": "a", "exp_cvi_05": "b", "exp_proc_06": "b",
+            "exp_vdm_07": "b", "exp_assoc_08": "b", "exp_rap_09": "b",
+            "exp_bdef_10": "b",
+        }
+        client.post("/api/sap/placement/submit", json={"experience_level": "experienced", "answers": all_correct})
+
+        # Switch to Day 1
+        res_day1 = client.post("/api/sap/placement/choose-start", json={"start_day": 1})
+        assert res_day1.status_code == 200
+        assert res_day1.json()["recommended_start_day"] == 1
+        assert res_day1.json()["waived_days"] == []
+
+        prog1 = SAPProgressionService.compute_user_progress(test_db, test_user.id)
+        assert prog1["current_day"] == 1
+        assert prog1["waived_days"] == []
+        assert prog1["day_states"]["1"]["status"] in ("available", "current")
+
+        # Switch BACK to recommended Day 77
+        res_day77 = client.post("/api/sap/placement/choose-start", json={"start_day": 77})
+        assert res_day77.status_code == 200
+        assert res_day77.json()["recommended_start_day"] == 77
+        assert len(res_day77.json()["waived_days"]) == 76
+
+        prog77 = SAPProgressionService.compute_user_progress(test_db, test_user.id)
+        assert prog77["current_day"] == 77
+        assert len(prog77["waived_days"]) == 76
+        assert prog77["day_states"]["1"]["status"] == "waived_by_placement"
+        assert prog77["day_states"]["77"]["status"] in ("available", "current")
+
+        # Repeating Day 77 call is strictly idempotent
+        res_day77_again = client.post("/api/sap/placement/choose-start", json={"start_day": 77})
+        assert res_day77_again.status_code == 200
+        assert res_day77_again.json()["recommended_start_day"] == 77
+    finally:
+        clear_deps()
+
