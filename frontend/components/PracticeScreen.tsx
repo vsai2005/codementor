@@ -128,7 +128,7 @@ export function PracticeScreen({
 
     try {
       const result = await api.submit(
-        { problem_id: problem.id, language: "python", code, plan },
+        { problem_id: problem.id, language: "python", code, plan, day_number: effectiveDay },
         abortRef.current.signal,
       );
       setTests(result.tests);
@@ -148,24 +148,11 @@ export function PracticeScreen({
       if (result.tests.all_passed) {
         setSolved(true);
         if (effectiveDay) {
+          // Canonical single-path progression sync
           recordPracticePassed(effectiveDay);
           const wasLessonDone = Boolean(progress.day_records?.[effectiveDay]?.lesson_completed);
           setIsFullyComplete(wasLessonDone);
           setShowCompletionModal(true);
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(
-              new CustomEvent("codementor:practice-passed", {
-                detail: { day_number: effectiveDay },
-              })
-            );
-            if (wasLessonDone) {
-              window.dispatchEvent(
-                new CustomEvent("codementor:day-completed", {
-                  detail: { day_number: effectiveDay },
-                })
-              );
-            }
-          }
         } else {
           // Standard independent practice: fetch next recommended problem
           api.nextProblem().then(setNextProblem).catch(() => setNextProblem(null));

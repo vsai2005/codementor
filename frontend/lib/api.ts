@@ -182,7 +182,7 @@ export const api = {
 
 
   submit: (
-    body: { problem_id: string; language: string; code: string; plan?: string },
+    body: { problem_id: string; language: string; code: string; plan?: string; day_number?: number },
     signal?: AbortSignal,
   ) => request<SubmissionResponse>("/api/submissions", { method: "POST", body, signal }),
 

@@ -57,6 +57,7 @@ export function useJourney() {
   const [progress, setProgress] = useState<LearningJourneyProgress>(DEFAULT_PROGRESS);
   const [isLoaded, setIsLoaded] = useState(false);
   const progressRef = useRef(progress);
+  const inFlightPracticeSyncRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     progressRef.current = progress;
@@ -235,62 +236,69 @@ export function useJourney() {
    */
   const recordPracticePassed = useCallback(
     async (dayNumber: number) => {
-      // Synchronous idempotency check: if practice is already passed, exit immediately
-      if (progressRef.current.day_records?.[dayNumber]?.practice_passed) {
+      // Synchronous idempotency check: if practice is already passed or sync is in-flight, exit immediately
+      if (
+        inFlightPracticeSyncRef.current.has(dayNumber) ||
+        progressRef.current.day_records?.[dayNumber]?.practice_passed
+      ) {
         return;
       }
 
-      saveProgress((prev) => {
-        const records = { ...(prev.day_records || {}) };
-        const existing = records[dayNumber] || {
-          day_number: dayNumber,
-          lesson_completed: false,
-          practice_passed: false,
-          completed: false,
-        };
-
-        if (existing.practice_passed) {
-          return prev;
-        }
-
-        const lesson_completed = Boolean(existing.lesson_completed);
-        const practice_passed = true;
-        const completed = lesson_completed && practice_passed;
-
-        records[dayNumber] = {
-          ...existing,
-          lesson_completed,
-          practice_passed: true,
-          practice_passed_at: existing.practice_passed_at || new Date().toISOString(),
-          completed,
-          completed_at: completed ? (existing.completed_at || new Date().toISOString()) : null,
-        };
-
-        const nextCompletedSet = new Set(prev.completed_days);
-        if (completed) {
-          nextCompletedSet.add(dayNumber);
-        } else {
-          nextCompletedSet.delete(dayNumber);
-        }
-
-        let nextCurrent = 1;
-        while (nextCompletedSet.has(nextCurrent) && nextCurrent < TOTAL_CURRICULUM_DAYS) {
-          nextCurrent++;
-        }
-
-        return {
-          ...prev,
-          current_day: nextCurrent,
-          completed_days: Array.from(nextCompletedSet).sort((a, b) => a - b),
-          day_records: records,
-          last_activity_timestamp: Date.now(),
-        };
-      });
+      inFlightPracticeSyncRef.current.add(dayNumber);
 
       try {
+        saveProgress((prev) => {
+          const records = { ...(prev.day_records || {}) };
+          const existing = records[dayNumber] || {
+            day_number: dayNumber,
+            lesson_completed: false,
+            practice_passed: false,
+            completed: false,
+          };
+
+          if (existing.practice_passed) {
+            return prev;
+          }
+
+          const lesson_completed = Boolean(existing.lesson_completed);
+          const practice_passed = true;
+          const completed = lesson_completed && practice_passed;
+
+          records[dayNumber] = {
+            ...existing,
+            lesson_completed,
+            practice_passed: true,
+            practice_passed_at: existing.practice_passed_at || new Date().toISOString(),
+            completed,
+            completed_at: completed ? (existing.completed_at || new Date().toISOString()) : null,
+          };
+
+          const nextCompletedSet = new Set(prev.completed_days);
+          if (completed) {
+            nextCompletedSet.add(dayNumber);
+          } else {
+            nextCompletedSet.delete(dayNumber);
+          }
+
+          let nextCurrent = 1;
+          while (nextCompletedSet.has(nextCurrent) && nextCurrent < TOTAL_CURRICULUM_DAYS) {
+            nextCurrent++;
+          }
+
+          return {
+            ...prev,
+            current_day: nextCurrent,
+            completed_days: Array.from(nextCompletedSet).sort((a, b) => a - b),
+            day_records: records,
+            last_activity_timestamp: Date.now(),
+          };
+        });
+
         await syncWithServer();
       } catch {
         // Offline or unauthenticated guest fallback
+      } finally {
+        inFlightPracticeSyncRef.current.delete(dayNumber);
       }
     },
     [saveProgress, syncWithServer]

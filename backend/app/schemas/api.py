@@ -81,6 +81,7 @@ class RunRequest(BaseModel):
     problem_id: uuid.UUID
     language: Literal["python"] = "python"
     code: str = Field(min_length=1, max_length=50_000)
+    day_number: int | None = Field(default=None, ge=1, le=160, description="Optional target curriculum day")
 
 
 class TestCaseResult(BaseModel):

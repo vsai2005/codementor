@@ -117,49 +117,96 @@ def complete_lesson(db: Session, user_id: uuid.UUID, day_number: int) -> dict:
     }
 
 
-def record_practice_passed(db: Session, user_id: uuid.UUID, problem_slug: str) -> dict | None:
-    """Records that a practice problem was passed and updates mapped days."""
-    days = PRACTICE_SLUG_TO_DAYS.get(problem_slug, [])
-    if not days:
-        return None
+def record_practice_passed(
+    db: Session,
+    user_id: uuid.UUID,
+    problem_slug: str,
+    day_number: int | None = None,
+) -> dict | None:
+    """Records that a practice problem was passed and credits ONLY the intended, accessible curriculum day.
+    
+    Rules:
+    - If day_number is provided:
+        1. Validates that problem_slug is mapped to day_number.
+        2. Validates that day_number is currently accessible (unlocked) for the learner.
+        Target day is day_number.
+    - If day_number is not provided:
+        1. Filters mapped days to those currently accessible (unlocked).
+        2. Prioritizes unlocked days where practice is not yet passed.
+        3. Falls back to the current/earliest unlocked day for idempotent repeat submissions.
+        4. If no mapped days are currently unlocked, returns None (never pre-marks future locked days!).
+    """
+    progress = compute_user_progress(db, user_id)
+    day_states = progress["day_states"]
+
+    if day_number is not None:
+        if CURRICULUM_DAY_PRACTICE.get(day_number) != problem_slug:
+            raise ValueError(f"Problem '{problem_slug}' is not mapped to Day {day_number}.")
+        day_info = day_states.get(str(day_number))
+        if not day_info or not day_info["unlocked"]:
+            raise ValueError(f"Day {day_number} is locked. Complete prior days first.")
+        target_day = day_number
+    else:
+        mapped_days = PRACTICE_SLUG_TO_DAYS.get(problem_slug, [])
+        if not mapped_days:
+            return None
+
+        # Filter strictly to currently accessible (unlocked) days
+        unlocked_mapped_days = [
+            d for d in mapped_days
+            if day_states.get(str(d), {}).get("unlocked")
+        ]
+        if not unlocked_mapped_days:
+            # All mapped days are locked for this learner — never credit future days!
+            return None
+
+        # Prioritize unlocked days that have not yet passed practice
+        unpassed = [
+            d for d in unlocked_mapped_days
+            if not day_states[str(d)].get("practice_passed")
+        ]
+        if unpassed:
+            target_day = min(unpassed)
+        else:
+            # Idempotent repeat submission on an already-passed unlocked day
+            target_day = min(unlocked_mapped_days)
 
     now = datetime.now(timezone.utc)
     newly_completed = []
-    affected = []
+    affected = [target_day]
 
-    for day in days:
-        r = db.execute(
-            select(UserLearningDayState).where(
-                UserLearningDayState.user_id == user_id,
-                UserLearningDayState.day_number == day,
-            )
-        ).scalar_one_or_none()
+    r = db.execute(
+        select(UserLearningDayState).where(
+            UserLearningDayState.user_id == user_id,
+            UserLearningDayState.day_number == target_day,
+        )
+    ).scalar_one_or_none()
 
-        if r is None:
-            r = UserLearningDayState(
-                user_id=user_id,
-                day_number=day,
-                practice_passed=True,
-                practice_passed_at=now,
-            )
-            db.add(r)
-        else:
-            r.practice_passed = True
-            if not r.practice_passed_at:
-                r.practice_passed_at = now
+    if r is None:
+        r = UserLearningDayState(
+            user_id=user_id,
+            day_number=target_day,
+            practice_passed=True,
+            practice_passed_at=now,
+        )
+        db.add(r)
+    else:
+        r.practice_passed = True
+        if not r.practice_passed_at:
+            r.practice_passed_at = now
 
-        if r.lesson_completed and not r.completed:
-            r.completed = True
-            r.completed_at = now
-            newly_completed.append(day)
-
-        affected.append(day)
+    if r.lesson_completed and not r.completed:
+        r.completed = True
+        r.completed_at = now
+        newly_completed.append(target_day)
 
     db.commit()
     updated = compute_user_progress(db, user_id)
     return {
+        "problem_slug": problem_slug,
         "affected_days": affected,
         "newly_completed_days": newly_completed,
         "unlocked_days": [d + 1 for d in newly_completed if d < 160],
         "current_day": updated["current_day"],
+        "day_states": updated["day_states"],
     }

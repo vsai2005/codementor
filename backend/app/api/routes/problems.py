@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.database import get_db
-from app.models.models import Problem, Topic, User
+from app.models.models import Problem, Submission, Topic, User
 from app.schemas.api import (
     GenerateProblemRequest,
     ProblemDetail,
@@ -85,7 +85,7 @@ def get_problem(
 def get_reference_solution(
     problem_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ) -> ReferenceSolution:
     problem = None
     try:
@@ -97,9 +97,25 @@ def get_reference_solution(
     if problem is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Problem not found")
 
-    ref = getattr(problem, "reference_solution", None)
-    if not ref and isinstance(problem.starter_code, dict):
-        ref = problem.starter_code.get("reference") or problem.starter_code.get("solution")
+    # Authoritative gating: user MUST have an accepted submission for this problem
+    accepted = db.execute(
+        select(Submission.id).where(
+            Submission.user_id == user.id,
+            Submission.problem_id == problem.id,
+            Submission.tests_passed == Submission.tests_total,
+            Submission.tests_total > 0,
+        ).limit(1)
+    ).scalar_one_or_none()
+
+    if not accepted:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Reference solution is locked. You must solve the problem and pass all tests first.",
+        )
+
+    from app.core.reference_solutions import get_problem_reference_solution
+
+    ref = getattr(problem, "reference_solution", None) or get_problem_reference_solution(problem.slug)
 
     if ref:
         return ReferenceSolution(
@@ -110,10 +126,10 @@ def get_reference_solution(
         )
 
     return ReferenceSolution(
-        available=True,
+        available=False,
         language="python",
-        code=f"# Reference solution for {problem.title}\n# Target complexity: {problem.optimal_time} time, {problem.optimal_space} space\n\ndef {problem.entry_point}(*args, **kwargs):\n    pass\n",
-        commentary=f"Standard solution targeting {problem.optimal_time} time and {problem.optimal_space} space complexity."
+        code="",
+        commentary="No reference solution available for this problem."
     )
 
 

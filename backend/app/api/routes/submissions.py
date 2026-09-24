@@ -112,6 +112,24 @@ async def submit(
         )
 
     problem = _load_problem(db, payload.problem_id)
+
+    # If submitting for a specific curriculum day, validate mapping and accessibility upfront
+    if payload.day_number is not None:
+        from app.core.curriculum_map import CURRICULUM_DAY_PRACTICE
+        if CURRICULUM_DAY_PRACTICE.get(payload.day_number) != problem.slug:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Problem '{problem.slug}' is not mapped to curriculum Day {payload.day_number}.",
+            )
+        from app.services.learning import compute_user_progress
+        prog = compute_user_progress(db, user.id)
+        day_info = prog["day_states"].get(str(payload.day_number))
+        if not day_info or not day_info["unlocked"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Curriculum Day {payload.day_number} is locked. Complete prior days first.",
+            )
+
     report = await svc.execute_async(problem, payload.code)
 
     try:
@@ -143,7 +161,7 @@ async def submit(
     if report.all_passed:
         try:
             from app.services.learning import record_practice_passed
-            record_practice_passed(db, user.id, problem.slug)
+            record_practice_passed(db, user.id, problem.slug, day_number=payload.day_number)
         except Exception:
             log.exception("failed to record curriculum practice pass")
 
