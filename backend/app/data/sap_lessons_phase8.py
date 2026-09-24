@@ -264,7 +264,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 90 Complete: BTP Architecture Mastered'}],
             'subtitle': 'Global accounts, subaccounts, Cloud Foundry, Kyma (Kubernetes), BTP Destinations, and '
                         'multi-cloud hyperscalers.',
-            'title': 'BTP Architecture & Environments'},
+            'title': 'SAP BTP Architecture & Runtimes'},
     91: {   'atomic_concepts': [   'sap-integration-suite',
                                    'cloud-integration-cpi',
                                    'iflow-design',
@@ -533,7 +533,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 91 Complete: Integration Suite & CPI Mastered'}],
             'subtitle': 'Integration flows (iFlows), adapter configurations (OData, REST, SOAP, SFTP), message '
                         'exchange patterns, and sync vs async.',
-            'title': 'SAP Integration Suite & Cloud Integration (CPI)'},
+            'title': 'Integration Patterns & SAP Integration Suite'},
     92: {   'atomic_concepts': ['iflow-groovy-scripting', 'content-enricher-pattern'],
             'day_number': 92,
             'estimated_minutes': 60,
@@ -789,7 +789,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 92 Complete: Transformations & Groovy Mastered'}],
             'subtitle': 'Message Mapping, Content Modifier, Content Enricher pattern, and dynamic message manipulation '
                         'with Groovy scripts.',
-            'title': 'CPI Transformations & Groovy Scripting'},
+            'title': 'iFlow Mappings & Groovy Scripting'},
     93: {   'atomic_concepts': ['event-driven-architecture', 'sap-event-mesh', 'cloudevents-standard'],
             'day_number': 93,
             'estimated_minutes': 60,
@@ -1033,7 +1033,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 93 Complete: Event-Driven Architecture Mastered'}],
             'subtitle': 'Pub-sub messaging, SAP Event Mesh, CloudEvents standard, topic hierarchies, and asynchronous '
                         'business decoupling.',
-            'title': 'Event-Driven Architecture & SAP Event Mesh'},
+            'title': 'Event-Driven Architecture with SAP Event Mesh'},
     94: {   'atomic_concepts': ['s4hana-business-events', 'event-enablement-binding', 'cloud-connector'],
             'day_number': 94,
             'estimated_minutes': 60,
@@ -1304,7 +1304,7 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Day 94 Complete: Business Events & Cloud Connector Mastered'}],
             'subtitle': 'Enterprise event enablement, Cloud Connector reverse tunnels, subaccount binding, and '
                         'principal propagation.',
-            'title': 'S/4HANA Business Events & Cloud Connector'},
+            'title': 'Secure Connectivity & S/4HANA Event Integration'},
     95: {   'atomic_concepts': ['enterprise-integration-synthesis'],
             'day_number': 95,
             'estimated_minutes': 90,
@@ -1572,4 +1572,4 @@ PHASE_8_DAYS_CONTENT: dict[int, dict[str, Any]] = {   90: {   'atomic_concepts':
                              'title': 'Phase 8 Complete: BTP & Enterprise Integration Certified'}],
             'subtitle': 'Phase 8 benchmark: end-to-end hybrid architecture audit, API security, and integration '
                         'defense.',
-            'title': 'BTP & Enterprise Integration Capstone'}}
+            'title': 'Enterprise Integration Capstone & Challenge'}}

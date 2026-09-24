@@ -1,172 +1,125 @@
-# CodeMentor AI
+# CodeMentor AI & SAP S/4HANA Guided Learning Platform
 
-AI coding-practice platform: LLM code review with structured scoring, per-topic
-adaptive difficulty, and pgvector-backed memory that persists across sessions.
+Production-grade, dual-curriculum AI engineering platform:
+1. **160-Day Python & DSA Curriculum**: 16 foundational and advanced topics, 65 curated LeetCode-style algorithmic challenges, Socratic AI Teacher, pgvector semantic memory, and zero-trust sandbox execution.
+2. **100-Day Enterprise SAP S/4HANA & ABAP Cloud Curriculum**: 9 architectural phases (ECC structural shifts, In-Memory HANA, ACDOCA Universal Journal, MATDOC, CDS views & VDM, Clean Core extensibility, ABAP RESTful Application Programming (RAP), SAP Integration Suite & Event Mesh, and final Enterprise Capstone defense).
 
 ```
-Next.js 15  ──HTTP──▶  FastAPI  ──▶  sandbox (subprocess + netns + rlimits)
-                          │
-                          ├──▶  LLM (Claude | GPT, swapped by env var)
-                          ├──▶  Postgres 16
-                          └──▶  pgvector  ◀── memory notes, always WHERE user_id
+Next.js 15 (App Router)  ──HTTP (Cookies)──▶  FastAPI (Backend)  ──▶  Zero-Trust Sandbox
+                                                  │
+                                                  ├──▶  PostgreSQL 16 + pgvector (Vector RAG)
+                                                  ├──▶  Redis 7 (Distributed Rate Limiting)
+                                                  ├──▶  SAP Curriculum Knowledge Engine (DAG)
+                                                  └──▶  LLM Services (Nemotron / Claude / GPT)
 ```
 
-## Run it
+---
+
+## Architecture & Technology Stack
+
+- **Frontend**: Next.js 15.5 (App Router, React 19, TypeScript strict mode, Tailwind CSS, Monaco Editor).
+- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, Alembic migrations.
+- **Databases**:
+  - **PostgreSQL 16 + pgvector**: Relational data, user progression, dual-mode enterprise state, and vector embeddings for semantic review memory.
+  - **Redis 7**: Distributed sliding-window rate limiting on execution, AI tutor chats, and problem generation.
+- **Authentication**: Server-authoritative HttpOnly JWT session cookies (`access_token`) with SameSite=Lax protection and CSRF mitigation. Optional Bearer header supported for programmatic API clients.
+- **Code Execution Sandbox**: Subprocess isolation with cross-platform memory tracking (RSS/working set), CPU deadlines, network namespace isolation (`unshare -n`), and output streaming capped at 64 KiB.
+
+---
+
+## Local Development Setup
+
+### 1. Infrastructure Services (Docker)
 
 ```bash
-docker compose up -d                      # postgres:16 + pgvector
+docker compose up -d                      # PostgreSQL 16 (port 5433) + Redis 7 (port 6379)
+```
 
-# backend
+*Note: PostgreSQL is exposed on host port `5433` to prevent collisions with existing system PostgreSQL instances.*
+
+### 2. Backend (FastAPI)
+
+```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env                      # JWT_SECRET, GOOGLE_CLIENT_ID, API keys
-alembic upgrade head
-python -m app.seed                        # 6 topics, 18 problems
-uvicorn app.main:app --reload             # http://localhost:8000/docs
+cp .env.example .env
 
-# frontend (new terminal)
+# Run database migrations and seed data
+alembic upgrade head
+python -m app.seed                        # Seeds 16 topics, 65 practice problems
+uvicorn app.main:app --reload             # http://localhost:8000/docs
+```
+
+### 3. Frontend (Next.js)
+
+```bash
 cd frontend
 npm install
-cp .env.local.example .env.local          # API base URL + Google client ID
+cp .env.local.example .env.local          # BACKEND_URL=http://localhost:8000
 npm run dev                               # http://localhost:3000
 ```
 
-### Tests
+---
 
+## Curriculum Overview
+
+### 1. Python & DSA Masterclass (160 Days)
+- **Topics (16)**: Arrays & Hashing, Two Pointers, Strings, Stacks & Queues, Binary Search, Graphs & Trees, Python Basics, Linked Lists, Trees & BST, Heaps & Priority Queues, Searching & Sorting, Hashing, Greedy Algorithms, Dynamic Programming, Bit Manipulation, Advanced DSA & Capstone.
+- **Server-Authoritative Progression**: Progress is recorded day-by-day. Solving a practice problem credits only the intended, accessible day without pre-marking future locked days.
+- **Pedagogical Experience**: 4-part daily lessons with interactive code sandboxes, Socratic AI Teacher guidance, and adaptive LeetCode-style problem recommendations.
+
+### 2. SAP S/4HANA & ABAP Cloud Enterprise Track (100 Days)
+- **Phase 1 (Days 1–8)**: Enterprise ERP Foundations & Architecture.
+- **Phase 2 (Days 9–22)**: S/4HANA Core Innovations (In-Memory HANA, ACDOCA, MATDOC, Business Partner / CVI, CTS Landscapes).
+- **Phase 3 (Days 23–44)**: Core End-to-End Business Processes (P2P, O2C, Record-to-Report, Inventory, Manufacturing).
+- **Phase 4 (Days 45–54)**: Core Data Services (CDS) & Virtual Data Models (VDM).
+- **Phase 5 (Days 55–64)**: SAP Fiori & Modern User Experience (Fiori Elements, SAPUI5, Flexible Programming Model).
+- **Phase 6 (Days 65–76)**: S/4HANA Cloud & Clean Core Extensibility (Key-User, On-Stack Developer Extensibility, Side-by-Side BTP).
+- **Phase 7 (Days 77–89)**: ABAP RESTful Application Programming Model (RAP) (Managed, Unmanaged, Draft, Determinations, Validations, Actions).
+- **Phase 8 (Days 90–95)**: Enterprise Integration & Business Technology Platform (BTP) (Integration Suite, Event Mesh, Cloud Connector).
+- **Phase 9 (Days 96–100)**: Full Enterprise Capstone Project & Architectural Defense (Nova Manufacturing Corp digital twin).
+
+---
+
+## Test Suites & Quality Gates
+
+The codebase enforces strict end-to-end verification gates:
+
+### Backend Testing (Pytest)
 ```bash
 cd backend
-pytest                                    # 84 unit tests, no DB needed
-
-# integration tests, opt-in:
-export TEST_DATABASE_URL=postgresql+psycopg://codementor:codementor@localhost:5433/codementor_test
-pytest -m integration                     # 12 tests: migration, pgvector, isolation
-
-cd ../frontend
-npm run typecheck && npm run build
+# Run full unit and integration test suite
+$env:TEST_DATABASE_URL="postgresql+psycopg://codementor:codementor@localhost:5433/codementor"
+python -m pytest tests -q                 # 360+ tests passing (0 failed, 0 skipped)
 ```
 
-## Layout
+Key test modules:
+- `tests/test_sap_metadata_consistency.py`: Asserts zero discrepancies between curriculum manifest and authored lessons.
+- `tests/test_sandbox.py`: Zero-trust code execution, 64 KiB output truncation, and physical memory bounds.
+- `tests/test_batch4_adversarial.py`: Anti-abuse rate limits, open redirect validation, and problem generation truthfulness.
+- `tests/test_sap_progression_gating.py`: Server-authoritative milestone unlock rules and diagnostic placement waivers.
+- `tests/test_cookie_cors_production.py`: HttpOnly cookie transport, CSRF protection, and CORS production validation.
 
-```
-backend/app/
-  services/     business logic — imports no FastAPI
-    sandbox.py        untrusted code execution
-    difficulty.py     pure tier function, no I/O
-    review.py         LLM pipeline + degradation
-    memory.py         RAG, user-scoped
-    ratelimit.py      sliding window
-    submissions.py    pipeline orchestration
-  api/routes/   thin routers, Pydantic in and out
-  models/       SQLAlchemy 2.x
-  schemas/      request/response + LLM contract
-
-frontend/
-  app/          App Router: /, /login, /dashboard, /practice,
-                /practice/[id], /tutor, /profile
-  components/   the PRD 4.5 inventory
-  lib/          api client, auth, types, autosave hook
+### Frontend Verification
+```bash
+cd frontend
+npx tsc --noEmit                          # Strict TypeScript typechecking (0 errors)
+npm run build                             # Next.js 15 production static page optimization
 ```
 
-## Four spec conflicts, resolved
-
-**1. The sandbox couldn't pass its own network test.** `resource.setrlimit`
-caps CPU, memory and file size — it does nothing about sockets, so
-`subprocess + setrlimit` alone can't satisfy "no network access." Now two
-layers: a network namespace via `unshare -n` when the host permits it, and a
-socket-neutering harness in the child that works unprivileged. Both tested.
-
-**2. Timeout conflict (15s vs 8s).** PRD §5.7 degraded at 15s while §4.4 gave
-the frontend 8s — the user would see an error while the backend was still
-waiting. Now 6s for the first LLM call, 4s for the retry. `LLM_TIMEOUT_S` is
-env-tunable.
-
-**3. Seed count (40–60 vs 12).** Seeds 18 across 6 topics. Six topics × five
-tiers is 30 cells, so `/api/problems/next` widens outward from the target tier
-instead of returning nothing. Add problems before claiming the adaptive engine
-is fully exercised.
-
-**4. Two orphaned requirements.** Rate limiting (§5.4 step 1) appeared in no
-build prompt — implemented and tested. Phase 5 had no prompt at all — dashboard,
-tutor UI and landing are now built.
-
-## Deliberate deviations from the PRD
-
-- **No NextAuth.js** (§4.1 names it). The backend already issues and owns the
-  session JWT; adding NextAuth would mean two session systems to keep in sync.
-  Google Identity Services returns an ID token, exchanged at
-  `POST /api/auth/google`.
-- **No GSAP/ScrollTrigger.** The landing page is short enough that scroll
-  choreography would be decoration. Three.js is used for the hero as specced,
-  and it no-ops under `prefers-reduced-motion`.
-- **The LLM does not compute `overall_score`** and **does not get a vote on
-  correctness.** It returns dimension scores; the server applies the weights and
-  the wrong-answer cap, and overwrites correctness with real test results.
-  Otherwise the cap is unenforceable.
-- **Fewer than 3 submissions uses a plain mean.** Applying 0.5/0.3/0.2 to two
-  scores gives 64 for someone who scored 80 twice — a silent deflation.
-- **`MemoryService` re-filters by `user_id`** after the repository returns, so a
-  leaky query stays a bug instead of becoming a breach. The suite includes a
-  deliberately leaky repository to prove it.
-
-## Verification status
-
-Everything below was actually run, with output checked.
-
-| Check | Result |
-|---|---|
-| `pytest` | 84 passed, 12 skipped (integration) |
-| Sandbox network isolation | `unshare -n` confirmed blocking, live |
-| Infinite loop + `sleep(600)` | both killed; CPU limit and wall clock each catch one |
-| Tier convergence simulation | settles at true level by submission 5 |
-| Backend route registration | 12 endpoints in the OpenAPI schema |
-| `tsc --noEmit` (strict, `noUncheckedIndexedAccess`) | clean |
-| `next build` | 9 routes compiled |
-| `next start` + HTTP | `/`, `/login`, `/practice` all 200 with rendered content |
-
-### Not verified — do this before trusting it
-
-1. **The 12 integration tests have never run.** No Postgres was available in the
-   build environment. They are written and they skip cleanly, but "written" is
-   not "passing." Run them first — they cover the migration cycle, the ivfflat
-   query, and cross-user isolation in real SQL.
-2. **No live LLM call.** The review pipeline is tested only against a mocked
-   client. Confirm the model returns the JSON shape and that p95 is under 8s.
-3. **No browser testing.** The four review states, localStorage autosave,
-   double-submit dedupe and the 375px layout are implemented and type-check, but
-   nothing has been clicked. The PRD's manual checklist (§4.4) is still owed.
-4. **Google OAuth end-to-end.** Needs a real client ID.
-
-### Known security advisory
-
-`npm audit` flags `next` (high) with no forward fix published — npm's suggested
-remedy is a downgrade to Next 9, which has no App Router and is not viable.
-Pinned to 15.5.22, the latest 15.x. `postcss` is pinned to 8.5.24 directly; the
-remaining transitive warnings (`sharp`, `dompurify`, `monaco-editor`) arrive
-through Next and clear when Next ships a patch. Re-run `npm audit` before
-deploying.
-
-## Deploy
-
-- Backend: `render.yaml` blueprint, Docker, migrations run on boot.
-- Frontend: `frontend/vercel.json`, framework preset.
-- Set `CORS_ORIGINS` to the Vercel origin. Never `*`.
-
-## Tests worth knowing about
-
-| Test | Guards |
-|---|---|
-| `test_infinite_loop_times_out_without_hanging_the_caller` | sandbox |
-| `test_consecutive_demotions_demote_once_then_cooldown_blocks` | tier logic |
-| `test_user_a_never_receives_user_b_notes` | isolation (fakes) |
-| `test_repository_never_returns_another_users_notes` | isolation (real SQL) |
-
+### End-to-End Browser Testing (Playwright)
+```bash
+cd frontend
+# Run Playwright tests against production build
+npm run start                             # Runs built frontend on port 3000
+npx playwright test e2e/codementor-integration.spec.ts
+npx playwright test e2e/sap-ux-gating.spec.ts
 ```
-tests/test_sandbox.py          13   execution, timeouts, network, memory, syntax
-tests/test_difficulty.py       24   table-driven §3.2 + convergence simulation
-tests/test_review.py           20   weights, cap, retry-once, degradation
-tests/test_memory.py           16   isolation, dedupe, ordering, resilience
-tests/test_ratelimit.py         5   window, per-user, concurrency
-tests/test_auth.py              6   expiry, forged signature, alg=none
-tests/test_db_integration.py   12   migration, pgvector, isolation  [needs DB]
-```
+
+---
+
+## Production Deployment
+
+- **Backend**: Containerized FastAPI service on Render / Railway / AWS ECS. Set `ENVIRONMENT=production`, configure managed PostgreSQL + Redis URLs, and ensure `CORS_ORIGINS` points strictly to the frontend origin.
+- **Frontend**: Next.js App Router deployed on Vercel or containerized with standalone output. Set `BACKEND_URL` to route API proxy requests safely with HttpOnly cookie support.

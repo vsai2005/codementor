@@ -664,7 +664,7 @@ PHASE_4_DAYS_CONTENT: dict[int, dict[str, Any]] = {
                      'title': 'Day 47 Complete: CDS Expressions Mastered'}],
     'subtitle': 'Modern CDS view entities, conditional CASE statements, coalesce null-safety, and currency conversion '
                 'pushdown',
-    'title': 'CDS Syntax, Expressions & CASE'},
+    'title': 'CDS Syntax, Expressions & Case Statements'},
     48: {   'atomic_concepts': ['cds-associations-concept', 'cardinality-rules', 'path-expressions'],
     'day_number': 48,
     'estimated_minutes': 90,

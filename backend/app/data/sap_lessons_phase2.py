@@ -34,8 +34,8 @@ PHASE_2_DAYS_CONTENT: dict[int, dict[str, Any]] = {
     # =========================================================================
     9: {
         "day_number": 9,
-        "slug": "s4hana-core-value-drivers",
-        "title": "S/4HANA Core Value Drivers",
+        "slug": "s4hana-value-drivers",
+        "title": "S/4HANA Value Drivers & Business Case",
         "subtitle": "Real-time enterprise execution, simplification, and total cost of ownership",
         "estimated_minutes": 45,
         "atomic_concepts": ["s4hana-value-drivers", "real-time-enterprise"],
@@ -213,8 +213,8 @@ You now understand the fundamental economic and technical imperatives driving S/
     # =========================================================================
     10: {
         "day_number": 10,
-        "slug": "ecc-to-s4hana-structural-shifts",
-        "title": "ECC → S/4HANA Structural Shifts",
+        "slug": "ecc-to-s4hana-changes",
+        "title": "ECC to S/4HANA Architectural Changes",
         "subtitle": "Simplification items, table elimination, and compatibility views",
         "estimated_minutes": 45,
         "atomic_concepts": ["ecc-simplification-items", "compatibility-views-concept"],
@@ -397,7 +397,7 @@ You have mastered the architectural shifts between ECC and S/4HANA:
     # =========================================================================
     11: {
         "day_number": 11,
-        "slug": "hana-in-memory-engine",
+        "slug": "hana-in-memory-architecture",
         "title": "HANA In-Memory Database Architecture",
         "subtitle": "Columnar data storage, dictionary compression, and the delta merge lifecycle",
         "estimated_minutes": 45,
@@ -759,7 +759,7 @@ You have conquered one of the most critical architecture innovations in enterpri
     # =========================================================================
     13: {
         "day_number": 13,
-        "slug": "matdoc-inventory-simplification",
+        "slug": "matdoc-inventory-architecture",
         "title": "Material Document Architecture (MATDOC)",
         "subtitle": "Inventory management simplification: single-table ledger, lock reduction, and valuation",
         "estimated_minutes": 45,
@@ -1118,7 +1118,7 @@ You have mastered the modern S/4HANA partner paradigm:
     # =========================================================================
     15: {
         "day_number": 15,
-        "slug": "cds-fundamentals",
+        "slug": "cds-fundamentals-intro",
         "title": "Core Data Services (CDS) Fundamentals",
         "subtitle": "ABAP Core Data Services, code-to-data pushdown, and view entity architecture",
         "estimated_minutes": 45,
@@ -1958,8 +1958,8 @@ You have mastered the principles of S/4HANA Embedded Analytics:
     # =========================================================================
     20: {
         "day_number": 20,
-        "slug": "s4hana-document-flow",
-        "title": "S/4HANA Document Flow & Cross-Document Integration",
+        "slug": "document-flow-integration",
+        "title": "Document Flow & Cross-Document Traceability",
         "subtitle": "Trace transactional continuity across sales, delivery, inventory, billing, and general ledgers",
         "estimated_minutes": 45,
         "atomic_concepts": ["document-flow-continuity", "transactional-audit-trail"],
@@ -2136,7 +2136,7 @@ You have mastered transactional lineage across S/4HANA:
     # =========================================================================
     21: {
         "day_number": 21,
-        "slug": "cross-module-integrated-scenario",
+        "slug": "s4hana-integrated-scenario",
         "title": "Cross-Module Integrated Scenario",
         "subtitle": "End-to-end transactional integration: executing a complete customer order touching BP, Sales, MATDOC, and ACDOCA",
         "estimated_minutes": 45,
@@ -2298,7 +2298,7 @@ You have validated full operational execution across the core modules of S/4HANA
     22: {
         "day_number": 22,
         "slug": "s4hana-fundamentals-capstone",
-        "title": "S/4HANA Fundamentals & Architecture Capstone",
+        "title": "S/4HANA Fundamentals & Architecture Evaluation",
         "subtitle": "Comprehensive Phase 2 benchmark evaluation across 11 core architectural dimensions",
         "estimated_minutes": 60,
         "atomic_concepts": [

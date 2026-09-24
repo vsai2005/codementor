@@ -6,7 +6,7 @@ exists so the app can be clicked through on a Windows box with none of those
 installed.
 
 What is real here:
-  * The 18 seed problems and 6 topics are loaded from the real backend seed.py.
+  * The 65 seed problems and 16 topics are loaded from the real backend seed.py (160-day curriculum).
   * "Run" / "Submit" actually execute your editor code against the real test
     cases in a subprocess (child_runner.py), so pass/fail is genuine.
   * overall_score uses the real weights + wrong-answer cap from schemas/review.py.

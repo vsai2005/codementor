@@ -282,7 +282,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 65 Complete: Cloud Deployment Architectures Mastered'}],
             'subtitle': 'Public vs Private Cloud, multi-tenant SaaS vs single-tenant IaaS, release cadences, and cloud '
                         'governance.',
-            'title': 'S/4HANA Cloud Flavors & Architecture'},
+            'title': 'S/4HANA Cloud: Public vs Private Architecture'},
     66: {   'atomic_concepts': ['clean-core-philosophy', 'upgrade-safety-principles'],
             'day_number': 66,
             'estimated_minutes': 60,
@@ -548,7 +548,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 66 Complete: Clean Core Philosophy Internalized'}],
             'subtitle': 'Decoupling extensions from the core: released APIs (C1 contract), cloud-compliant ABAP, and '
                         'zero modifications.',
-            'title': 'Clean Core Philosophy & Upgrade-Safe Architecture'},
+            'title': 'The Clean Core Philosophy & Principles'},
     67: {   'atomic_concepts': ['sap-activate-methodology', 'activate-quality-gates'],
             'day_number': 67,
             'estimated_minutes': 60,
@@ -1591,7 +1591,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 70 Complete: Key-User Extensibility Mastered'}],
             'subtitle': 'Custom Fields and Logic app, UI adaptation at runtime, restricted ABAP Cloud, and business '
                         'user extensibility.',
-            'title': 'Key-User Extensibility: Low-Code Cloud Extensions'},
+            'title': 'Key-User Extensibility (In-App)'},
     71: {   'atomic_concepts': ['developer-extensibility-on-stack', 'abap-cloud-language-version', 'released-apis-c1'],
             'day_number': 71,
             'estimated_minutes': 60,
@@ -1861,7 +1861,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 71 Complete: On-Stack Developer Extensibility Mastered'}],
             'subtitle': 'ABAP Cloud language version in Eclipse ADT, released C1 APIs, RAP on-stack development, and '
                         'package governance.',
-            'title': 'Developer Extensibility On-Stack: ABAP Cloud'},
+            'title': 'Developer Extensibility (On-Stack ABAP Cloud)'},
     72: {   'atomic_concepts': ['side-by-side-extensibility', 'btp-extension-architecture'],
             'day_number': 72,
             'estimated_minutes': 60,
@@ -2374,7 +2374,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 73 Complete: Data Migration Mastered'}],
             'subtitle': 'Data migration architecture: staging tables, direct transfer from SAP ECC, migration object '
                         'modeler (LTMOM), and validation.',
-            'title': 'SAP Data Migration Cockpit'},
+            'title': 'Data Migration Cockpit (Migrate Your Data)'},
     74: {   'atomic_concepts': ['cloud-test-automation', 'upgrade-regression-testing'],
             'day_number': 74,
             'estimated_minutes': 60,
@@ -2641,7 +2641,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 74 Complete: Cloud Test Automation Mastered'}],
             'subtitle': 'Test automation in the cloud, SAP Cloud Test Automation Tool, Post-Upgrade Tests (PUT), and '
                         'regression management.',
-            'title': 'Cloud Testing & Quality Assurance'},
+            'title': 'Cloud Testing & Regression Automation'},
     75: {   'atomic_concepts': ['cutover-strategy', 'hypercare-operations'],
             'day_number': 75,
             'estimated_minutes': 60,
@@ -2914,7 +2914,7 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Day 75 Complete: Cutover & Hypercare Mastered'}],
             'subtitle': 'Cutover planning, blackout periods, mock cutovers, hypercare support, and transition to '
                         'operations.',
-            'title': 'Cutover & Operational Readiness'},
+            'title': 'Cutover Strategy & Operational Readiness'},
     76: {   'atomic_concepts': ['clean-core-roadmap-synthesis'],
             'day_number': 76,
             'estimated_minutes': 90,
@@ -3219,4 +3219,4 @@ PHASE_6_DAYS_CONTENT: dict[int, dict[str, Any]] = {   65: {   'atomic_concepts':
                              'title': 'Phase 6 Complete: S/4HANA Cloud & Clean Core Certified'}],
             'subtitle': 'Phase 6 benchmark: Clean Core architecture defense, cloud governance, and multi-tier '
                         'extensibility roadmap.',
-            'title': 'Cloud & Clean Core Capstone'}}
+            'title': 'S/4HANA Cloud & Clean Core Assessment'}}

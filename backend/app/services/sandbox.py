@@ -34,7 +34,164 @@ CLEAN_ENV = {
     "PATH": "/usr/local/bin:/usr/bin:/bin",
     "PYTHONUNBUFFERED": "1",
     "PYTHONDONTWRITEBYTECODE": "1",
+    "MALLOC_ARENA_MAX": "1",
+    "PYTHONHASHSEED": "0",
 }
+
+_WIN32_QUOTA_EXCEEDED = (3221225540, -1073741756, 3221225495, -1073741801)
+
+
+def _setup_win32_job_object(pid: int, limit_bytes: int):
+    """Enforces Job Object physical commit limits on Windows child processes."""
+    if sys.platform != "win32" or not pid:
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.windll.kernel32
+
+        class IO_COUNTERS(ctypes.Structure):
+            _fields_ = [
+                ("ReadOperationCount", ctypes.c_uint64),
+                ("WriteOperationCount", ctypes.c_uint64),
+                ("OtherOperationCount", ctypes.c_uint64),
+                ("ReadTransferCount", ctypes.c_uint64),
+                ("WriteTransferCount", ctypes.c_uint64),
+                ("OtherTransferCount", ctypes.c_uint64),
+            ]
+
+        class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):
+            _fields_ = [
+                ("BasicLimitInformation_PerProcessUserTimeLimit", ctypes.c_int64),
+                ("BasicLimitInformation_PerJobUserTimeLimit", ctypes.c_int64),
+                ("BasicLimitInformation_LimitFlags", wintypes.DWORD),
+                ("BasicLimitInformation_MinimumWorkingSetSize", ctypes.c_size_t),
+                ("BasicLimitInformation_MaximumWorkingSetSize", ctypes.c_size_t),
+                ("BasicLimitInformation_ActiveProcessLimit", wintypes.DWORD),
+                ("BasicLimitInformation_Affinity", ctypes.c_size_t),
+                ("BasicLimitInformation_PriorityClass", wintypes.DWORD),
+                ("BasicLimitInformation_SchedulingClass", wintypes.DWORD),
+                ("IoInfo", IO_COUNTERS),
+                ("ProcessMemoryLimit", ctypes.c_size_t),
+                ("JobMemoryLimit", ctypes.c_size_t),
+                ("PeakProcessMemoryUsed", ctypes.c_size_t),
+                ("PeakJobMemoryUsed", ctypes.c_size_t),
+            ]
+
+        job = kernel32.CreateJobObjectW(None, None)
+        if not job:
+            return None
+
+        limits = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
+        # JOB_OBJECT_LIMIT_JOB_MEMORY (0x200) | JOB_OBJECT_LIMIT_PROCESS_MEMORY (0x100)
+        limits.BasicLimitInformation_LimitFlags = 0x200 | 0x100
+        limits.ProcessMemoryLimit = limit_bytes
+        limits.JobMemoryLimit = limit_bytes
+
+        kernel32.SetInformationJobObject(
+            job, 9, ctypes.byref(limits), ctypes.sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION)
+        )
+
+        h_proc = kernel32.OpenProcess(0x1F0FFF, False, pid)
+        if h_proc:
+            kernel32.AssignProcessToJobObject(job, h_proc)
+            kernel32.CloseHandle(h_proc)
+
+        return job
+    except Exception:
+        return None
+
+
+def _get_process_rss(pid: int) -> int | None:
+    """Returns the physical resident memory (RSS / commit) of process `pid` in bytes."""
+    if not pid:
+        return None
+
+    # Strategy 1: psutil if available
+    try:
+        import psutil
+
+        p = psutil.Process(pid)
+        return p.memory_info().rss
+    except Exception:
+        pass
+
+    # Strategy 2: Linux /proc filesystem (RSS pages * page_size)
+    if sys.platform != "win32":
+        try:
+            with open(f"/proc/{pid}/statm", "r") as f:
+                parts = f.read().split()
+                if len(parts) >= 2:
+                    return int(parts[1]) * os.sysconf("SC_PAGE_SIZE")
+        except Exception:
+            pass
+        return None
+
+    # Strategy 3: Windows psapi via ctypes
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+            ]
+
+        psapi = ctypes.windll.psapi
+        psapi.GetProcessMemoryInfo.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(PROCESS_MEMORY_COUNTERS),
+            wintypes.DWORD,
+        ]
+        psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+
+        h = ctypes.windll.kernel32.OpenProcess(0x1000 | 0x0400, False, pid)
+        if h:
+            try:
+                counters = PROCESS_MEMORY_COUNTERS()
+                counters.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
+                if psapi.GetProcessMemoryInfo(h, ctypes.byref(counters), counters.cb):
+                    return max(counters.WorkingSetSize, counters.PagefileUsage)
+            finally:
+                ctypes.windll.kernel32.CloseHandle(h)
+    except Exception:
+        pass
+
+    return None
+
+
+async def _watch_process_memory(
+    pid: int,
+    limit_bytes: int,
+    violation_flag: list[bool],
+    stop_event: asyncio.Event,
+) -> None:
+    """Async background task that polls process physical memory every 20ms and terminates on breach."""
+    if not pid:
+        return
+    while not stop_event.is_set():
+        try:
+            mem = _get_process_rss(pid)
+            if mem is not None and mem > limit_bytes:
+                violation_flag[0] = True
+                _kill_process_group(pid)
+                break
+        except Exception:
+            break
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=0.02)
+        except (asyncio.TimeoutError, TimeoutError):
+            pass
 
 
 @dataclass
@@ -168,6 +325,11 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
     preexec = _posix_preexec if sys.platform != "win32" else None
 
     proc = None
+    win_job = None
+    stop_watchdog = asyncio.Event()
+    mem_violation = [False]
+    watchdog_task = None
+    timed_out = False
     try:
         proc = await asyncio.create_subprocess_exec(
             *argv,
@@ -179,11 +341,17 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
             preexec_fn=preexec,
         )
 
+        if proc.pid:
+            if sys.platform == "win32":
+                win_job = _setup_win32_job_object(proc.pid, MEMORY_BYTES)
+            watchdog_task = asyncio.create_task(
+                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog)
+            )
+
         stdout_bytes, stderr_bytes = await asyncio.wait_for(
             proc.communicate(input=job.encode("utf-8")),
             timeout=WALL_SECONDS,
         )
-        timed_out = False
     except (asyncio.TimeoutError, TimeoutError):
         timed_out = True
         if proc and proc.pid:
@@ -195,9 +363,32 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
         stdout_bytes = b""
         stderr_bytes = b"Time Limit Exceeded"
     finally:
+        stop_watchdog.set()
+        if watchdog_task:
+            try:
+                await watchdog_task
+            except Exception:
+                pass
+        if win_job and sys.platform == "win32":
+            try:
+                import ctypes
+
+                ctypes.windll.kernel32.CloseHandle(win_job)
+            except Exception:
+                pass
         shutil.rmtree(workdir, ignore_errors=True)
 
     runtime_ms = int((time.perf_counter() - started) * 1000)
+
+    if mem_violation[0]:
+        return TestResult(
+            index=index,
+            passed=False,
+            status="memory",
+            runtime_ms=runtime_ms,
+            stderr="Memory Limit Exceeded (256 MB)",
+            expected=expected,
+        )
 
     if timed_out:
         return TestResult(
@@ -208,6 +399,13 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
             stderr="Time Limit Exceeded",
             expected=expected,
         )
+
+    # Windows Job Object quota or Out-of-Memory exit codes
+    if sys.platform == "win32" and proc and proc.returncode:
+        if proc.returncode in (0xC0000044, -1073741756, 3221225540, 0xC0000017, -1073741801, 3221225495):
+            return TestResult(
+                index, False, "memory", runtime_ms, stderr="Memory Limit Exceeded (256 MB)", expected=expected
+            )
 
     # Decode and parse payload envelope (captured stdout in payload is capped at 64 KB)
     raw_out = stdout_bytes[: 512 * 1024].decode("utf-8", "replace")
@@ -311,6 +509,11 @@ async def execute_script_async(code: str) -> dict:
     preexec = _posix_preexec if sys.platform != "win32" else None
 
     proc = None
+    win_job = None
+    stop_watchdog = asyncio.Event()
+    mem_violation = [False]
+    watchdog_task = None
+    timed_out = False
     try:
         proc = await asyncio.create_subprocess_exec(
             *argv,
@@ -321,23 +524,85 @@ async def execute_script_async(code: str) -> dict:
             env=env,
             preexec_fn=preexec,
         )
+        if proc.pid:
+            if sys.platform == "win32":
+                win_job = _setup_win32_job_object(proc.pid, MEMORY_BYTES)
+            watchdog_task = asyncio.create_task(
+                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog)
+            )
+
         stdout_raw, stderr_raw = await asyncio.wait_for(
             proc.communicate(input=job.encode("utf-8")),
             timeout=WALL_SECONDS,
         )
-        runtime_ms = int((time.perf_counter() - started) * 1000)
-    except asyncio.TimeoutError:
-        runtime_ms = int((time.perf_counter() - started) * 1000)
+    except (asyncio.TimeoutError, TimeoutError):
+        timed_out = True
         if proc is not None and proc.pid:
             _kill_process_group(proc.pid)
+            try:
+                await proc.wait()
+            except Exception:
+                pass
+        stdout_raw = b""
+        stderr_raw = b"Time Limit Exceeded (Execution timed out)"
+    finally:
+        stop_watchdog.set()
+        if watchdog_task:
+            try:
+                await watchdog_task
+            except Exception:
+                pass
+        if win_job and sys.platform == "win32":
+            try:
+                import ctypes
+
+                ctypes.windll.kernel32.CloseHandle(win_job)
+            except Exception:
+                pass
+        shutil.rmtree(workdir, ignore_errors=True)
+
+    runtime_ms = int((time.perf_counter() - started) * 1000)
+
+    if mem_violation[0]:
+        return {
+            "status": "memory",
+            "stdout": "",
+            "stderr": "Memory Limit Exceeded (256 MB)",
+            "runtime_ms": runtime_ms,
+        }
+
+    if timed_out:
         return {
             "status": "timeout",
             "stdout": "",
             "stderr": "Time Limit Exceeded (Execution timed out)",
             "runtime_ms": runtime_ms,
         }
-    finally:
-        shutil.rmtree(workdir, ignore_errors=True)
+
+    if sys.platform == "win32" and proc and proc.returncode:
+        if proc.returncode in (0xC0000044, -1073741756, 3221225540, 0xC0000017, -1073741801, 3221225495):
+            return {
+                "status": "memory",
+                "stdout": "",
+                "stderr": "Memory Limit Exceeded (256 MB)",
+                "runtime_ms": runtime_ms,
+            }
+
+    if proc and proc.returncode and proc.returncode < 0:
+        sig = -proc.returncode
+        if hasattr(signal, "SIGXCPU") and sig == signal.SIGXCPU:
+            return {
+                "status": "timeout",
+                "stdout": "",
+                "stderr": "Time Limit Exceeded",
+                "runtime_ms": runtime_ms,
+            }
+        return {
+            "status": "memory",
+            "stdout": "",
+            "stderr": "Memory Limit Exceeded (256 MB)",
+            "runtime_ms": runtime_ms,
+        }
 
     try:
         payload = json.loads(stdout_raw.decode("utf-8", errors="replace"))

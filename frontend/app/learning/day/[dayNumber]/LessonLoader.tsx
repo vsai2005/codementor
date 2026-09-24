@@ -6,14 +6,35 @@ import { getLessonPackage } from "@/lib/lessons/loader";
 import { DailyLessonPackage } from "@/lib/lessons/types";
 import { LessonShell, LockedDayGate } from "@/components/learning/lesson";
 
+import Link from "next/link";
+
 interface LessonLoaderProps {
   dayNumber: number;
 }
 
 export function LessonLoader({ dayNumber }: LessonLoaderProps) {
-  // Safety Gate: If day is beyond STAGE_MAX_ACCESSIBLE_DAY or less than 1, render the locked route guard immediately
-  if (dayNumber > STAGE_MAX_ACCESSIBLE_DAY || dayNumber < 1) {
-    return <LockedDayGate dayNumber={dayNumber} />;
+  // Guard: If day is outside the valid curriculum range (1 to STAGE_MAX_ACCESSIBLE_DAY), render 404
+  if (dayNumber < 1 || dayNumber > STAGE_MAX_ACCESSIBLE_DAY) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <div className="card p-8 sm:p-12 bg-surface border-2 border-ink shadow-hard space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-ink bg-bg text-2xl shadow-hard-sm">
+            ❓
+          </div>
+          <h1 className="font-display text-2xl font-bold text-ink">
+            Day {dayNumber} Does Not Exist
+          </h1>
+          <p className="font-body text-sm text-ink/80 max-w-md mx-auto">
+            The Python &amp; DSA curriculum spans Days 1 through {STAGE_MAX_ACCESSIBLE_DAY}.
+          </p>
+          <div className="pt-2">
+            <Link href="/learning" className="btn btn-primary font-bold shadow-hard-sm hover:shadow-hard">
+              ← Back to 160-Day Roadmap
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const { isLoaded, getDayStatus, markLessonComplete } = useJourney();

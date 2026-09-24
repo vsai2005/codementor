@@ -117,7 +117,9 @@ class SAPProgressionService:
 
     @classmethod
     def complete_lesson(cls, db: Session, user_id: uuid.UUID, day_number: int) -> dict:
-        """Marks a lesson completed after verifying day is unlocked."""
+        if day_number < 1 or day_number > cls.TOTAL_DAYS:
+            raise ValueError(f"SAP Day {day_number} does not exist. Valid curriculum days are 1–{cls.TOTAL_DAYS}.")
+
         progress = cls.compute_user_progress(db, user_id)
         day_info = progress["day_states"].get(str(day_number))
 
@@ -203,7 +205,9 @@ class SAPProgressionService:
 
     @classmethod
     def record_practice_completed(cls, db: Session, user_id: uuid.UUID, day_number: int) -> dict:
-        """Records interactive practice completion for an unlocked day."""
+        if day_number < 1 or day_number > cls.TOTAL_DAYS:
+            raise ValueError(f"SAP Day {day_number} does not exist. Valid curriculum days are 1–{cls.TOTAL_DAYS}.")
+
         progress = cls.compute_user_progress(db, user_id)
         day_info = progress["day_states"].get(str(day_number))
 

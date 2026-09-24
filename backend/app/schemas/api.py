@@ -358,6 +358,6 @@ class GenerateProblemRequest(BaseModel):
 
 
 class DevSetProgressRequest(BaseModel):
-    completed_up_to: int = 1
+    completed_up_to: int = Field(default=1, ge=1, le=160, description="Curriculum day to fast-forward up to (1–160)")
 
 

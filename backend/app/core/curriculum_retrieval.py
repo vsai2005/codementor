@@ -74,6 +74,7 @@ class CurriculumKnowledgeEngine:
         if not path:
             here = os.path.dirname(os.path.abspath(__file__))
             candidates = [
+                os.path.join(here, "..", "data", "curriculum_160.json"),
                 os.path.join(here, "..", "..", "..", "scratch", "curriculum_160.json"),
                 os.path.join(here, "..", "..", "scratch", "curriculum_160.json"),
                 os.path.join(os.getcwd(), "scratch", "curriculum_160.json"),

@@ -272,7 +272,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 77 Complete: ABAP Cloud Paradigm Mastered'}],
             'subtitle': 'Restricted ABAP syntax, forbidden legacy statements, released C1 APIs, and the clean ABAP '
                         'model.',
-            'title': 'ABAP Cloud Paradigm & Language Rules'},
+            'title': 'ABAP Cloud Paradigm & Rules'},
     78: {   'atomic_concepts': ['modern-abap-syntax', 'abap-unit-testing'],
             'day_number': 78,
             'estimated_minutes': 60,
@@ -550,7 +550,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 78 Complete: Modern ABAP & Unit Testing Mastered'}],
             'subtitle': 'Constructor expressions, string templates, table expressions, ABAP Unit, and test isolation '
                         'with test doubles.',
-            'title': 'Modern ABAP OO & Unit Testing'},
+            'title': 'Modern ABAP Objects & ABAP Unit'},
     79: {   'atomic_concepts': ['rap-architecture-overview', 'bdef-and-behavior-implementation'],
             'day_number': 79,
             'estimated_minutes': 60,
@@ -826,7 +826,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 79 Complete: RAP Architecture Big Picture Mastered'}],
             'subtitle': 'The three pillars: Data Modeling (CDS), Behavior Definition (BDEF), and Service Provisioning '
                         '(SRVD/SRVB).',
-            'title': 'RAP Architecture Big Picture'},
+            'title': 'RAP Architecture: The Big Picture'},
     80: {   'atomic_concepts': ['rap-business-object-modeling', 'composition-hierarchies'],
             'day_number': 80,
             'estimated_minutes': 60,
@@ -1100,7 +1100,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 80 Complete: Composition Hierarchies Mastered'}],
             'subtitle': 'Root view entities, child entities, composition trees (`composition of`), and association to '
                         'parent.',
-            'title': 'RAP BO Modeling: Root Entities & Compositions'},
+            'title': 'RAP Business Object Modeling & Composition'},
     81: {   'atomic_concepts': ['bdef-syntax', 'managed-vs-unmanaged-rap'],
             'day_number': 81,
             'estimated_minutes': 60,
@@ -1374,7 +1374,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 81 Complete: BDEF Syntax & Scenarios Mastered'}],
             'subtitle': 'BDEF syntax, persistent tables, draft tables, lock master/dependent, and implementation '
                         'classes.',
-            'title': 'Behavior Definitions: Managed vs Unmanaged'},
+            'title': 'Behavior Definition (BDEF): Managed vs Unmanaged'},
     82: {   'atomic_concepts': ['rap-save-sequence', 'interaction-vs-save-phase'],
             'day_number': 82,
             'estimated_minutes': 60,
@@ -1634,7 +1634,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 82 Complete: RAP Save Sequence Mastered'}],
             'subtitle': 'Interaction phase vs save phase: finalize, check_before_save, adjust_numbers, save, and '
                         'cleanup.',
-            'title': 'RAP Transactional Save Sequence'},
+            'title': 'RAP Transactional Buffer & Save Sequence'},
     83: {   'atomic_concepts': ['rap-determinations', 'determination-triggers'],
             'day_number': 83,
             'estimated_minutes': 60,
@@ -1886,7 +1886,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 83 Complete: RAP Determinations Mastered'}],
             'subtitle': 'Trigger operations, trigger fields, determine on modify vs on save, and implementation in '
                         'local handlers.',
-            'title': 'RAP Determinations: Automated Logic & Triggers'},
+            'title': 'RAP Determinations: on modify vs on save'},
     84: {   'atomic_concepts': ['rap-validations', 'failed-reported-structures'],
             'day_number': 84,
             'estimated_minutes': 60,
@@ -2146,7 +2146,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                                            'Language (EML)**.',
                              'title': 'Day 84 Complete: RAP Validations Mastered'}],
             'subtitle': 'Validation triggers, failed and reported structures, transition messages, and state messages.',
-            'title': 'RAP Validations & Error Handling'},
+            'title': 'RAP Validations & Message Handling'},
     85: {   'atomic_concepts': ['rap-actions', 'entity-manipulation-language-eml'],
             'day_number': 85,
             'estimated_minutes': 60,
@@ -2409,7 +2409,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 85 Complete: RAP Actions & EML Mastered'}],
             'subtitle': 'Instance vs static actions, factory actions, and calling RAP entities programmatically via '
                         'EML.',
-            'title': 'RAP Actions & Entity Manipulation Language (EML)'},
+            'title': 'RAP Actions: Instance, Static & Factory'},
     86: {   'atomic_concepts': ['rap-draft-handling', 'draft-activation-lifecycle'],
             'day_number': 86,
             'estimated_minutes': 60,
@@ -2671,7 +2671,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 86 Complete: RAP Draft Handling Mastered'}],
             'subtitle': 'Active tables vs draft tables, draft administrative data, draft actions (Edit, Activate, '
                         'Discard), and total ETags.',
-            'title': 'RAP Draft Handling: Autosave & Lifecycle'},
+            'title': 'Draft Handling in RAP'},
     87: {   'atomic_concepts': ['rap-concurrency-control', 'optimistic-locking-etag'],
             'day_number': 87,
             'estimated_minutes': 60,
@@ -2920,7 +2920,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 87 Complete: Concurrency & Locking Mastered'}],
             'subtitle': 'Optimistic locking via ETags (`etag master`), pessimistic enqueue locking, and resolving 412 '
                         'Precondition Failed.',
-            'title': 'Concurrency Control & ETags'},
+            'title': 'Concurrency Control & Optimistic Locking'},
     88: {   'atomic_concepts': ['rap-numbering-strategies', 'rap-authorization-control'],
             'day_number': 88,
             'estimated_minutes': 60,
@@ -3177,7 +3177,7 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Day 88 Complete: Numbering & Authorization Mastered'}],
             'subtitle': 'Early numbering with UUIDs vs late numbering with number ranges; global vs instance '
                         'authorization.',
-            'title': 'Numbering Strategies & Authorization Control'},
+            'title': 'Number Ranges & Authorization Control'},
     89: {   'atomic_concepts': ['rap-full-stack-synthesis'],
             'day_number': 89,
             'estimated_minutes': 90,
@@ -3447,4 +3447,4 @@ PHASE_7_DAYS_CONTENT: dict[int, dict[str, Any]] = {   77: {   'atomic_concepts':
                              'title': 'Phase 7 Complete: ABAP Cloud & RAP Certified'}],
             'subtitle': 'Full-stack RAP synthesis: CDS entities, managed BDEF with draft, determinations, validations, '
                         'actions, and review.',
-            'title': 'ABAP Cloud & RAP Capstone'}}
+            'title': 'ABAP Cloud & RAP Capstone Assessment'}}

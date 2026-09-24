@@ -177,7 +177,7 @@ export default function SapDayDetailPage() {
           </Link>
         </div>
 
-        {/* If complete interactive 8-step lesson content exists (Days 1–8), render SapLessonShell */}
+        {/* If complete interactive 8-step lesson content exists (Days 1–100), render SapLessonShell */}
         {lesson ? (
           <SapLessonShell
             lesson={lesson}
@@ -185,7 +185,7 @@ export default function SapDayDetailPage() {
             onDayComplete={() => setCompleteSuccess(true)}
           />
         ) : day ? (
-          /* Fallback for unauthored days (Days 9–100): render curriculum manifest overview */
+          /* Fallback when lesson content is temporarily loading or unavailable */
           <div className="border-4 border-ink bg-surface p-6 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-8">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">

@@ -1,4 +1,6 @@
-"""Authoritative content definitions for SAP S/4HANA Guided Learning Days 1–8.
+"""Authoritative content repository for SAP S/4HANA Guided Learning (Days 1–100, Phases 1–9).
+
+Defines Phase 1 (Days 1–8) directly and aggregates Phases 2–9 (Days 9–100) into SAP_DAYS_CONTENT.
 
 Implements the strict 8-step pedagogical sequence for every day:
 1. learn: Core concepts, definitions, and business rationale.
@@ -1317,7 +1319,7 @@ You have mastered:
     8: {
         "day_number": 8,
         "slug": "foundation-capstone-assessment",
-        "title": "Foundation Capstone & Comprehensive Assessment",
+        "title": "Foundation Capstone + Assessment",
         "subtitle": "Synthesizing Architecture, Master Data, Org Structure & Integration for Nova Manufacturing",
         "estimated_minutes": 75,
         "atomic_concepts": [

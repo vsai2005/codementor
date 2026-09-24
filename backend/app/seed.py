@@ -1,12 +1,11 @@
-"""Seed topics and problems.
+"""Seed topics and problems for the 160-Day Python & DSA Curriculum.
 
 Idempotent: re-running upserts by slug rather than duplicating.
 
-Inventory note: the PRD's Phase 1 asks for 40-60 problems while BUILD_PROMPTS
-asks for 12. This seeds 18 (3 per topic, tiers 1-5). That is enough to
-demonstrate adaptive difficulty, but /api/problems/next widens its tier search
-when a tier is empty precisely because 18 problems cannot fill 6 topics x 5
-tiers. Add problems before claiming the adaptive engine is fully exercised.
+Inventory: Seeds 16 core computer science and DSA topics with 65 problems
+spanning Tiers 1-5, fully mapped across the 160-day Python curriculum.
+Includes server-authoritative reference solutions, robust test cases, and
+adaptive difficulty tier progression.
 
 Run:  python -m app.seed
 """

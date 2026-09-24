@@ -202,3 +202,51 @@ def test_runtime_is_measured():
     report = sandbox.run_test_cases(CORRECT, "two_sum", TWO_SUM_CASES[:1])
     assert report.results[0].runtime_ms >= 0
     assert report.results[0].runtime_ms < 4000
+
+
+def test_real_memory_abuse_is_caught_as_memory():
+    # Allocate actual physical memory blocks until > 256 MB is hit
+    code = (
+        "def solve():\n"
+        "    blocks = []\n"
+        "    for _ in range(350):\n"
+        "        blocks.append(bytearray(1024 * 1024))\n"
+        "    return len(blocks)\n"
+    )
+    report = sandbox.run_test_cases(code, "solve", [{"args": [], "expected": 350}])
+    result = report.results[0]
+    assert not result.passed
+    assert result.status == "memory", f"Expected memory status, got {result.status} (stderr: {result.stderr})"
+    assert "Memory Limit Exceeded" in result.stderr or "Memory limit exceeded" in result.stderr
+
+
+def test_virtual_memory_mapping_does_not_false_positive():
+    # Moderate legitimate data processing (15 MB) should succeed without triggering false positive
+    code = (
+        "import math\n"
+        "import collections\n"
+        "def solve():\n"
+        "    d = collections.defaultdict(list)\n"
+        "    for i in range(150_000):\n"
+        "        d[i % 100].append(i)\n"
+        "    return sum(len(v) for v in d.values())\n"
+    )
+    report = sandbox.run_test_cases(code, "solve", [{"args": [], "expected": 150_000}])
+    result = report.results[0]
+    assert result.passed
+    assert result.status == "ok"
+    assert result.returned == 150_000
+
+
+@pytest.mark.asyncio
+async def test_execute_script_async_memory_abuse():
+    code = (
+        "blocks = []\n"
+        "for _ in range(350):\n"
+        "    blocks.append(bytearray(1024 * 1024))\n"
+        "print('done')\n"
+    )
+    result = await sandbox.execute_script_async(code)
+    assert result["status"] == "memory"
+    assert "Memory Limit Exceeded" in result["stderr"] or "Memory limit exceeded" in result["stderr"]
+

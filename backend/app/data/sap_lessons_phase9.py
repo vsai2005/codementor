@@ -282,7 +282,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                                            'VDM Hierarchy**.',
                              'title': 'Day 96 Complete: Capstone Inception & Scoping Certified'}],
             'subtitle': 'Project kick-off, business case, organizational scoping, and Fit-to-Standard process design.',
-            'title': 'Enterprise Capstone: Discovery & Fit-to-Standard'},
+            'title': 'Capstone: Discovery & Process Architecture'},
     97: {   'atomic_concepts': ['capstone-data-semantics'],
             'day_number': 97,
             'estimated_minutes': 90,
@@ -556,7 +556,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                                            'Behavior Implementation (Managed with Draft)**.',
                              'title': 'Day 97 Complete: Capstone Data Modeling Certified'}],
             'subtitle': 'Implementing the core CDS data model: VDM entities, associations, and analytical annotations.',
-            'title': 'Enterprise Capstone: CDS & Data Semantics'},
+            'title': 'Capstone: Data Semantics & CDS Modeling'},
     98: {   'atomic_concepts': ['capstone-rap-implementation'],
             'day_number': 98,
             'estimated_minutes': 90,
@@ -826,7 +826,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                              'title': 'Day 98 Complete: Capstone RAP Implementation Certified'}],
             'subtitle': 'Implementing the transactional business logic: managed BDEF with draft, determinations, and '
                         'validations.',
-            'title': 'Enterprise Capstone: ABAP Cloud & RAP Implementation'},
+            'title': 'Capstone: ABAP Cloud & RAP Implementation'},
     99: {   'atomic_concepts': ['capstone-fiori-btp-integration'],
             'day_number': 99,
             'estimated_minutes': 90,
@@ -1096,7 +1096,7 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                              'title': 'Day 99 Complete: Capstone Presentation & Integration Certified'}],
             'subtitle': 'Assembling the user interface: Fiori Elements List Report/Object Page and BTP Integration '
                         'Suite connectivity.',
-            'title': 'Enterprise Capstone: Fiori Elements & BTP Assembly'},
+            'title': 'Capstone: Fiori UX, BTP Integration & Clean Core Audit'},
     100: {   'atomic_concepts': ['capstone-final-defense'],
              'day_number': 100,
              'estimated_minutes': 120,
@@ -1430,4 +1430,4 @@ PHASE_9_DAYS_CONTENT: dict[int, dict[str, Any]] = {   96: {   'atomic_concepts':
                               'title': 'Curriculum Complete: 100 Days of SAP S/4HANA Mastered!'}],
              'subtitle': 'Final comprehensive review: defending architectural choices, troubleshooting scenarios, and '
                          'final certification.',
-             'title': 'Enterprise Capstone: Architectural Defense & Certification'}}
+             'title': 'Capstone: Architectural Defense & Final Assessment'}}

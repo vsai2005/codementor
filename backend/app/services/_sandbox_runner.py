@@ -20,6 +20,26 @@ import sys
 MAX_OUTPUT_BYTES = 64 * 1024  # 64 KB cap on captured output
 
 
+class BoundedStringIO(io.StringIO):
+    """StringIO stream that strictly caps accumulated characters to MAX_OUTPUT_BYTES,
+    preventing unbounded memory growth from large print statements.
+    """
+
+    def __init__(self, max_bytes: int = MAX_OUTPUT_BYTES):
+        super().__init__()
+        self.max_bytes = max_bytes
+        self.current_bytes = 0
+
+    def write(self, s: str) -> int:
+        if self.current_bytes >= self.max_bytes:
+            return len(s)  # Drop excess silently to prevent memory bloat
+        remaining = self.max_bytes - self.current_bytes
+        chunk = s[:remaining]
+        super().write(chunk)
+        self.current_bytes += len(chunk.encode("utf-8", "replace"))
+        return len(s)
+
+
 def _drop_privileges(uid: int, gid: int) -> None:
     if not hasattr(os, "getuid") or os.getuid() != 0:
         return  # already unprivileged or non-POSIX
@@ -37,8 +57,20 @@ def _apply_rlimits(cpu_seconds: int = 2, memory_bytes: int = 256 * 1024 * 1024) 
 
         # RLIMIT_CPU: 2s limit
         resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
-        # RLIMIT_AS: 256 MB
-        resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
+
+        # RLIMIT_DATA: limit heap data segment to memory_bytes if supported
+        if hasattr(resource, "RLIMIT_DATA"):
+            try:
+                resource.setrlimit(resource.RLIMIT_DATA, (memory_bytes, memory_bytes))
+            except (OSError, ValueError):
+                pass
+
+        # Relax RLIMIT_AS to 1 GB ceiling to prevent glibc/python multi-arena virtual memory false positives,
+        # while parent watchdog actively enforces real physical RSS (256 MB).
+        if hasattr(resource, "RLIMIT_AS"):
+            virt_ceiling = max(1024 * 1024 * 1024, memory_bytes * 4)
+            resource.setrlimit(resource.RLIMIT_AS, (virt_ceiling, virt_ceiling))
+
         # RLIMIT_FSIZE: 1 MB writes
         fsize_bytes = 1024 * 1024
         resource.setrlimit(resource.RLIMIT_FSIZE, (fsize_bytes, fsize_bytes))
@@ -154,7 +186,7 @@ def main() -> None:
     _apply_rlimits(cpu_s, mem_b)
     _block_network_and_env()
 
-    captured = io.StringIO()
+    captured = BoundedStringIO(max_bytes=MAX_OUTPUT_BYTES)
     sys.stdout = captured
 
     namespace: dict = {"__name__": "__solution__"}

@@ -1,5 +1,5 @@
 # Render blueprint for CodeMentor production backend (FastAPI + SQLAlchemy + SAP Learning Engine)
-# Serves /health, /api/sap/*, /api/problems/*, /api/learning/*, /api/submissions/*, /api/progress/*
+# Serves /health, /api/auth/*, /api/sap/*, /api/learning/*, /api/problems/*, /api/submissions/*, /api/progress/*, /api/coach/*
 
 services:
   - type: web
@@ -22,8 +22,12 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: CORS_ORIGINS
+        sync: false
       - key: REDIS_URL
         sync: false
+      - key: LLM_MODEL
+        value: nvidia/nemotron-3-ultra-550b-a55b
       - key: NVIDIA_MODEL
         value: nvidia/nemotron-3-ultra-550b-a55b
       - key: NVIDIA_BASE_URL
@@ -44,12 +48,10 @@ services:
         sync: false
       - key: NVIDIA_API_KEY
         sync: false
-      - key: GEMINI_API_KEY
+      - key: ANTHROPIC_API_KEY
         sync: false
-      - key: GEMINI_API_KEYS
+      - key: OPENAI_API_KEY
         sync: false
-      - key: GEMINI_MODEL
-        value: gemini-flash-latest
 
 databases:
   - name: codementor-db

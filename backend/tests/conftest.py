@@ -65,12 +65,15 @@ def db(engine, migrated) -> Session:
     """
     connection = engine.connect()
     transaction = connection.begin()
-    session = sessionmaker(bind=connection, expire_on_commit=False)()
+    session = sessionmaker(
+        bind=connection, expire_on_commit=False, join_transaction_mode="create_savepoint"
+    )()
     try:
         yield session
     finally:
         session.close()
-        transaction.rollback()
+        if transaction.is_active:
+            transaction.rollback()
         connection.close()
 
 

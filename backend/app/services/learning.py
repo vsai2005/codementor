@@ -73,6 +73,8 @@ def compute_user_progress(db: Session, user_id: uuid.UUID) -> dict:
 
 def complete_lesson(db: Session, user_id: uuid.UUID, day_number: int) -> dict:
     """Marks day lesson completed after validating day is unlocked."""
+    if day_number < 1 or day_number > 160:
+        raise ValueError(f"Day {day_number} does not exist. Valid curriculum days are 1–160.")
     progress = compute_user_progress(db, user_id)
     day_info = progress["day_states"].get(str(day_number))
     if not day_info or not day_info["unlocked"]:
@@ -140,6 +142,8 @@ def record_practice_passed(
     day_states = progress["day_states"]
 
     if day_number is not None:
+        if day_number < 1 or day_number > 160:
+            raise ValueError(f"Day {day_number} does not exist. Valid curriculum days are 1–160.")
         if CURRICULUM_DAY_PRACTICE.get(day_number) != problem_slug:
             raise ValueError(f"Problem '{problem_slug}' is not mapped to Day {day_number}.")
         day_info = day_states.get(str(day_number))
