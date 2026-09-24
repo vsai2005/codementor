@@ -73,6 +73,15 @@ class Settings(BaseSettings):
     run_rate_limit: int = 30
     run_rate_window_s: int = 60
 
+    tutor_rate_limit: int = 20
+    tutor_rate_window_s: int = 300
+
+    coach_rate_limit: int = 20
+    coach_rate_window_s: int = 300
+
+    generate_rate_limit: int = 10
+    generate_rate_window_s: int = 300
+
     @model_validator(mode="after")
     def validate_production_config(self) -> Self:
         # Normalize database_url prefix for SQLAlchemy 2.0 / psycopg3

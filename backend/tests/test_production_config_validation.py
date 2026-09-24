@@ -101,7 +101,10 @@ def test_database_url_normalization():
     assert s2.database_url.startswith("postgresql+psycopg://")
 
 
-def test_dev_environment_allows_defaults():
+def test_dev_environment_allows_defaults(monkeypatch):
+    monkeypatch.delenv("REDIS_URL", raising=False)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("JWT_SECRET", raising=False)
     s = Settings(environment="development")
     assert s.is_production is False
     assert s.jwt_secret == "change-me-in-production"

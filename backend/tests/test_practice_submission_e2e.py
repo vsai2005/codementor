@@ -50,28 +50,36 @@ def mapped_problem(db):
         problem = Problem(
             id=uuid.uuid4(),
             topic_id=topic.id,
-            title="Two Sum Test",
+            title="Celsius to Fahrenheit",
             slug=slug,
-            statement_md="Given an array of integers nums and target, return indices.",
-            constraints_md="2 <= nums.length <= 10^4",
+            statement_md="Convert celsius to fahrenheit.",
+            constraints_md="None",
             difficulty_tier=1,
-            optimal_time="O(n)",
-            optimal_space="O(n)",
-            entry_point="two_sum",
+            optimal_time="O(1)",
+            optimal_space="O(1)",
+            entry_point="celsius_to_fahrenheit",
             test_cases=[
-                {"args": [[2, 7, 11, 15], 9], "expected": [0, 1]},
-                {"args": [[3, 2, 4], 6], "expected": [1, 2]},
+                {"args": [0], "expected": 32.0},
+                {"args": [100], "expected": 212.0},
             ],
-            starter_code={"python": "def two_sum(nums, target):\n    pass\n"},
+            starter_code={"python": "def celsius_to_fahrenheit(c):\n    pass\n"},
         )
         db.add(problem)
+        db.commit()
+        db.refresh(problem)
+    else:
+        problem.entry_point = "celsius_to_fahrenheit"
+        problem.test_cases = [
+            {"args": [0], "expected": 32.0},
+            {"args": [100], "expected": 212.0},
+        ]
         db.commit()
         db.refresh(problem)
     return problem
 
 
 def test_wrong_answer_submission_does_not_set_practice_passed(client, auth_headers, mapped_problem):
-    code = "def two_sum(nums, target):\n    return [0, 0]"
+    code = "def celsius_to_fahrenheit(c):\n    return 0.0"
     resp = client.post(
         "/api/submissions",
         json={"problem_id": str(mapped_problem.id), "language": "python", "code": code},
@@ -86,7 +94,7 @@ def test_wrong_answer_submission_does_not_set_practice_passed(client, auth_heade
 
 
 def test_syntax_error_submission_does_not_set_practice_passed(client, auth_headers, mapped_problem):
-    code = "def two_sum(nums, target):\n    return [0, 0"
+    code = "def celsius_to_fahrenheit(c):\n    return 0.0 ("
     resp = client.post(
         "/api/submissions",
         json={"problem_id": str(mapped_problem.id), "language": "python", "code": code},
@@ -101,7 +109,7 @@ def test_syntax_error_submission_does_not_set_practice_passed(client, auth_heade
 
 
 def test_timeout_submission_does_not_set_practice_passed(client, auth_headers, mapped_problem):
-    code = "def two_sum(nums, target):\n    while True:\n        pass"
+    code = "def celsius_to_fahrenheit(c):\n    while True:\n        pass"
     resp = client.post(
         "/api/submissions",
         json={"problem_id": str(mapped_problem.id), "language": "python", "code": code},
@@ -116,14 +124,8 @@ def test_timeout_submission_does_not_set_practice_passed(client, auth_headers, m
 
 
 def test_correct_submission_sets_practice_passed(client, auth_headers, mapped_problem):
-    code = """def two_sum(nums, target):
-    seen = {}
-    for i, n in enumerate(nums):
-        diff = target - n
-        if diff in seen:
-            return [seen[diff], i]
-        seen[n] = i
-    return []
+    code = """def celsius_to_fahrenheit(c):
+    return (c * 9.0 / 5.0) + 32.0
 """
     resp = client.post(
         "/api/submissions",
@@ -144,14 +146,8 @@ def test_correct_submission_plus_lesson_unlocks_next_day(client, auth_headers, m
     res_lesson = client.post("/api/learning/complete-lesson", json={"day_number": 1}, headers=auth_headers)
     assert res_lesson.status_code == 200
 
-    code = """def two_sum(nums, target):
-    seen = {}
-    for i, n in enumerate(nums):
-        diff = target - n
-        if diff in seen:
-            return [seen[diff], i]
-        seen[n] = i
-    return []
+    code = """def celsius_to_fahrenheit(c):
+    return (c * 9.0 / 5.0) + 32.0
 """
     resp = client.post(
         "/api/submissions",
@@ -222,14 +218,8 @@ def test_unmapped_problem_submission_does_not_affect_curriculum(client, auth_hea
 
 
 def test_repeat_correct_submission_is_idempotent(client, auth_headers, mapped_problem):
-    code = """def two_sum(nums, target):
-    seen = {}
-    for i, n in enumerate(nums):
-        diff = target - n
-        if diff in seen:
-            return [seen[diff], i]
-        seen[n] = i
-    return []
+    code = """def celsius_to_fahrenheit(c):
+    return (c * 9.0 / 5.0) + 32.0
 """
 
     # First submission

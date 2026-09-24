@@ -68,6 +68,8 @@ class ProblemDetail(ProblemSummary):
     optimal_space: str
     entry_point: str
     starter_code: dict[str, str]
+    is_generated: bool = False
+    generation_source: str = "curated"
 
 
 class ProblemPage(BaseModel):
@@ -352,6 +354,7 @@ class CoachResponse(BaseModel):
 class GenerateProblemRequest(BaseModel):
     topic: str | None = None
     tier: int | None = None
+    mode: Literal["generate", "recommend"] = "generate"
 
 
 class DevSetProgressRequest(BaseModel):

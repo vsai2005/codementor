@@ -17,6 +17,7 @@ from app.schemas.api import (
     ReferenceSolution,
 )
 from app.services.submissions import next_problem
+from app.services.ratelimit import get_generate_rate_limiter
 
 router = APIRouter(prefix="/api/problems", tags=["problems"])
 
@@ -133,12 +134,13 @@ def get_reference_solution(
     )
 
 
-@router.post("/generate", response_model=ProblemDetail)
-def generate_ai_problem(
+@router.post("/recommend", response_model=ProblemDetail)
+def recommend_problem(
     payload: GenerateProblemRequest,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> ProblemDetail:
+    """Recommend an existing curated problem from the curriculum matching target criteria."""
     stmt = select(Problem)
     if payload.topic:
         stmt = stmt.join(Topic).where(Topic.slug == payload.topic)
@@ -148,7 +150,37 @@ def generate_ai_problem(
     if not problem:
         problem = db.execute(select(Problem)).scalars().first()
     if not problem:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Could not generate or find a problem.")
-    return ProblemDetail.model_validate(problem)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No matching recommended problem found in curriculum.")
+
+    detail = ProblemDetail.model_validate(problem)
+    detail.is_generated = False
+    detail.generation_source = "curated"
+    return detail
+
+
+@router.post("/generate", response_model=ProblemDetail)
+async def generate_ai_problem(
+    payload: GenerateProblemRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ProblemDetail:
+    """Generate a validated problem using AI or return a curated recommendation."""
+    verdict = get_generate_rate_limiter().check(f"generate:{user.id}")
+    if not verdict.allowed:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Problem generation rate limit reached. Please wait {verdict.retry_after_s} seconds.",
+            headers={"Retry-After": str(verdict.retry_after_s)},
+        )
+
+    if payload.mode == "recommend":
+        return recommend_problem(payload, db, user)
+
+    from app.services.problem_generator import generate_and_validate_problem
+    return await generate_and_validate_problem(
+        topic_slug=payload.topic,
+        tier=payload.tier,
+        db=db,
+    )
 
 

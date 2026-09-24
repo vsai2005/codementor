@@ -25,7 +25,7 @@ from app.services.difficulty import banner_text
 from app.services.embeddings import get_embedder
 from app.services.llm import get_llm_client
 from app.services.memory import MemoryService, build_note_prompt
-from app.services.ratelimit import get_rate_limiter
+from app.services.ratelimit import get_rate_limiter, get_run_rate_limiter
 from app.services.repositories import PgMemoryRepository
 from app.services.review import ReviewService, degraded_review
 
@@ -62,6 +62,14 @@ async def run_only(
     user: User = Depends(get_current_user),
 ) -> TestsResponse:
     """Tests only, no LLM. Target < 2s p95."""
+    verdict = get_run_rate_limiter().check(f"run:{user.id}")
+    if not verdict.allowed:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Run rate limit reached. Please wait {verdict.retry_after_s} seconds.",
+            headers={"Retry-After": str(verdict.retry_after_s)},
+        )
+
     problem = _load_problem(db, payload.problem_id)
     report = await svc.execute_async(problem, payload.code)
     return _tests_payload(report)
@@ -73,6 +81,14 @@ async def run_custom_input(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> CustomRunResponse:
+    verdict = get_run_rate_limiter().check(f"run:{user.id}")
+    if not verdict.allowed:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Run rate limit reached. Please wait {verdict.retry_after_s} seconds.",
+            headers={"Retry-After": str(verdict.retry_after_s)},
+        )
+
     problem = None
     try:
         uid = uuid.UUID(payload.problem_id)

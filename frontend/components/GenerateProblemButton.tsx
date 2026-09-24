@@ -7,43 +7,66 @@ import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
 
 /**
- * Triggers AI problem generation. The model authors a fresh problem for the
- * learner's weakest topic; the backend validates its test cases by running the
- * reference solution before returning it. On success we seed the query cache and
- * navigate straight into the new problem.
+ * Triggers truthful AI problem generation or curated catalog recommendation.
  *
- * variant "card" — full dashboard call-to-action; "inline" — compact button.
+ * Mode "generate": Authors a fresh problem via AI and strictly validates its test
+ * cases by executing the reference solution in the sandbox before returning it.
+ * Mode "recommend": Selects a curated curriculum problem matching the learner's
+ * current level without falsely claiming generation.
+ *
+ * variant "card" — full dashboard call-to-action; "inline" — compact buttons.
  */
 export function GenerateProblemButton({ variant = "card" }: { variant?: "card" | "inline" }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<"generate" | "recommend" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const generate = async () => {
-    if (busy) return;
-    setBusy(true);
+  const handleAction = async (mode: "generate" | "recommend") => {
+    if (busyAction) return;
+    setBusyAction(mode);
     setError(null);
     try {
-      const problem = await api.generateProblem();
+      const problem =
+        mode === "generate"
+          ? await api.generateProblem({ mode: "generate" })
+          : await api.recommendProblem();
+
       queryClient.setQueryData(["problem", problem.id], problem);
       router.push(`/practice/${problem.id}`);
     } catch (err) {
       setError(
         err instanceof ApiError
           ? err.message
-          : "Couldn't generate a problem right now. Please try again.",
+          : mode === "generate"
+          ? "Couldn't generate a validated problem right now. Please try again or choose a curated recommendation."
+          : "Couldn't retrieve a recommended problem right now. Please try again.",
       );
-      setBusy(false);
+      setBusyAction(null);
     }
   };
 
   if (variant === "inline") {
     return (
       <div className="flex flex-col items-end gap-1">
-        <button type="button" className="btn btn-primary px-3 py-1 text-xs" onClick={generate} disabled={busy}>
-          {busy ? "Generating…" : "✨ Generate a problem"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary px-2.5 py-1 text-xs"
+            onClick={() => handleAction("recommend")}
+            disabled={busyAction !== null}
+          >
+            {busyAction === "recommend" ? "Recommending…" : "🎯 Recommend problem"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary px-2.5 py-1 text-xs"
+            onClick={() => handleAction("generate")}
+            disabled={busyAction !== null}
+          >
+            {busyAction === "generate" ? "Generating & validating…" : "✨ Generate AI problem"}
+          </button>
+        </div>
         {error && <span className="font-body text-xs text-accent">{error}</span>}
       </div>
     );
@@ -53,19 +76,39 @@ export function GenerateProblemButton({ variant = "card" }: { variant?: "card" |
     <div className="card border-l-4 border-l-accent-2 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-display text-base font-bold">✨ Generate a problem for me</p>
+          <p className="font-display text-base font-bold">✨ Targeted Practice &amp; Generation</p>
           <p className="mt-0.5 font-body text-sm text-muted">
-            The AI writes a brand-new problem aimed at your weakest topic — with test cases it
-            validates by running a reference solution. Never run out of targeted practice.
+            Choose genuine AI generation (fully verified against test cases in our sandbox)
+            or get a recommended curated problem matched to your curriculum progress.
           </p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={generate} disabled={busy}>
-          {busy ? "Crafting your problem…" : "Generate"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => handleAction("recommend")}
+            disabled={busyAction !== null}
+          >
+            {busyAction === "recommend" ? "Finding recommendation…" : "🎯 Recommended problem"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => handleAction("generate")}
+            disabled={busyAction !== null}
+          >
+            {busyAction === "generate" ? "Authoring &amp; validating…" : "✨ Generate AI problem"}
+          </button>
+        </div>
       </div>
-      {busy && (
+      {busyAction === "generate" && (
         <p className="mt-2 font-body text-xs text-muted">
-          Authoring a problem and validating its tests — this takes a few seconds.
+          Authoring code problem and executing reference solution in sandbox — this takes a few seconds.
+        </p>
+      )}
+      {busyAction === "recommend" && (
+        <p className="mt-2 font-body text-xs text-muted">
+          Selecting optimal curated problem from curriculum matching your mastery level.
         </p>
       )}
       {error && (

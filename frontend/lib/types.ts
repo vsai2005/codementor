@@ -49,6 +49,8 @@ export interface ProblemDetail extends ProblemSummary {
   starter_code: Record<string, string>;
   concept?: ConceptLesson | null;
   generation?: GenerationMeta;
+  is_generated?: boolean;
+  generation_source?: "ai_generated" | "curated" | string;
 }
 
 export interface ProblemPage {

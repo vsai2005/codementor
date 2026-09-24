@@ -102,12 +102,12 @@ def complete_lesson(
 async def tutor_chat(
     payload: LearningTutorChatRequest,
     request: Request,
-    user: User | None = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
     teacher_svc: AITeacherService = Depends(get_teacher_service),
 ) -> LearningTutorResponse:
     """Chat with the Socratic AI Teacher for a specific curriculum day and step."""
     limiter = get_tutor_rate_limiter()
-    ratelimit_key = str(user.id) if user else (request.client.host if request.client else "anonymous")
+    ratelimit_key = f"tutor:{user.id}"
     verdict = limiter.check(ratelimit_key)
     if not verdict.allowed:
         raise HTTPException(
@@ -138,12 +138,12 @@ async def tutor_chat(
 async def tutor_quick_action(
     payload: LearningTutorQuickActionRequest,
     request: Request,
-    user: User | None = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
     teacher_svc: AITeacherService = Depends(get_teacher_service),
 ) -> LearningTutorResponse:
     """Execute a pedagogical quick action (e.g. explain simply, give hint, find mistake)."""
     limiter = get_tutor_rate_limiter()
-    ratelimit_key = str(user.id) if user else (request.client.host if request.client else "anonymous")
+    ratelimit_key = f"tutor:{user.id}"
     verdict = limiter.check(ratelimit_key)
     if not verdict.allowed:
         raise HTTPException(

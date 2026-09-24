@@ -73,7 +73,7 @@ export default function SapPlacementPage() {
   const handleFresherStart = async () => {
     setSubmitError(null);
     if (!user) {
-      setSubmitError("Please sign in to record your diagnostic placement.");
+      router.push("/login?redirect=/sap/placement");
       return;
     }
 
@@ -127,7 +127,7 @@ export default function SapPlacementPage() {
   const handleSubmitAssessment = async () => {
     setSubmitError(null);
     if (!user) {
-      setSubmitError("Please sign in to save your diagnostic assessment results.");
+      router.push("/login?redirect=/sap/placement");
       return;
     }
 

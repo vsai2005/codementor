@@ -129,8 +129,11 @@ export const api = {
 
   nextProblem: () => request<ProblemDetail>("/api/problems/next"),
 
-  generateProblem: (body: { topic?: string; tier?: number } = {}) =>
+  generateProblem: (body: { topic?: string; tier?: number; mode?: "generate" | "recommend" } = {}) =>
     request<ProblemDetail>("/api/problems/generate", { method: "POST", body }),
+
+  recommendProblem: (body: { topic?: string; tier?: number } = {}) =>
+    request<ProblemDetail>("/api/problems/recommend", { method: "POST", body }),
 
   referenceSolution: (id: string) =>
     request<ReferenceSolution>(`/api/problems/${id}/reference`),

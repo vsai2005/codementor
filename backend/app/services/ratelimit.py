@@ -105,6 +105,8 @@ class RedisRateLimiter(BaseRateLimiter):
 _default: BaseRateLimiter | None = None
 _tutor_limiter: BaseRateLimiter | None = None
 _run_limiter: BaseRateLimiter | None = None
+_coach_limiter: BaseRateLimiter | None = None
+_generate_limiter: BaseRateLimiter | None = None
 
 
 def _get_redis_client():
@@ -162,14 +164,33 @@ def get_rate_limiter() -> BaseRateLimiter:
 def get_tutor_rate_limiter() -> BaseRateLimiter:
     global _tutor_limiter
     if _tutor_limiter is None:
+        from app.config import get_settings
+
+        settings = get_settings()
         client = _get_redis_client()
-        limit = int(os.getenv("TUTOR_RATE_LIMIT", "20"))
-        window = int(os.getenv("TUTOR_RATE_WINDOW_S", "300"))
+        limit = int(os.getenv("TUTOR_RATE_LIMIT", str(settings.tutor_rate_limit)))
+        window = int(os.getenv("TUTOR_RATE_WINDOW_S", str(settings.tutor_rate_window_s)))
         if client is not None:
             _tutor_limiter = RedisRateLimiter(client, limit, window)
         else:
             _tutor_limiter = InMemoryRateLimiter(limit, window)
     return _tutor_limiter
+
+
+def get_coach_rate_limiter() -> BaseRateLimiter:
+    global _coach_limiter
+    if _coach_limiter is None:
+        from app.config import get_settings
+
+        settings = get_settings()
+        client = _get_redis_client()
+        limit = int(os.getenv("COACH_RATE_LIMIT", str(settings.coach_rate_limit)))
+        window = int(os.getenv("COACH_RATE_WINDOW_S", str(settings.coach_rate_window_s)))
+        if client is not None:
+            _coach_limiter = RedisRateLimiter(client, limit, window)
+        else:
+            _coach_limiter = InMemoryRateLimiter(limit, window)
+    return _coach_limiter
 
 
 def get_run_rate_limiter() -> BaseRateLimiter:
@@ -186,3 +207,19 @@ def get_run_rate_limiter() -> BaseRateLimiter:
         else:
             _run_limiter = InMemoryRateLimiter(limit, window)
     return _run_limiter
+
+
+def get_generate_rate_limiter() -> BaseRateLimiter:
+    global _generate_limiter
+    if _generate_limiter is None:
+        from app.config import get_settings
+
+        settings = get_settings()
+        client = _get_redis_client()
+        limit = int(os.getenv("GENERATE_RATE_LIMIT", str(settings.generate_rate_limit)))
+        window = int(os.getenv("GENERATE_RATE_WINDOW_S", str(settings.generate_rate_window_s)))
+        if client is not None:
+            _generate_limiter = RedisRateLimiter(client, limit, window)
+        else:
+            _generate_limiter = InMemoryRateLimiter(limit, window)
+    return _generate_limiter

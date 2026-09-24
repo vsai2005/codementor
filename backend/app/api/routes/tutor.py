@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user_optional
+from app.api.deps import get_current_user
 from app.database import get_db
 from app.models.models import Problem, User
 from app.schemas.api import (
@@ -21,7 +21,7 @@ from app.schemas.api import (
 from app.services.embeddings import get_embedder
 from app.services.llm import get_llm_client
 from app.services.memory import MemoryService
-from app.services.ratelimit import get_rate_limiter
+from app.services.ratelimit import get_coach_rate_limiter, get_tutor_rate_limiter
 from app.services.repositories import PgMemoryRepository
 
 log = logging.getLogger(__name__)
@@ -41,10 +41,10 @@ def chat(
     payload: TutorRequest,
     request: Request,
     db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
 ) -> TutorResponse:
-    ratelimit_key = f"tutor:{user.id}" if user else f"tutor:{request.client.host if request.client else 'guest'}"
-    verdict = get_rate_limiter().check(ratelimit_key)
+    ratelimit_key = f"tutor:{user.id}"
+    verdict = get_tutor_rate_limiter().check(ratelimit_key)
     if not verdict.allowed:
         raise HTTPException(
             status.HTTP_429_TOO_MANY_REQUESTS,
@@ -95,8 +95,17 @@ def chat(
 def coach_debrief(
     payload: CoachDebriefRequest,
     db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
 ) -> CoachResponse:
+    ratelimit_key = f"coach:{user.id}"
+    verdict = get_coach_rate_limiter().check(ratelimit_key)
+    if not verdict.allowed:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Coach debrief rate limit reached. Try again shortly.",
+            headers={"Retry-After": str(verdict.retry_after_s)},
+        )
+
     problem = None
     try:
         uid = uuid.UUID(payload.problem_id)

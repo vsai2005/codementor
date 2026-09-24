@@ -23,3 +23,8 @@ REFERENCE_SOLUTIONS: dict[str, str] = {
 def get_problem_reference_solution(slug: str) -> str | None:
     """Retrieve the real server-side reference solution for a problem by slug."""
     return REFERENCE_SOLUTIONS.get(slug)
+
+
+def set_custom_reference_solution(slug: str, solution: str) -> None:
+    """Register or update reference solution for dynamic/generated problems."""
+    REFERENCE_SOLUTIONS[slug] = solution.strip()

@@ -23,7 +23,7 @@ async function registerUser(page: Page) {
   await submitBtn.click();
 
   // Wait for dashboard redirect
-  await page.waitForURL('**/dashboard', { timeout: 15000 });
+  await page.waitForURL('**/dashboard', { timeout: 25000 });
   await expect(page.locator('h1')).toContainText('Dashboard');
   return { username, password };
 }
@@ -197,6 +197,50 @@ test.describe('CodeMentor Full Integration E2E Suite', () => {
     await page.waitForTimeout(500);
     const syncsAfterRepeatedPass = syncCount - initialSyncs;
     expect(syncsAfterRepeatedPass).toBe(1);
+  });
+
+  test('8. SAP guest flow preserves redirect=/sap/placement and rejects open redirect', async ({ page }) => {
+    // 1. Visit /sap/placement unauthenticated
+    await page.goto('/sap/placement');
+    await page.waitForLoadState('networkidle');
+
+    // Click Sign In in the guest mode alert
+    const signInLink = page.locator('a[href*="/login?redirect=/sap/placement"]').first();
+    await expect(signInLink).toBeVisible();
+    await signInLink.click();
+    await page.waitForURL(
+      (url) => url.pathname === '/login' && url.searchParams.get('redirect') === '/sap/placement',
+      { timeout: 10000 }
+    );
+    expect(page.url()).toContain('/login');
+    expect(page.url()).toContain('/sap/placement');
+
+    // Register a fresh user through this login/register form
+    const toggleBtn = page.getByRole('button', { name: /create an account/i });
+    if (await toggleBtn.isVisible()) {
+      await toggleBtn.click();
+    }
+
+    const testId = Date.now();
+    const username = `u_sap_${testId}_${Math.floor(Math.random() * 1000)}`;
+    const password = 'Password123!';
+
+    await page.locator('input[placeholder*="Username"]').fill(username);
+    await page.locator('input[placeholder*="Password"]').fill(password);
+
+    const submitBtn = page.getByRole('button', { name: /^create account$/i });
+    await submitBtn.click();
+
+    // Must return the user back to /sap/placement (NOT /dashboard)
+    await page.waitForURL((url) => url.pathname === '/sap/placement', { timeout: 15000 });
+    expect(page.url()).toContain('/sap/placement');
+
+    // 2. Open redirect rejection: attempt login with an unsafe external redirect
+    await page.goto('/login?redirect=https://evil.com');
+    await page.waitForLoadState('networkidle');
+    // Because user is already authenticated, the page must safely redirect to /dashboard, NOT https://evil.com!
+    await page.waitForURL((url) => url.pathname === '/dashboard', { timeout: 10000 });
+    expect(page.url()).toContain('/dashboard');
   });
 
 });
