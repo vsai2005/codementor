@@ -56,15 +56,20 @@ def get_lesson_content(
     progress = SAPProgressionService.compute_user_progress(db, user.id)
     day_info = progress["day_states"].get(str(day_number))
 
-    if not day_info or not day_info["unlocked"]:
+    if not day_info:
         raise HTTPException(
-            status_code=403,
-            detail=f"Day {day_number} is locked. Complete prior days or take the diagnostic placement first.",
+            status_code=404,
+            detail=f"SAP Day {day_number} does not exist.",
         )
     if day_info.get("waived"):
         raise HTTPException(
             status_code=403,
             detail=f"Day {day_number} was waived by diagnostic placement. Its lesson content is not required.",
+        )
+    if not day_info["unlocked"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Day {day_number} is locked. Complete prior days or take the diagnostic placement first.",
         )
 
     return SAPLessonDetail(**lesson)

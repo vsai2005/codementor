@@ -22,6 +22,8 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.deps import get_current_user
+from app.models.models import User
 from app.core.sap_curriculum_retrieval import (
     DAGIntegrityError,
     SAPCurriculumKnowledgeEngine,
@@ -444,16 +446,21 @@ def test_api_sap_concept_detail_with_dag():
 
 
 def test_api_sap_execution_validate():
-    payload = {
-        "provider_type": "abap_cloud",
-        "code_or_payload": "CALL TRANSACTION 'SE11'.",
-        "context_parameters": {},
-    }
-    resp = client.post("/api/sap/execution/validate", json=payload)
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["success"] is False
-    assert any(f["rule_code"] == "CALL_TRANSACTION_FORBIDDEN" for f in data["findings"])
+    test_user = User(id=uuid.uuid4(), email="exec_test@example.com", name="Exec Tester")
+    app.dependency_overrides[get_current_user] = lambda: test_user
+    try:
+        payload = {
+            "provider_type": "abap_cloud",
+            "code_or_payload": "CALL TRANSACTION 'SE11'.",
+            "context_parameters": {},
+        }
+        resp = client.post("/api/sap/execution/validate", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is False
+        assert any(f["rule_code"] == "CALL_TRANSACTION_FORBIDDEN" for f in data["findings"])
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
 
 
 # =============================================================================
@@ -772,13 +779,18 @@ async def test_execution_provider_truthfulness_metadata():
     assert abap_res.is_live_sap_system is False
 
     # API Endpoint Response Truthfulness Metadata
-    resp = client.post(
-        "/api/sap/execution/validate",
-        json={"provider_type": "abap_cloud", "code_or_payload": "DATA: x TYPE i."},
-    )
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["provider_category"] == "STATIC_VALIDATION"
-    assert data["is_sandboxed_simulation"] is False
-    assert data["is_live_sap_system"] is False
+    test_user = User(id=uuid.uuid4(), email="exec_truth@example.com", name="Exec Truth Tester")
+    app.dependency_overrides[get_current_user] = lambda: test_user
+    try:
+        resp = client.post(
+            "/api/sap/execution/validate",
+            json={"provider_type": "abap_cloud", "code_or_payload": "DATA: x TYPE i."},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["provider_category"] == "STATIC_VALIDATION"
+        assert data["is_sandboxed_simulation"] is False
+        assert data["is_live_sap_system"] is False
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
 

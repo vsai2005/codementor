@@ -53,13 +53,86 @@ def submit_assessment(
             detail=f"Interactive practice is mandatory. Complete Day {payload.day_number} practice before attempting assessment.",
         )
 
+    # 3. Authoritative server-side assessment identity binding
+    from app.data.sap_lessons import SAP_DAYS_CONTENT
+
+    day_data = SAP_DAYS_CONTENT.get(payload.day_number)
+    if not day_data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"SAP Day {payload.day_number} content definition not found.",
+        )
+
+    assessment_step = next(
+        (s for s in day_data.get("steps", []) if s.get("step_type") == "assessment"),
+        None,
+    )
+    if not assessment_step:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No assessment defined for SAP Day {payload.day_number}.",
+        )
+
+    canonical_step_id = assessment_step.get("step_id")
+    canonical_id = canonical_step_id or f"d{payload.day_number}_s6_assessment"
+    valid_assessment_ids = {
+        canonical_id,
+        f"day-{payload.day_number}-assessment",
+        f"d{payload.day_number}_s6_assessment",
+    }
+    if canonical_step_id:
+        valid_assessment_ids.add(canonical_step_id)
+    day_slug = day_data.get("slug", "")
+    if day_slug:
+        valid_assessment_ids.add(f"day-{payload.day_number}-{day_slug}")
+        valid_assessment_ids.add(day_slug)
+
+    day_prefixes = (f"day-{payload.day_number}-", f"d{payload.day_number}_", f"d{payload.day_number}-", f"day{payload.day_number}_")
+    is_valid_id = (
+        payload.assessment_id in valid_assessment_ids
+        or (
+            payload.assessment_id.startswith(day_prefixes)
+            and any(term in payload.assessment_id for term in ("assessment", "capstone", "quiz", day_slug) if term)
+        )
+    )
+
+    if not is_valid_id:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Assessment ID mismatch for Day {payload.day_number}. "
+                f"Expected canonical ID '{canonical_id}', received '{payload.assessment_id}'."
+            ),
+        )
+
+    raw_type = assessment_step.get("assessment_type")
+    if raw_type:
+        canonical_type = raw_type
+    elif assessment_step.get("multi_concept_eval") or assessment_step.get("is_capstone"):
+        canonical_type = "capstone_multi_concept"
+    else:
+        canonical_type = "mcq"
+
+    valid_types = {canonical_type}
+    if canonical_type in ("capstone_multi_concept", "capstone_quiz"):
+        valid_types.update({"capstone_multi_concept", "capstone_quiz"})
+
+    if payload.assessment_type not in valid_types:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Assessment type mismatch for Day {payload.day_number}. "
+                f"Expected canonical type '{canonical_type}', received '{payload.assessment_type}'."
+            ),
+        )
+
     try:
         result = SAPAssessmentService.evaluate(
             db=db,
             user_id=user.id,
             day_number=payload.day_number,
-            assessment_id=payload.assessment_id,
-            assessment_type=payload.assessment_type,
+            assessment_id=canonical_id,
+            assessment_type=canonical_type,
             rubric_spec=payload.rubric_spec,
             submission_payload=payload.submission_payload,
         )

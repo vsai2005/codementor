@@ -135,21 +135,21 @@ export default function SapLearningPage() {
         waivedSet.has(dayNumber)
     );
 
-    // 1. Waived by placement: visually distinct, reviewed on demand, does NOT count as completed
+    // 1. Waived by placement: visually distinct, non-clickable, does NOT count as completed
     if (isWaived) {
       return {
-        ctaState: "REVIEW DAY" as const,
+        ctaState: "WAIVED" as const,
         isWaived: true,
-        isClickable: true,
+        isClickable: false,
         badge: (
           <span className="border border-ink bg-sky-200 text-ink px-2 py-0.5 text-xs font-bold uppercase font-mono">
             WAIVED BY PLACEMENT
           </span>
         ),
         buttonClass:
-          "border-2 border-ink bg-sky-200 hover:bg-sky-300 text-ink font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
+          "border-2 border-dashed border-sky-400 bg-sky-100 text-sky-800 font-bold cursor-not-allowed opacity-75",
         cardClass:
-          "border-2 border-dashed border-sky-600 bg-sky-50/70 shadow-[3px_3px_0px_0px_rgba(2,132,199,0.35)] hover:translate-x-[1px] hover:translate-y-[1px]",
+          "border-2 border-dashed border-sky-400 bg-sky-50/60 shadow-[2px_2px_0px_0px_rgba(2,132,199,0.2)] opacity-85",
       };
     }
 
@@ -401,6 +401,7 @@ export default function SapLearningPage() {
               {phaseDays.map((day) => {
                 const {
                   ctaState,
+                  isWaived,
                   isClickable,
                   badge,
                   buttonClass,
@@ -459,7 +460,7 @@ export default function SapLearningPage() {
                           disabled
                           className={`px-3 py-1.5 text-xs transition-all ${buttonClass}`}
                         >
-                          🔒 {ctaState}
+                          {isWaived ? ctaState : `🔒 ${ctaState}`}
                         </button>
                       )}
                     </div>

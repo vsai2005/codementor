@@ -100,18 +100,18 @@ export default function SapHubPage() {
 
     if (isWaived) {
       return {
-        ctaState: "REVIEW DAY" as const,
+        ctaState: "WAIVED" as const,
         isWaived: true,
-        isClickable: true,
+        isClickable: false,
         badge: (
           <span className="border border-ink bg-sky-200 text-ink px-1.5 py-0.5 text-[10px] font-bold uppercase font-mono">
             WAIVED BY PLACEMENT
           </span>
         ),
         buttonClass:
-          "border border-ink bg-sky-200 hover:bg-sky-300 text-ink font-bold",
+          "border border-ink/40 bg-sky-100 text-sky-800 font-bold cursor-not-allowed opacity-75",
         cardClass:
-          "border-2 border-dashed border-sky-600 bg-sky-50/70 shadow-[3px_3px_0px_0px_rgba(2,132,199,0.35)]",
+          "border-2 border-dashed border-sky-400 bg-sky-50/60 shadow-[2px_2px_0px_0px_rgba(2,132,199,0.2)] opacity-85",
       };
     }
 
@@ -412,7 +412,7 @@ export default function SapHubPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {phaseDays.map((d) => {
-                    const { ctaState, isClickable, badge, buttonClass, cardClass } =
+                    const { ctaState, isWaived, isClickable, badge, buttonClass, cardClass } =
                       getDayDetails(d.day_number);
 
                     return (
@@ -444,7 +444,7 @@ export default function SapHubPage() {
                               disabled
                               className={`px-2 py-0.5 text-[11px] font-bold ${buttonClass}`}
                             >
-                              🔒 {ctaState}
+                              {isWaived ? ctaState : `🔒 ${ctaState}`}
                             </button>
                           )}
                         </div>

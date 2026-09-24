@@ -49,6 +49,52 @@ class SAPAssessmentService:
         if not assessment_step:
             raise ValueError(f"No assessment defined for SAP Day {day_number}.")
 
+        # Derive canonical ID and Type authoritatively from lesson definition
+        canonical_step_id = assessment_step.get("step_id")
+        canonical_id = canonical_step_id or f"d{day_number}_s6_assessment"
+        valid_assessment_ids = {
+            canonical_id,
+            f"day-{day_number}-assessment",
+            f"d{day_number}_s6_assessment",
+        }
+        if canonical_step_id:
+            valid_assessment_ids.add(canonical_step_id)
+        day_slug = day_data.get("slug", "")
+        if day_slug:
+            valid_assessment_ids.add(f"day-{day_number}-{day_slug}")
+            valid_assessment_ids.add(day_slug)
+
+        day_prefixes = (f"day-{day_number}-", f"d{day_number}_", f"d{day_number}-", f"day{day_number}_")
+        is_valid_id = (
+            assessment_id in valid_assessment_ids
+            or (
+                assessment_id.startswith(day_prefixes)
+                and any(term in assessment_id for term in ("assessment", "capstone", "quiz", day_slug) if term)
+            )
+        )
+
+        if not is_valid_id:
+            raise ValueError(
+                f"Invalid assessment_id '{assessment_id}' for SAP Day {day_number}. Expected canonical ID '{canonical_id}'."
+            )
+
+        raw_type = assessment_step.get("assessment_type")
+        if raw_type:
+            canonical_type = raw_type
+        elif assessment_step.get("multi_concept_eval") or assessment_step.get("is_capstone"):
+            canonical_type = "capstone_multi_concept"
+        else:
+            canonical_type = "mcq"
+
+        valid_types = {canonical_type}
+        if canonical_type in ("capstone_multi_concept", "capstone_quiz"):
+            valid_types.update({"capstone_multi_concept", "capstone_quiz"})
+
+        if assessment_type not in valid_types:
+            raise ValueError(
+                f"Invalid assessment_type '{assessment_type}' for SAP Day {day_number}. Expected '{canonical_type}'."
+            )
+
         # 2. Validate assessment type against supported curriculum types
         allowed_types = {
             "mcq",
@@ -62,8 +108,8 @@ class SAPAssessmentService:
             "cds_challenge",
             "rap_challenge",
         }
-        if assessment_type not in allowed_types:
-            raise ValueError(f"Unsupported assessment type: '{assessment_type}'.")
+        if canonical_type not in allowed_types:
+            raise ValueError(f"Unsupported assessment type: '{canonical_type}'.")
 
         # 3. Validate submission payload
         if not submission_payload or not isinstance(submission_payload, dict):
@@ -142,17 +188,20 @@ class SAPAssessmentService:
 
         passed = score >= pass_score
 
-        # Lookup or create assessment entity from server definitions
+        # Lookup or create assessment entity from server definitions strictly scoped to this day_number
         assessment = db.execute(
-            select(SAPAssessment).where(SAPAssessment.slug == assessment_id)
+            select(SAPAssessment).where(
+                SAPAssessment.day_number == day_number,
+                SAPAssessment.slug == canonical_id,
+            )
         ).scalar_one_or_none()
 
         if assessment is None:
             assessment = SAPAssessment(
-                slug=assessment_id,
+                slug=canonical_id,
                 day_number=day_number,
                 title=assessment_step.get("title", f"Assessment Day {day_number}"),
-                assessment_type=assessment_type,
+                assessment_type=canonical_type,
                 prompt_md=assessment_step.get("instruction", "Assessment Task"),
                 scoring_criteria={"questions_count": len(server_questions), "pass_score": pass_score},
                 pass_score=int(pass_score),

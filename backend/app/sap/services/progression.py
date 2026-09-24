@@ -62,7 +62,7 @@ class SAPProgressionService:
 
             # Unlocked logic: Day 1, or starting day, or prior day completed/waived, or in placement waiver
             prior_cleared = (day == 1) or ((day - 1) in completed_days) or ((day - 1) in waived_days)
-            is_unlocked = prior_cleared or (day == starting_day) or is_waived
+            is_unlocked = False if is_waived else (prior_cleared or (day == starting_day))
 
             # Compute explicit 5-state status
             if is_completed:
@@ -123,7 +123,13 @@ class SAPProgressionService:
         progress = cls.compute_user_progress(db, user_id)
         day_info = progress["day_states"].get(str(day_number))
 
-        if not day_info or not day_info["unlocked"]:
+        if not day_info:
+            raise ValueError(f"SAP Day {day_number} does not exist.")
+
+        if day_info.get("waived"):
+            raise ValueError(f"SAP Day {day_number} was waived by diagnostic placement. Lesson completion is not allowed.")
+
+        if not day_info.get("unlocked"):
             raise ValueError(f"SAP Day {day_number} is locked. Complete Day {day_number - 1} or diagnostic placement first.")
 
         r = db.execute(
@@ -211,11 +217,14 @@ class SAPProgressionService:
         progress = cls.compute_user_progress(db, user_id)
         day_info = progress["day_states"].get(str(day_number))
 
-        if not day_info or not day_info["unlocked"]:
-            raise ValueError(f"SAP Day {day_number} is locked. Complete Day {day_number - 1} or diagnostic placement first.")
+        if not day_info:
+            raise ValueError(f"SAP Day {day_number} does not exist.")
 
         if day_info.get("waived"):
             raise ValueError(f"SAP Day {day_number} was waived by diagnostic placement.")
+
+        if not day_info["unlocked"]:
+            raise ValueError(f"SAP Day {day_number} is locked. Complete Day {day_number - 1} or diagnostic placement first.")
 
         r = db.execute(
             select(SAPUserDayState).where(

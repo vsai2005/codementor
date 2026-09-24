@@ -107,6 +107,7 @@ _tutor_limiter: BaseRateLimiter | None = None
 _run_limiter: BaseRateLimiter | None = None
 _coach_limiter: BaseRateLimiter | None = None
 _generate_limiter: BaseRateLimiter | None = None
+_sap_execution_limiter: BaseRateLimiter | None = None
 
 
 def _get_redis_client():
@@ -223,3 +224,19 @@ def get_generate_rate_limiter() -> BaseRateLimiter:
         else:
             _generate_limiter = InMemoryRateLimiter(limit, window)
     return _generate_limiter
+
+
+def get_sap_execution_rate_limiter() -> BaseRateLimiter:
+    global _sap_execution_limiter
+    if _sap_execution_limiter is None:
+        from app.config import get_settings
+
+        settings = get_settings()
+        client = _get_redis_client()
+        limit = int(os.getenv("SAP_EXECUTION_RATE_LIMIT", "30"))
+        window = int(os.getenv("SAP_EXECUTION_RATE_WINDOW_S", "60"))
+        if client is not None:
+            _sap_execution_limiter = RedisRateLimiter(client, limit, window)
+        else:
+            _sap_execution_limiter = InMemoryRateLimiter(limit, window)
+    return _sap_execution_limiter

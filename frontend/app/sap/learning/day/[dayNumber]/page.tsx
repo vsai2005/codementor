@@ -96,10 +96,61 @@ export default function SapDayDetailPage() {
   }
 
   const dayState = progress?.day_states?.[String(dayNumber)];
+  const isWaived = Boolean(
+    dayState?.status === "waived_by_placement" ||
+      dayState?.waived ||
+      (progress?.waived_days || []).includes(dayNumber)
+  );
+
+  // Authoritative server-gating: If this milestone was waived by diagnostic placement, show waived banner
+  if (isWaived) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-[800px] px-4 py-16">
+          <div className="border-4 border-ink bg-surface p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center space-y-4">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center border-3 border-ink bg-sky-100 text-2xl">
+              📋
+            </div>
+            <div className="inline-block border border-ink bg-sky-200 text-ink px-2.5 py-0.5 text-xs font-mono font-bold uppercase">
+              Waived by Diagnostic Placement
+            </div>
+            <h1 className="text-2xl font-black text-ink">
+              Milestone Day {dayNumber} is Waived
+            </h1>
+            <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
+              This milestone was waived based on your diagnostic placement results. Its lesson content and assessment are not required for your learning track.
+              {progress?.current_day && (
+                <>
+                  {" "}Your current active milestone is{" "}
+                  <strong className="text-ink font-mono font-black">Day {progress.current_day}</strong>.
+                </>
+              )}
+            </p>
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+              {progress?.current_day && progress.current_day !== dayNumber && (
+                <Link
+                  href={`/sap/learning/day/${progress.current_day}`}
+                  className="border-3 border-ink bg-emerald-400 px-5 py-2.5 text-xs font-black uppercase text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-emerald-300 transition-all"
+                >
+                  Go to Active Day {progress.current_day} →
+                </Link>
+              )}
+              <Link
+                href="/sap/learning"
+                className="border-2 border-ink bg-surface px-5 py-2 text-xs font-bold text-ink hover:bg-surface-raised shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              >
+                View Full Roadmap
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   const isUnlocked =
     dayNumber === 1 ||
     Boolean(dayState?.unlocked) ||
-    Boolean(dayState?.waived) ||
     Boolean(progress && dayNumber <= progress.current_day);
 
   // Authoritative server-gating: If learner has progress record and this milestone is locked, block access
@@ -142,7 +193,6 @@ export default function SapDayDetailPage() {
   const nextDayState = progress?.day_states?.[String(nextDayNumber)];
   const isNextUnlocked =
     Boolean(nextDayState?.unlocked) ||
-    Boolean(nextDayState?.waived) ||
     Boolean(progress && nextDayNumber <= progress.current_day);
 
   return (
