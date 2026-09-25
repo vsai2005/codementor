@@ -20,9 +20,24 @@ import sys
 MAX_OUTPUT_BYTES = 64 * 1024  # 64 KB cap on captured output
 
 
+def truncate_utf8(s: str, max_bytes: int) -> tuple[str, int]:
+    """Truncate string `s` so that len(result.encode('utf-8')) <= max_bytes,
+    guaranteeing no multibyte UTF-8 character is ever split.
+    """
+    if max_bytes <= 0 or not s:
+        return ("", 0)
+    candidate = s[:max_bytes]
+    raw = candidate.encode("utf-8")
+    if len(raw) <= max_bytes:
+        return (candidate, len(raw))
+    truncated = raw[:max_bytes].decode("utf-8", errors="ignore")
+    return (truncated, len(truncated.encode("utf-8")))
+
+
 class BoundedStringIO(io.StringIO):
-    """StringIO stream that strictly caps accumulated characters to MAX_OUTPUT_BYTES,
-    preventing unbounded memory growth from large print statements.
+    """StringIO stream that strictly caps accumulated UTF-8 bytes to max_bytes,
+    guaranteeing len(output.encode('utf-8')) <= max_bytes for ASCII, emoji, CJK,
+    and mixed Unicode, while never splitting a multibyte character.
     """
 
     def __init__(self, max_bytes: int = MAX_OUTPUT_BYTES):
@@ -31,13 +46,19 @@ class BoundedStringIO(io.StringIO):
         self.current_bytes = 0
 
     def write(self, s: str) -> int:
+        if not s:
+            return 0
+        original_len = len(s)
         if self.current_bytes >= self.max_bytes:
-            return len(s)  # Drop excess silently to prevent memory bloat
+            return original_len  # Drop excess silently to prevent memory bloat
+
         remaining = self.max_bytes - self.current_bytes
-        chunk = s[:remaining]
-        super().write(chunk)
-        self.current_bytes += len(chunk.encode("utf-8", "replace"))
-        return len(s)
+        chunk, chunk_bytes = truncate_utf8(s, remaining)
+        if chunk:
+            super().write(chunk)
+            self.current_bytes += chunk_bytes
+
+        return original_len
 
 
 def _drop_privileges(uid: int, gid: int) -> None:
@@ -57,19 +78,6 @@ def _apply_rlimits(cpu_seconds: int = 2, memory_bytes: int = 256 * 1024 * 1024) 
 
         # RLIMIT_CPU: 2s limit
         resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
-
-        # RLIMIT_DATA: limit heap data segment to memory_bytes if supported
-        if hasattr(resource, "RLIMIT_DATA"):
-            try:
-                resource.setrlimit(resource.RLIMIT_DATA, (memory_bytes, memory_bytes))
-            except (OSError, ValueError):
-                pass
-
-        # Relax RLIMIT_AS to 1 GB ceiling to prevent glibc/python multi-arena virtual memory false positives,
-        # while parent watchdog actively enforces real physical RSS (256 MB).
-        if hasattr(resource, "RLIMIT_AS"):
-            virt_ceiling = max(1024 * 1024 * 1024, memory_bytes * 4)
-            resource.setrlimit(resource.RLIMIT_AS, (virt_ceiling, virt_ceiling))
 
         # RLIMIT_FSIZE: 1 MB writes
         fsize_bytes = 1024 * 1024
@@ -186,18 +194,21 @@ def main() -> None:
     _apply_rlimits(cpu_s, mem_b)
     _block_network_and_env()
 
-    captured = BoundedStringIO(max_bytes=MAX_OUTPUT_BYTES)
-    sys.stdout = captured
+    captured_stdout = BoundedStringIO(max_bytes=MAX_OUTPUT_BYTES)
+    captured_stderr = BoundedStringIO(max_bytes=MAX_OUTPUT_BYTES)
+    sys.stdout = captured_stdout
+    sys.stderr = captured_stderr
 
     namespace: dict = {"__name__": "__solution__"}
     try:
         compiled = compile(job["code"], "solution.py", "exec")
     except SyntaxError as exc:
+        err_msg, _ = truncate_utf8(f"{exc.msg} (line {exc.lineno})", MAX_OUTPUT_BYTES)
         _emit(
             {
                 "status": "error",
                 "error_type": "SyntaxError",
-                "stderr": f"{exc.msg} (line {exc.lineno})"[:MAX_OUTPUT_BYTES],
+                "stderr": err_msg,
                 "stdout": "",
             }
         )
@@ -210,12 +221,13 @@ def main() -> None:
         if job.get("entry_point"):
             entry = namespace.get(job["entry_point"])
             if not callable(entry):
+                err_msg, _ = truncate_utf8(f"expected a function named {job['entry_point']!r}", MAX_OUTPUT_BYTES)
                 _emit(
                     {
                         "status": "error",
                         "error_type": "MissingEntryPoint",
-                        "stderr": f"expected a function named {job['entry_point']!r}"[:MAX_OUTPUT_BYTES],
-                        "stdout": captured.getvalue()[:MAX_OUTPUT_BYTES],
+                        "stderr": err_msg,
+                        "stdout": captured_stdout.getvalue(),
                     }
                 )
                 return
@@ -228,19 +240,23 @@ def main() -> None:
                 "status": "memory",
                 "error_type": "MemoryError",
                 "stderr": "Memory limit exceeded (256 MB)",
-                "stdout": "",
+                "stdout": captured_stdout.getvalue(),
             }
         )
         return
     except BaseException as exc:  # noqa: BLE001 -- must not leak a crash
         import traceback
 
+        tb = traceback.format_exc(limit=3)
+        user_err = captured_stderr.getvalue()
+        combined_err = f"{user_err}\n{tb}".strip() if user_err else tb
+        trunc_err, _ = truncate_utf8(combined_err, MAX_OUTPUT_BYTES)
         _emit(
             {
                 "status": "error",
                 "error_type": type(exc).__name__,
-                "stderr": traceback.format_exc(limit=3)[:MAX_OUTPUT_BYTES],
-                "stdout": captured.getvalue()[:MAX_OUTPUT_BYTES],
+                "stderr": trunc_err,
+                "stdout": captured_stdout.getvalue(),
             }
         )
         return
@@ -255,8 +271,8 @@ def main() -> None:
         {
             "status": "ok",
             "returned": serialisable,
-            "stdout": captured.getvalue()[:MAX_OUTPUT_BYTES],
-            "stderr": "",
+            "stdout": captured_stdout.getvalue(),
+            "stderr": captured_stderr.getvalue(),
         }
     )
 

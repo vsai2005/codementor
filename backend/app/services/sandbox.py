@@ -41,8 +41,26 @@ CLEAN_ENV = {
 _WIN32_QUOTA_EXCEEDED = (3221225540, -1073741756, 3221225495, -1073741801)
 
 
-def _setup_win32_job_object(pid: int, limit_bytes: int):
-    """Enforces Job Object physical commit limits on Windows child processes."""
+def _truncate_utf8(s: str, max_bytes: int = MAX_OUTPUT_BYTES) -> str:
+    """Truncate string `s` so that len(result.encode('utf-8')) <= max_bytes,
+    guaranteeing no multibyte UTF-8 character is ever split.
+    """
+    if max_bytes <= 0 or not s:
+        return ""
+    candidate = s[:max_bytes]
+    raw = candidate.encode("utf-8")
+    if len(raw) <= max_bytes:
+        return candidate
+    return raw[:max_bytes].decode("utf-8", errors="ignore")
+
+
+def _setup_win32_job_object(pid: int):
+    """Enforces Job Object process containment and active process limits on Windows child processes.
+    
+    Avoids setting virtual commit quotas (JOB_OBJECT_LIMIT_JOB_MEMORY / PROCESS_MEMORY) which
+    falsely terminate legitimate moderate Python workloads. Memory abuse is authoritatively
+    enforced by the active physical RSS process-tree watchdog.
+    """
     if sys.platform != "win32" or not pid:
         return None
     try:
@@ -84,10 +102,9 @@ def _setup_win32_job_object(pid: int, limit_bytes: int):
             return None
 
         limits = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
-        # JOB_OBJECT_LIMIT_JOB_MEMORY (0x200) | JOB_OBJECT_LIMIT_PROCESS_MEMORY (0x100)
-        limits.BasicLimitInformation_LimitFlags = 0x200 | 0x100
-        limits.ProcessMemoryLimit = limit_bytes
-        limits.JobMemoryLimit = limit_bytes
+        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | JOB_OBJECT_LIMIT_ACTIVE_PROCESS (0x0008)
+        limits.BasicLimitInformation_LimitFlags = 0x2000 | 0x0008
+        limits.BasicLimitInformation_ActiveProcessLimit = 10
 
         kernel32.SetInformationJobObject(
             job, 9, ctypes.byref(limits), ctypes.sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION)
@@ -95,40 +112,83 @@ def _setup_win32_job_object(pid: int, limit_bytes: int):
 
         h_proc = kernel32.OpenProcess(0x1F0FFF, False, pid)
         if h_proc:
-            kernel32.AssignProcessToJobObject(job, h_proc)
-            kernel32.CloseHandle(h_proc)
+            try:
+                kernel32.AssignProcessToJobObject(job, h_proc)
+            finally:
+                kernel32.CloseHandle(h_proc)
 
         return job
     except Exception:
         return None
 
 
-def _get_process_rss(pid: int) -> int | None:
-    """Returns the physical resident memory (RSS / commit) of process `pid` in bytes."""
+def _terminate_win32_job(job) -> None:
+    if sys.platform == "win32" and job:
+        try:
+            import ctypes
+            ctypes.windll.kernel32.TerminateJobObject(job, 1)
+        except Exception:
+            pass
+
+
+def _close_win32_job(job) -> None:
+    if sys.platform == "win32" and job:
+        try:
+            import ctypes
+            ctypes.windll.kernel32.CloseHandle(job)
+        except Exception:
+            pass
+
+
+def _get_process_tree_rss(pid: int) -> int | None:
+    """Returns the total physical resident memory (RSS / Working Set) of process `pid`
+    and all its descendant processes in bytes.
+    """
     if not pid:
         return None
 
-    # Strategy 1: psutil if available
+    # Strategy 1: psutil (cross-platform, reliable, accounts for full descendant tree)
     try:
         import psutil
 
-        p = psutil.Process(pid)
-        return p.memory_info().rss
+        proc = psutil.Process(pid)
+        total_rss = proc.memory_info().rss
+        for child in proc.children(recursive=True):
+            try:
+                total_rss += child.memory_info().rss
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        return total_rss
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        return None
     except Exception:
         pass
 
-    # Strategy 2: Linux /proc filesystem (RSS pages * page_size)
+    # Strategy 2: Linux /proc filesystem (RSS pages * page_size) + child tree
     if sys.platform != "win32":
         try:
-            with open(f"/proc/{pid}/statm", "r") as f:
-                parts = f.read().split()
-                if len(parts) >= 2:
-                    return int(parts[1]) * os.sysconf("SC_PAGE_SIZE")
-        except Exception:
-            pass
-        return None
+            total_rss = 0
+            page_size = os.sysconf("SC_PAGE_SIZE")
+            pids = [pid]
+            try:
+                with open(f"/proc/{pid}/task/{pid}/children", "r") as f:
+                    pids.extend(int(p) for p in f.read().split())
+            except Exception:
+                pass
 
-    # Strategy 3: Windows psapi via ctypes
+            for p in pids:
+                try:
+                    with open(f"/proc/{p}/statm", "r") as f:
+                        parts = f.read().split()
+                        if len(parts) >= 2:
+                            total_rss += int(parts[1]) * page_size
+                except Exception:
+                    pass
+            return total_rss if total_rss > 0 else None
+        except Exception:
+            return None
+
+    # Strategy 3: Windows psapi via ctypes (measures physical WorkingSetSize, NOT commit charge)
     try:
         import ctypes
         from ctypes import wintypes
@@ -161,7 +221,7 @@ def _get_process_rss(pid: int) -> int | None:
                 counters = PROCESS_MEMORY_COUNTERS()
                 counters.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
                 if psapi.GetProcessMemoryInfo(h, ctypes.byref(counters), counters.cb):
-                    return max(counters.WorkingSetSize, counters.PagefileUsage)
+                    return counters.WorkingSetSize
             finally:
                 ctypes.windll.kernel32.CloseHandle(h)
     except Exception:
@@ -175,21 +235,22 @@ async def _watch_process_memory(
     limit_bytes: int,
     violation_flag: list[bool],
     stop_event: asyncio.Event,
+    win_job=None,
 ) -> None:
-    """Async background task that polls process physical memory every 20ms and terminates on breach."""
+    """Async background task that polls process-tree physical memory every 15ms and terminates on breach."""
     if not pid:
         return
     while not stop_event.is_set():
         try:
-            mem = _get_process_rss(pid)
+            mem = _get_process_tree_rss(pid)
             if mem is not None and mem > limit_bytes:
                 violation_flag[0] = True
-                _kill_process_group(pid)
+                _kill_process_group(pid, win_job=win_job)
                 break
         except Exception:
             break
         try:
-            await asyncio.wait_for(stop_event.wait(), timeout=0.02)
+            await asyncio.wait_for(stop_event.wait(), timeout=0.015)
         except (asyncio.TimeoutError, TimeoutError):
             pass
 
@@ -281,7 +342,30 @@ def _posix_preexec():
             pass
 
 
-def _kill_process_group(pid: int) -> None:
+def _kill_process_group(pid: int, win_job=None) -> None:
+    if sys.platform == "win32":
+        if win_job:
+            _terminate_win32_job(win_job)
+        try:
+            import psutil
+
+            parent = psutil.Process(pid)
+            children = parent.children(recursive=True)
+            for child in children:
+                try:
+                    child.kill()
+                except Exception:
+                    pass
+            parent.kill()
+            return
+        except Exception:
+            pass
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except Exception:
+            pass
+        return
+
     sigkill = getattr(signal, "SIGKILL", getattr(signal, "SIGTERM", 9))
     if hasattr(os, "killpg") and hasattr(os, "getpgid"):
         try:
@@ -343,9 +427,9 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
 
         if proc.pid:
             if sys.platform == "win32":
-                win_job = _setup_win32_job_object(proc.pid, MEMORY_BYTES)
+                win_job = _setup_win32_job_object(proc.pid)
             watchdog_task = asyncio.create_task(
-                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog)
+                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog, win_job=win_job)
             )
 
         stdout_bytes, stderr_bytes = await asyncio.wait_for(
@@ -355,7 +439,7 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
     except (asyncio.TimeoutError, TimeoutError):
         timed_out = True
         if proc and proc.pid:
-            _kill_process_group(proc.pid)
+            _kill_process_group(proc.pid, win_job=win_job)
             try:
                 await proc.wait()
             except Exception:
@@ -369,13 +453,10 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
                 await watchdog_task
             except Exception:
                 pass
-        if win_job and sys.platform == "win32":
-            try:
-                import ctypes
-
-                ctypes.windll.kernel32.CloseHandle(win_job)
-            except Exception:
-                pass
+        if win_job:
+            _close_win32_job(win_job)
+        if proc and proc.pid:
+            _kill_process_group(proc.pid, win_job=None)
         shutil.rmtree(workdir, ignore_errors=True)
 
     runtime_ms = int((time.perf_counter() - started) * 1000)
@@ -407,9 +488,9 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
                 index, False, "memory", runtime_ms, stderr="Memory Limit Exceeded (256 MB)", expected=expected
             )
 
-    # Decode and parse payload envelope (captured stdout in payload is capped at 64 KB)
-    raw_out = stdout_bytes[: 512 * 1024].decode("utf-8", "replace")
-    raw_err = stderr_bytes[:MAX_OUTPUT_BYTES].decode("utf-8", "replace")
+    # Decode and parse payload envelope with byte-safe truncation
+    raw_out = _truncate_utf8(stdout_bytes.decode("utf-8", "replace"), 512 * 1024)
+    raw_err = _truncate_utf8(stderr_bytes.decode("utf-8", "replace"), MAX_OUTPUT_BYTES)
 
     # Check return code signal on POSIX
     if proc and proc.returncode and proc.returncode < 0:
@@ -429,18 +510,19 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
             False,
             "error",
             runtime_ms,
-            stderr=(raw_err or "sandbox produced no parseable output")[:MAX_OUTPUT_BYTES],
+            stderr=_truncate_utf8(raw_err or "sandbox produced no parseable output", MAX_OUTPUT_BYTES),
             expected=expected,
         )
 
     status = payload.get("status")
-    stdout = str(payload.get("stdout", ""))[:MAX_OUTPUT_BYTES]
+    stdout = _truncate_utf8(str(payload.get("stdout", "")), MAX_OUTPUT_BYTES)
+    stderr = _truncate_utf8(str(payload.get("stderr", "")), MAX_OUTPUT_BYTES)
 
     if status == "memory":
         return TestResult(index, False, "memory", runtime_ms, stderr="Memory Limit Exceeded (256 MB)", expected=expected)
     if status == "error":
-        err_msg = f"{payload.get('error_type')}: {payload.get('stderr', '')}"[:MAX_OUTPUT_BYTES]
-        return TestResult(index, False, "error", runtime_ms, stdout=stdout, stderr=err_msg, expected=expected)
+        err_msg = f"{payload.get('error_type')}: {stderr}".strip()
+        return TestResult(index, False, "error", runtime_ms, stdout=stdout, stderr=_truncate_utf8(err_msg, MAX_OUTPUT_BYTES), expected=expected)
 
     returned = payload.get("returned")
     passed = returned == expected
@@ -450,6 +532,7 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
         "ok" if passed else "wrong_answer",
         runtime_ms,
         stdout=stdout,
+        stderr=stderr,
         expected=expected,
         returned=returned,
     )
@@ -526,9 +609,9 @@ async def execute_script_async(code: str) -> dict:
         )
         if proc.pid:
             if sys.platform == "win32":
-                win_job = _setup_win32_job_object(proc.pid, MEMORY_BYTES)
+                win_job = _setup_win32_job_object(proc.pid)
             watchdog_task = asyncio.create_task(
-                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog)
+                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog, win_job=win_job)
             )
 
         stdout_raw, stderr_raw = await asyncio.wait_for(
@@ -538,7 +621,7 @@ async def execute_script_async(code: str) -> dict:
     except (asyncio.TimeoutError, TimeoutError):
         timed_out = True
         if proc is not None and proc.pid:
-            _kill_process_group(proc.pid)
+            _kill_process_group(proc.pid, win_job=win_job)
             try:
                 await proc.wait()
             except Exception:
@@ -552,13 +635,10 @@ async def execute_script_async(code: str) -> dict:
                 await watchdog_task
             except Exception:
                 pass
-        if win_job and sys.platform == "win32":
-            try:
-                import ctypes
-
-                ctypes.windll.kernel32.CloseHandle(win_job)
-            except Exception:
-                pass
+        if win_job:
+            _close_win32_job(win_job)
+        if proc and proc.pid:
+            _kill_process_group(proc.pid, win_job=None)
         shutil.rmtree(workdir, ignore_errors=True)
 
     runtime_ms = int((time.perf_counter() - started) * 1000)
@@ -607,20 +687,20 @@ async def execute_script_async(code: str) -> dict:
     try:
         payload = json.loads(stdout_raw.decode("utf-8", errors="replace"))
         err_type = payload.get("error_type")
-        err_msg = payload.get("stderr", "")
+        err_msg = _truncate_utf8(str(payload.get("stderr", "")), MAX_OUTPUT_BYTES)
         if err_type and not err_msg.startswith(err_type):
             err_msg = f"{err_type}: {err_msg}"
         return {
             "status": payload.get("status", "ok"),
-            "stdout": payload.get("stdout", "")[:MAX_OUTPUT_BYTES],
-            "stderr": err_msg[:MAX_OUTPUT_BYTES],
+            "stdout": _truncate_utf8(str(payload.get("stdout", "")), MAX_OUTPUT_BYTES),
+            "stderr": _truncate_utf8(err_msg, MAX_OUTPUT_BYTES),
             "runtime_ms": runtime_ms,
         }
     except Exception:
         return {
             "status": "error",
-            "stdout": stdout_raw.decode("utf-8", errors="replace")[:MAX_OUTPUT_BYTES],
-            "stderr": stderr_raw.decode("utf-8", errors="replace")[:MAX_OUTPUT_BYTES] or "Unknown execution error",
+            "stdout": _truncate_utf8(stdout_raw.decode("utf-8", errors="replace"), MAX_OUTPUT_BYTES),
+            "stderr": _truncate_utf8(stderr_raw.decode("utf-8", errors="replace") or "Unknown execution error", MAX_OUTPUT_BYTES),
             "runtime_ms": runtime_ms,
         }
 

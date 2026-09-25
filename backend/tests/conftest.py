@@ -53,7 +53,6 @@ def migrated(engine):
     cfg.set_main_option("sqlalchemy.url", TEST_DATABASE_URL or "")
     command.upgrade(cfg, "head")
     yield
-    command.downgrade(cfg, "base")
 
 
 @pytest.fixture
@@ -97,8 +96,13 @@ def make_user(db):
 @pytest.fixture
 def make_topic(db):
     from app.models.models import Topic
+    from sqlalchemy import select
 
     def _make(slug: str | None = None):
+        if slug:
+            existing = db.execute(select(Topic).where(Topic.slug == slug)).scalar_one_or_none()
+            if existing:
+                return existing
         s = slug or f"topic-{uuid.uuid4().hex[:6]}"
         topic = Topic(id=uuid.uuid4(), slug=s, name=s.title())
         db.add(topic)
