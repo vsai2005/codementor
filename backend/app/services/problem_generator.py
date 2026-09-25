@@ -7,7 +7,9 @@ against all generated test cases inside the sandbox before returning or saving i
 
 from __future__ import annotations
 
+import ast
 import logging
+import re
 import uuid
 from typing import Any
 from fastapi import HTTPException, status
@@ -18,7 +20,6 @@ from app.models.models import Problem, Topic
 from app.schemas.api import ProblemDetail, TopicOut
 from app.services.llm import get_llm_client, extract_json
 from app.services.sandbox import run_test_cases_async
-from app.core.reference_solutions import set_custom_reference_solution
 
 log = logging.getLogger(__name__)
 
@@ -45,6 +46,40 @@ You must return a valid JSON object matching the following structure:
 The test_cases MUST have at least 2 test cases with exact inputs and outputs.
 The reference_solution MUST be 100% syntactically valid Python code and MUST pass all test_cases when called as entry_point(*args).
 """
+
+
+def _sanitize_and_validate_reference_solution(code: str) -> str:
+    """Validate reference solution Python syntax and guard against credentials/secrets/logs."""
+    cleaned = code.strip()
+    if cleaned.startswith("```python"):
+        cleaned = cleaned[len("```python"):].strip()
+    elif cleaned.startswith("```"):
+        cleaned = cleaned[3:].strip()
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3].strip()
+
+    cleaned = cleaned.strip()
+    if not cleaned:
+        raise ValueError("Reference solution cannot be empty.")
+
+    # Ensure no secrets, credentials, or execution logs are stored
+    forbidden_patterns = [
+        r"api_key\b", r"apikey\b", r"secret_key\b", r"bearer\s+[a-zA-Z0-9_\-\.]+",
+        r"password\s*=", r"pwd_hash\b", r"database_url\b", r"redis_url\b",
+        r"gemini_api_key\b", r"aizasy[a-zA-Z0-9_\-]{30,}", r"sk-[a-zA-Z0-9_\-]{20,}",
+        r"\[execution\s+log\]", r"stdout:", r"stderr:",
+    ]
+    for pattern in forbidden_patterns:
+        if re.search(pattern, cleaned, re.IGNORECASE):
+            raise ValueError(f"Reference solution contains prohibited token or credential pattern: {pattern}")
+
+    # Must be valid Python syntax
+    try:
+        ast.parse(cleaned)
+    except SyntaxError as e:
+        raise ValueError(f"Reference solution has invalid Python syntax: {e}") from e
+
+    return cleaned
 
 
 async def generate_and_validate_problem(
@@ -98,9 +133,18 @@ async def generate_and_validate_problem(
             detail="AI generated incomplete problem structure. Please try again.",
         )
 
+    try:
+        clean_ref_solution = _sanitize_and_validate_reference_solution(ref_solution)
+    except ValueError as val_err:
+        log.warning("Generated reference solution failed sanitization/validation: %s", val_err)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Generated problem rejected: invalid reference solution ({val_err}).",
+        ) from val_err
+
     # 2. Execute reference solution against test cases in the sandbox
     try:
-        report = await run_test_cases_async(ref_solution, entry_point, test_cases)
+        report = await run_test_cases_async(clean_ref_solution, entry_point, test_cases)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -118,7 +162,7 @@ async def generate_and_validate_problem(
             detail=f"Generated problem rejected: reference solution failed {failed_count} test case(s) in sandbox.",
         )
 
-    # 3. Persist problem in DB
+    # 3. Persist problem in DB transactionally
     existing = db.execute(select(Problem).where(Problem.slug == slug)).scalar_one_or_none()
     if existing:
         slug = f"{slug}-{uuid.uuid4().hex[:4]}"
@@ -136,13 +180,21 @@ async def generate_and_validate_problem(
         test_cases=test_cases,
         optimal_time=optimal_time,
         optimal_space=optimal_space,
+        is_generated=True,
+        generation_source="ai_generated",
+        reference_solution=clean_ref_solution,
     )
-    db.add(new_problem)
-    db.commit()
-    db.refresh(new_problem)
-
-    # Register reference solution in memory repository
-    set_custom_reference_solution(new_problem.slug, ref_solution)
+    try:
+        db.add(new_problem)
+        db.commit()
+        db.refresh(new_problem)
+    except Exception as exc:
+        db.rollback()
+        log.error("Failed to persist generated problem %s: %s", slug, exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to persist generated problem.",
+        ) from exc
 
     topic_out = (
         TopicOut.model_validate(topic)

@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.review import Review
 
@@ -70,6 +70,20 @@ class ProblemDetail(ProblemSummary):
     starter_code: dict[str, str]
     is_generated: bool = False
     generation_source: str = "curated"
+
+    @field_validator("is_generated", mode="before")
+    @classmethod
+    def _validate_is_generated(cls, v: Any) -> bool:
+        if v is None:
+            return False
+        return bool(v)
+
+    @field_validator("generation_source", mode="before")
+    @classmethod
+    def _validate_generation_source(cls, v: Any) -> str:
+        if not v:
+            return "curated"
+        return str(v)
 
 
 class ProblemPage(BaseModel):

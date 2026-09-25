@@ -21,10 +21,14 @@ REFERENCE_SOLUTIONS: dict[str, str] = {
 
 
 def get_problem_reference_solution(slug: str) -> str | None:
-    """Retrieve the real server-side reference solution for a problem by slug."""
+    """Retrieve the real server-side reference solution for a curated problem by slug."""
     return REFERENCE_SOLUTIONS.get(slug)
 
 
 def set_custom_reference_solution(slug: str, solution: str) -> None:
-    """Register or update reference solution for dynamic/generated problems."""
+    """[DEPRECATED] Register reference solution in process memory.
+    
+    Generated problems must be persisted transactionally in PostgreSQL (`problems.reference_solution`).
+    This function remains solely as backward-compatibility fallback.
+    """
     REFERENCE_SOLUTIONS[slug] = solution.strip()

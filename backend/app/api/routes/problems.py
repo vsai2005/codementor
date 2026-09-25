@@ -116,7 +116,9 @@ def get_reference_solution(
 
     from app.core.reference_solutions import get_problem_reference_solution
 
-    ref = getattr(problem, "reference_solution", None) or get_problem_reference_solution(problem.slug)
+    db_ref = getattr(problem, "reference_solution", None)
+    clean_db_ref = str(db_ref).strip() if (db_ref and str(db_ref).strip()) else None
+    ref = clean_db_ref or get_problem_reference_solution(problem.slug)
 
     if ref:
         return ReferenceSolution(
