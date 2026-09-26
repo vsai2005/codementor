@@ -7,9 +7,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from jose import jwt
+from pydantic import ValidationError
 
-from app.config import get_settings
-from app.core.security import AuthError, create_access_token, decode_access_token
+from app.config import Settings, get_settings
+from app.core.security import AuthError, create_access_token, decode_access_token, verify_google_id_token
 
 
 def _b64(data: dict) -> str:
@@ -69,12 +70,45 @@ def test_unexpected_hmac_algorithm_is_rejected():
         decode_access_token(token)
 
 
-def test_unexpected_asymmetric_algorithm_is_rejected():
+@pytest.mark.parametrize("algorithm", ["RS256", "ES256"])
+def test_unexpected_asymmetric_algorithm_is_rejected(algorithm):
     token = create_access_token("u")
     _, payload, signature = token.split(".")
-    forged = f'{_b64({"alg": "RS256", "typ": "JWT"})}.{payload}.{signature}'
+    forged = f'{_b64({"alg": algorithm, "typ": "JWT"})}.{payload}.{signature}'
     with pytest.raises(AuthError):
         decode_access_token(forged)
+
+
+@pytest.mark.parametrize("algorithm", ["ES256", "RS256", "HS512"])
+def test_session_algorithm_cannot_be_overridden(algorithm, monkeypatch):
+    with pytest.raises(ValidationError):
+        Settings(jwt_algorithm=algorithm)
+    monkeypatch.setenv("JWT_ALGORITHM", algorithm)
+    with pytest.raises(ValidationError):
+        Settings()
+
+
+def test_google_token_uses_google_verifier_and_checks_claims(monkeypatch):
+    from google.oauth2 import id_token as google_id_token
+
+    calls = []
+
+    def verify(token, request, audience):
+        calls.append((token, audience))
+        return {"iss": "https://accounts.google.com", "email_verified": True, "sub": "google-user"}
+
+    monkeypatch.setattr(google_id_token, "verify_oauth2_token", verify)
+    monkeypatch.setattr("app.core.security.get_settings", lambda: Settings(google_client_id="test-client-id"))
+    assert verify_google_id_token("signed-google-token")["sub"] == "google-user"
+    assert calls == [("signed-google-token", "test-client-id")]
+
+    for claims in (
+        {"iss": "https://attacker.example", "email_verified": True},
+        {"iss": "accounts.google.com", "email_verified": False},
+    ):
+        monkeypatch.setattr(google_id_token, "verify_oauth2_token", lambda *_: claims)
+        with pytest.raises(AuthError):
+            verify_google_id_token("signed-google-token")
 
 
 def test_garbage_token_is_rejected():

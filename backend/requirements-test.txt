@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# Batch 6 process-tree tests import psutil. Keep it out of production installs:
+# the sandbox deliberately supports systems without this optional helper.
+psutil==7.2.2

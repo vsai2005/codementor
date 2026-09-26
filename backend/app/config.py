@@ -33,7 +33,9 @@ class Settings(BaseSettings):
         default="change-me-in-production",
         validation_alias=AliasChoices("JWT_SECRET", "jwt_secret"),
     )
-    jwt_algorithm: str = "HS256"
+    # Application sessions use a shared HMAC secret. Never allow an environment
+    # override to switch issuance/verification onto python-jose's EC backend.
+    jwt_algorithm: Literal["HS256"] = "HS256"
     jwt_expiry_hours: int = 24
 
     redis_url: str | None = Field(
@@ -203,4 +205,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

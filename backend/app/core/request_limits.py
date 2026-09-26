@@ -4,18 +4,22 @@ Every limit is in BYTES of the raw request body (so multi-byte UTF-8 counts full
 enforced by BodySizeLimitMiddleware before routing: oversized requests never reach JSON
 parsing, auth lookups, password hashing, DB writes, LLM calls, or the sandbox.
 
-Enforcement does not trust Content-Length: a declared length over the limit is rejected
-without reading, and the actual streamed bytes are always counted (chunked, missing, or
-understated lengths included). The body is read once, capped at limit + 1 bytes, and
-replayed to the app, so the app never re-reads it.
+Enforcement does not trust Content-Length: a declared length over the limit is rejected,
+and the actual streamed bytes are always counted (chunked, missing, or understated
+lengths included). Modest declared oversize bodies are briefly discarded with fixed
+bounds so a streaming proxy can receive the 413; huge declarations are rejected without
+reading. Accepted bodies are read once, capped at limit + 1 bytes, and replayed to the app.
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 from dataclasses import dataclass
 
 KiB = 1024
+MAX_REJECTION_DRAIN_BYTES = 1024 * KiB
+REJECTION_DRAIN_SECONDS = 0.5
 
 # Category -> maximum body size in bytes.
 BODY_LIMITS: dict[str, int] = {
@@ -69,7 +73,6 @@ def _json_response(status: int, detail: str) -> tuple[dict, dict]:
         "headers": [
             (b"content-type", b"application/json"),
             (b"content-length", str(len(body)).encode("ascii")),
-            (b"connection", b"close"),
         ],
     }
     return start, {"type": "http.response.body", "body": body, "more_body": False}
@@ -101,6 +104,12 @@ class BodySizeLimitMiddleware:
                 return
             declared = values.pop()
             if declared > limit.max_bytes:
+                # A reverse proxy may still be streaming a modest body when
+                # we reject its Content-Length. Discard it with fixed byte and
+                # time bounds so the proxy can receive the 413 instead of a
+                # reset while writing. Huge declarations are rejected at once.
+                if declared <= MAX_REJECTION_DRAIN_BYTES:
+                    await self._drain_rejected_body(receive)
                 await self._reject_too_large(send, limit)
                 return
 
@@ -135,6 +144,21 @@ class BodySizeLimitMiddleware:
             return await receive()
 
         await self.app(scope, replay_receive, send)
+
+    @staticmethod
+    async def _drain_rejected_body(receive) -> None:
+        consumed = 0
+        try:
+            async with asyncio.timeout(REJECTION_DRAIN_SECONDS):
+                while consumed < MAX_REJECTION_DRAIN_BYTES:
+                    message = await receive()
+                    if message["type"] == "http.disconnect":
+                        return
+                    consumed += len(message.get("body", b""))
+                    if not message.get("more_body", False):
+                        return
+        except TimeoutError:
+            return
 
     @staticmethod
     async def _reject(send, status: int, detail: str) -> None:

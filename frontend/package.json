@@ -12,6 +12,7 @@
   "dependencies": {
     "@monaco-editor/react": "4.7.0",
     "@tanstack/react-query": "5.62.11",
+    "monaco-editor": "0.57.0",
     "next": "15.5.26",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -28,5 +29,11 @@
     "postcss": "8.5.24",
     "tailwindcss": "3.4.17",
     "typescript": "5.7.2"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.24"
+    },
+    "nanoid": "3.3.18"
   }
 }
