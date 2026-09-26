@@ -27,6 +27,16 @@ requires_db = pytest.mark.skipif(
 )
 
 
+@pytest.fixture(autouse=True)
+def _isolated_auth_rate_limits():
+    """Auth rate limiters are process-wide; give every test fresh, empty buckets."""
+    from app.services.ratelimit import reset_policy_rate_limiters
+
+    reset_policy_rate_limiters()
+    yield
+    reset_policy_rate_limiters()
+
+
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "integration: requires a real Postgres + pgvector")
 

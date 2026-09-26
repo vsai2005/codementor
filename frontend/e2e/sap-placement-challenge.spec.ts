@@ -48,6 +48,9 @@ test('waived learner earns a skipped day via its challenge; placement then locks
   // Waived lesson stays closed; roadmap offers the challenge instead.
   expect((await api(page, 'GET', '/api/sap/learning/lessons/6')).status).toBe(403);
   await page.goto('/sap/learning');
+  await expect(page.locator('body')).toContainText(/\+8 waived/i);
+  // The roadmap opens on the learner's current phase (Phase 2); waived days are in Phase 1.
+  await page.getByRole('button', { name: /P1:/i }).click();
   await expect(page.getByRole('link', { name: /TAKE CHALLENGE/i }).first()).toBeVisible();
 
   // Take Day 6's challenge: first wrong, then right.

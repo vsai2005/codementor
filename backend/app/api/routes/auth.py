@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 import re
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.api.rate_limit import account_subject, client_ip, enforce_rate_limit
 from app.config import get_settings
 from app.core.security import (
     AuthError,
@@ -17,6 +20,7 @@ from app.core.security import (
     verify_password,
 )
 from app.database import get_db
+from app.services.google_accounts import GoogleAccountError, resolve_google_user
 from app.models.models import User
 from app.schemas.api import (
     GoogleLoginRequest,
@@ -26,6 +30,7 @@ from app.schemas.api import (
     UserOut,
 )
 
+log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9._-]{3,30}$")
 
@@ -48,27 +53,24 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 @router.post("/google", response_model=TokenResponse)
 def google_login(
     payload: GoogleLoginRequest,
+    request: Request,
     response: Response,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
+    """Google sign-in. Rate-limited per IP before token verification and per Google
+    identity after it; identity is the Google `sub`, the username is only a handle."""
+    enforce_rate_limit("auth_google_ip", client_ip(request))
     try:
         claims = verify_google_id_token(payload.id_token)
     except AuthError as exc:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(exc)) from exc
+        log.info("google sign-in rejected: %s", exc)
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Google sign-in failed. Please try again.") from exc
 
-    email = claims["email"]
-    user = db.execute(select(User).where(User.email == email)).scalars().first()
-    if user is None:
-        user = User(
-            email=email,
-            username=email.split("@")[0].lower(),
-            name=claims.get("name") or email.split("@")[0],
-            avatar_url=claims.get("picture"),
-            google_sub=claims.get("sub"),
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+    enforce_rate_limit("auth_google_identity", account_subject(str(claims.get("sub") or "")))
+    try:
+        user = resolve_google_user(db, claims)
+    except GoogleAccountError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
 
     token = create_access_token(str(user.id), {"email": user.email})
     _set_auth_cookie(response, token)
@@ -82,9 +84,11 @@ def google_login(
 @router.post("/register", response_model=TokenResponse)
 def register(
     payload: RegisterRequest,
+    request: Request,
     response: Response,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
+    enforce_rate_limit("auth_register_ip", client_ip(request))
     username = payload.username.strip().lower()
     if not USERNAME_RE.match(username):
         raise HTTPException(
@@ -118,7 +122,12 @@ def register(
         pwd_hash=pwd_hash,
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # A concurrent registration claimed the username or email first.
+        db.rollback()
+        raise HTTPException(status.HTTP_409_CONFLICT, "That username or email is already taken.")
     db.refresh(user)
 
     token = create_access_token(str(user.id), {"sub": str(user.id)})
@@ -133,10 +142,15 @@ def register(
 @router.post("/login", response_model=TokenResponse)
 def login(
     payload: LoginRequest,
+    request: Request,
     response: Response,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
+    """Password login. Every attempt is counted per IP and per normalized identifier
+    (existing or not) before any lookup or hashing, so limits reveal nothing."""
     ident = payload.identifier.strip().lower()
+    enforce_rate_limit("auth_login_ip", client_ip(request))
+    enforce_rate_limit("auth_login_account", account_subject(ident))
     user = db.execute(
         select(User).where(or_(User.username == ident, User.email == ident))
     ).scalars().first()

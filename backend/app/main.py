@@ -15,7 +15,9 @@ from app.api.routes.sap import sap_router
 from contextlib import asynccontextmanager
 from sqlalchemy import text
 from app.config import get_settings
+from app.core.request_limits import BodySizeLimitMiddleware
 from app.database import engine
+from app.services.ratelimit import RateLimiterUnavailable
 from app.schemas.api import HealthResponse
 
 logging.basicConfig(level=logging.INFO)
@@ -44,6 +46,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
 
+# Added before CORS so CORS stays outermost and 413/400 rejections still carry CORS headers.
+app.add_middleware(BodySizeLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -64,6 +68,17 @@ def _db_down(request: Request, exc: OperationalError) -> JSONResponse:
         status_code=503,
         content={"detail": "Database unavailable. Your code is saved locally — retry shortly.",
                  "retry_after_s": 5},
+        headers={"Retry-After": "5"},
+    )
+
+
+@app.exception_handler(RateLimiterUnavailable)
+def _rate_limiter_down(request: Request, exc: RateLimiterUnavailable) -> JSONResponse:
+    # Fail closed (Redis is mandatory in production); never expose backend error details.
+    logging.getLogger(__name__).error("rate limiter unavailable: %r", exc.__cause__)
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Service temporarily unavailable. Please retry shortly.", "retry_after_s": 5},
         headers={"Retry-After": "5"},
     )
 

@@ -16,6 +16,14 @@ from collections import defaultdict, deque
 from dataclasses import dataclass
 
 
+class RateLimiterUnavailable(RuntimeError):
+    """The rate-limit backend could not be consulted.
+
+    Policy (matches the production boot rule that Redis is mandatory): fail closed. The API
+    answers 503 with a generic message; the backend error is logged, never returned.
+    """
+
+
 @dataclass(frozen=True)
 class RateLimitVerdict:
     allowed: bool
@@ -79,18 +87,21 @@ class RedisRateLimiter(BaseRateLimiter):
         redis_key = f"ratelimit:{key}"
         cutoff = now - self._window
 
-        pipe = self._redis.pipeline()
-        pipe.zremrangebyscore(redis_key, 0, cutoff)
-        pipe.zcard(redis_key)
-        pipe.zadd(redis_key, {str(uuid.uuid4()): now})
-        pipe.expire(redis_key, self._window + 10)
-        _, count, _, _ = pipe.execute()
+        try:
+            pipe = self._redis.pipeline()
+            pipe.zremrangebyscore(redis_key, 0, cutoff)
+            pipe.zcard(redis_key)
+            pipe.zadd(redis_key, {str(uuid.uuid4()): now})
+            pipe.expire(redis_key, self._window + 10)
+            _, count, _, _ = pipe.execute()
 
-        if count >= self._limit:
-            self._redis.zremrangebyrank(redis_key, -1, -1)  # undo our own add
-            oldest = self._redis.zrange(redis_key, 0, 0, withscores=True)
-            retry = int(self._window - (now - oldest[0][1])) + 1 if oldest else self._window
-            return RateLimitVerdict(False, 0, max(1, retry))
+            if count >= self._limit:
+                self._redis.zremrangebyrank(redis_key, -1, -1)  # undo our own add
+                oldest = self._redis.zrange(redis_key, 0, 0, withscores=True)
+                retry = int(self._window - (now - oldest[0][1])) + 1 if oldest else self._window
+                return RateLimitVerdict(False, 0, max(1, retry))
+        except Exception as exc:  # redis.RedisError, socket errors, timeouts
+            raise RateLimiterUnavailable("rate limiter backend unavailable") from exc
 
         return RateLimitVerdict(True, self._limit - count - 1, 0)
 
@@ -240,3 +251,50 @@ def get_sap_execution_rate_limiter() -> BaseRateLimiter:
         else:
             _sap_execution_limiter = InMemoryRateLimiter(limit, window)
     return _sap_execution_limiter
+
+
+# =============================================================================
+# Authentication rate-limit policies
+# =============================================================================
+
+# policy name -> (Settings attribute for the limit, Settings attribute for the window)
+AUTH_RATE_LIMIT_POLICIES: dict[str, tuple[str, str]] = {
+    "auth_login_ip": ("auth_login_ip_limit", "auth_login_ip_window_s"),
+    "auth_login_account": ("auth_login_account_limit", "auth_login_account_window_s"),
+    "auth_register_ip": ("auth_register_ip_limit", "auth_register_ip_window_s"),
+    "auth_google_ip": ("auth_google_ip_limit", "auth_google_ip_window_s"),
+    "auth_google_identity": ("auth_google_identity_limit", "auth_google_identity_window_s"),
+}
+
+_policy_limiters: dict[str, BaseRateLimiter] = {}
+_policy_lock = threading.Lock()
+
+
+def get_policy_rate_limiter(policy: str) -> BaseRateLimiter:
+    """Limiter for a named policy; Redis-backed when available, same fallback as the rest."""
+    with _policy_lock:
+        limiter = _policy_limiters.get(policy)
+        if limiter is None:
+            from app.config import get_settings
+
+            settings = get_settings()
+            limit_attr, window_attr = AUTH_RATE_LIMIT_POLICIES[policy]
+            limit, window = getattr(settings, limit_attr), getattr(settings, window_attr)
+            client = _get_redis_client()
+            limiter = (
+                RedisRateLimiter(client, limit, window) if client is not None
+                else InMemoryRateLimiter(limit, window)
+            )
+            _policy_limiters[policy] = limiter
+        return limiter
+
+
+def reset_policy_rate_limiters() -> None:
+    """Empty and drop all policy limiters (tests / settings reload); rebuilt on next use."""
+    with _policy_lock:
+        for policy, limiter in _policy_limiters.items():
+            try:
+                limiter.reset(None)
+            except Exception:
+                pass
+        _policy_limiters.clear()

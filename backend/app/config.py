@@ -82,6 +82,27 @@ class Settings(BaseSettings):
     generate_rate_limit: int = 10
     generate_rate_window_s: int = 300
 
+    # Authentication rate limits (attempts per window). Every attempt counts, successful or
+    # not, and account buckets exist for unknown identifiers too, so the limiter never
+    # reveals whether an account exists. Per-IP limits are deliberately roomier than
+    # per-account ones: classrooms and campuses share one NAT address.
+    auth_login_ip_limit: int = 100
+    auth_login_ip_window_s: int = 900
+    auth_login_account_limit: int = 10
+    auth_login_account_window_s: int = 900
+    auth_register_ip_limit: int = 20
+    auth_register_ip_window_s: int = 3600
+    auth_google_ip_limit: int = 100
+    auth_google_ip_window_s: int = 900
+    auth_google_identity_limit: int = 10
+    auth_google_identity_window_s: int = 900
+
+    # Number of trusted reverse proxies in front of the API that append to
+    # X-Forwarded-For. 0 = use the socket peer address (safe default, cannot be spoofed).
+    # Behind Vercel (frontend rewrite) -> Render, set this to the real hop count so the
+    # client IP, not the proxy IP, keys per-IP limits.
+    trusted_proxy_hops: int = Field(default=0, ge=0, le=5)
+
     @model_validator(mode="after")
     def validate_production_config(self) -> Self:
         # Normalize database_url prefix for SQLAlchemy 2.0 / psycopg3
