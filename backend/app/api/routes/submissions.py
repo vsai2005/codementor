@@ -131,8 +131,8 @@ async def submit(
 
     # If submitting for a specific curriculum day, validate mapping and accessibility upfront
     if payload.day_number is not None:
-        from app.core.curriculum_map import CURRICULUM_DAY_PRACTICE
-        if CURRICULUM_DAY_PRACTICE.get(payload.day_number) != problem.slug:
+        from app.core.curriculum_map import is_practice_for_day
+        if not is_practice_for_day(problem.slug, payload.day_number):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Problem '{problem.slug}' is not mapped to curriculum Day {payload.day_number}.",

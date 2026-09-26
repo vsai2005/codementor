@@ -8,7 +8,11 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.curriculum_map import CURRICULUM_DAY_PRACTICE, PRACTICE_SLUG_TO_DAYS
+from app.core.curriculum_map import (
+    CURRICULUM_DAY_PRACTICE,
+    is_practice_for_day,
+    practice_days_for_slug,
+)
 from app.models.models import UserLearningDayState
 
 
@@ -132,11 +136,12 @@ def record_practice_passed(
         1. Validates that problem_slug is mapped to day_number.
         2. Validates that day_number is currently accessible (unlocked) for the learner.
         Target day is day_number.
-    - If day_number is not provided:
-        1. Filters mapped days to those currently accessible (unlocked).
-        2. Prioritizes unlocked days where practice is not yet passed.
-        3. Falls back to the current/earliest unlocked day for idempotent repeat submissions.
-        4. If no mapped days are currently unlocked, returns None (never pre-marks future locked days!).
+    - If day_number is not provided (standalone Practice):
+        A day is inferred ONLY when exactly one day is eligible: a day whose authoritative
+        practice problem is problem_slug, that is unlocked, and whose practice is not yet
+        passed. Zero eligible days (not a curriculum problem, all mapped days locked, or all
+        already passed) or several eligible days (ambiguous) return None with no mutation;
+        the learner must submit from the Learning day to credit it explicitly.
     """
     progress = compute_user_progress(db, user_id)
     day_states = progress["day_states"]
@@ -144,36 +149,21 @@ def record_practice_passed(
     if day_number is not None:
         if day_number < 1 or day_number > 160:
             raise ValueError(f"Day {day_number} does not exist. Valid curriculum days are 1–160.")
-        if CURRICULUM_DAY_PRACTICE.get(day_number) != problem_slug:
+        if not is_practice_for_day(problem_slug, day_number):
             raise ValueError(f"Problem '{problem_slug}' is not mapped to Day {day_number}.")
         day_info = day_states.get(str(day_number))
         if not day_info or not day_info["unlocked"]:
             raise ValueError(f"Day {day_number} is locked. Complete prior days first.")
         target_day = day_number
     else:
-        mapped_days = PRACTICE_SLUG_TO_DAYS.get(problem_slug, [])
-        if not mapped_days:
-            return None
-
-        # Filter strictly to currently accessible (unlocked) days
-        unlocked_mapped_days = [
-            d for d in mapped_days
+        eligible = [
+            d for d in practice_days_for_slug(problem_slug)
             if day_states.get(str(d), {}).get("unlocked")
+            and not day_states[str(d)].get("practice_passed")
         ]
-        if not unlocked_mapped_days:
-            # All mapped days are locked for this learner — never credit future days!
+        if len(eligible) != 1:
             return None
-
-        # Prioritize unlocked days that have not yet passed practice
-        unpassed = [
-            d for d in unlocked_mapped_days
-            if not day_states[str(d)].get("practice_passed")
-        ]
-        if unpassed:
-            target_day = min(unpassed)
-        else:
-            # Idempotent repeat submission on an already-passed unlocked day
-            target_day = min(unlocked_mapped_days)
+        target_day = eligible[0]
 
     now = datetime.now(timezone.utc)
     newly_completed = []
