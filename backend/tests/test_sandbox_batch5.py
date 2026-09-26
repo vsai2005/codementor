@@ -182,30 +182,63 @@ def solve():
 
 
 def test_11_child_process_cleanup():
-    proc = subprocess.Popen(
-        [sys.executable, "-c", "import time, subprocess, sys; subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); time.sleep(60)"],
+    # Keep the regression probe outside pytest's process group: a broken
+    # killpg(getpgid(pid)) implementation may terminate its caller.
+    probe = r'''
+import subprocess, sys, time
+import psutil
+from app.services import sandbox
+
+proc = subprocess.Popen([
+    sys.executable, "-c",
+    "import subprocess,sys,time; subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)']);time.sleep(60)",
+])
+try:
+    for _ in range(100):
+        children = psutil.Process(proc.pid).children(recursive=True)
+        if children:
+            break
+        time.sleep(0.01)
+    assert children, "child process was not spawned"
+    child = children[0]
+    if sys.platform.startswith('linux'):
+        # Exercise the production image path, where psutil is not installed.
+        sys.modules['psutil'] = None
+    try:
+        sandbox._kill_process_group(proc.pid)
+    finally:
+        if sys.platform.startswith('linux'):
+            sys.modules['psutil'] = psutil
+    proc.wait(timeout=5)
+    for _ in range(100):
+        if not child.is_running() or child.status() == psutil.STATUS_ZOMBIE:
+            break
+        time.sleep(0.01)
+    assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
+finally:
+    if proc.poll() is None:
+        proc.kill()
+        proc.wait()
+'''
+    options = {"start_new_session": True} if sys.platform != "win32" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    completed = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, timeout=15, **options
     )
-    time.sleep(0.5)
-    parent_ps = psutil.Process(proc.pid)
-    children = parent_ps.children(recursive=True)
-    assert len(children) >= 1, "Child process was not spawned"
-    child_pid = children[0].pid
-
-    sandbox._kill_process_group(proc.pid)
-    time.sleep(0.3)
-
-    assert not psutil.pid_exists(proc.pid)
-    assert not psutil.pid_exists(child_pid), f"Child process {child_pid} leaked after kill_process_group"
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_12_repeated_executions_no_resource_leakage():
-    initial_threads = psutil.Process().num_threads()
+    process = psutil.Process()
+    initial_threads = process.num_threads()
+    initial_children = {child.pid for child in process.children(recursive=True)}
     for _ in range(30):
         report = sandbox.run_test_cases("def solve(x):\n    return x * 2\n", "solve", [{"args": [5], "expected": 10}])
         assert report.all_passed
 
-    final_threads = psutil.Process().num_threads()
+    final_threads = process.num_threads()
+    final_children = {child.pid for child in process.children(recursive=True)}
     assert final_threads <= initial_threads + 2
+    assert final_children <= initial_children
 
 
 def test_13_windows_job_object_behavior():

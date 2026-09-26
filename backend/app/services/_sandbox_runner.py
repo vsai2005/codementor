@@ -4,7 +4,7 @@ Executed as:
     python3 -I -s _sandbox_runner.py
 
 Hardening layers:
-  1. POSIX rlimits (2s CPU, 256MB AS, 10 NPROC, 1MB FSIZE)
+  1. POSIX CPU/process/file rlimits; parent enforces 256 MiB resident memory
   2. Drop privileges to nobody if root
   3. Network socket neutering and sensitive file blocking
   4. Stream output buffering capped at 64 KB
@@ -72,11 +72,11 @@ def _drop_privileges(uid: int, gid: int) -> None:
         pass
 
 
-def _apply_rlimits(cpu_seconds: int = 2, memory_bytes: int = 256 * 1024 * 1024) -> None:
+def _apply_rlimits(cpu_seconds: int = 3, memory_bytes: int = 256 * 1024 * 1024) -> None:
     try:
         import resource
 
-        # RLIMIT_CPU: 2s limit
+        # RLIMIT_CPU: bounded independently from the parent wall-clock limit.
         resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
 
         # RLIMIT_FSIZE: 1 MB writes

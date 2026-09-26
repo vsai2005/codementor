@@ -1,7 +1,7 @@
 """Sandboxed execution of untrusted user code (Phase 1).
 
 Zero-trust process isolation:
-  - Kernel-level rlimits (2s CPU, 256MB AS, 10 NPROC, 1MB FSIZE)
+  - Kernel-level CPU/process/file rlimits and a 256 MiB process-tree memory watchdog
   - Async process execution via `asyncio.create_subprocess_exec`
   - Sterile minimal environment (dropping all secrets from os.environ)
   - 3.5s execution deadline via `asyncio.wait_for` with process-group SIGKILL on timeout
@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-CPU_SECONDS = 2
+CPU_SECONDS = 3
 WALL_SECONDS = 3.5
 MEMORY_BYTES = 256 * 1024 * 1024
 MAX_OUTPUT_BYTES = 64 * 1024
@@ -141,13 +141,85 @@ def _close_win32_job(job) -> None:
 
 
 def _get_process_tree_rss(pid: int) -> int | None:
-    """Returns the total physical resident memory (RSS / Working Set) of process `pid`
-    and all its descendant processes in bytes.
+    """Resident memory of the sandbox process tree, excluding the supervisor.
+
+    Linux PSS charges shared and fork/COW pages proportionally to each process.
+    When smaps_rollup is inaccessible (for example, after a privileged server
+    drops the runner to ``nobody``), summed RSS is a conservative fallback.
+    Windows retains its process-tree Working Set measurement.
     """
     if not pid:
         return None
 
-    # Strategy 1: psutil (cross-platform, reliable, accounts for full descendant tree)
+    if sys.platform.startswith("linux"):
+        def start_time(member: int) -> str | None:
+            try:
+                with open(f"/proc/{member}/stat", encoding="ascii") as proc_stat:
+                    # comm is parenthesized and may contain spaces or parentheses.
+                    return proc_stat.read().rsplit(")", 1)[1].split()[19]
+            except (OSError, IndexError):
+                return None
+
+        root_start = start_time(pid)
+        if root_start is None:
+            return None
+
+        members: list[tuple[int, str]] = []
+        pending = [pid]
+        seen: set[int] = set()
+        while pending:
+            member = pending.pop()
+            if member in seen:
+                continue
+            seen.add(member)
+            identity = start_time(member)
+            if identity is None:
+                continue  # exited during enumeration
+            members.append((member, identity))
+            try:
+                with open(f"/proc/{member}/task/{member}/children", encoding="ascii") as children:
+                    pending.extend(int(child) for child in children.read().split())
+            except (OSError, ValueError):
+                pass
+
+        if not members or members[0][1] != root_start:
+            return None
+
+        pss_total = 0
+        pss_available = True
+        for member, identity in members:
+            if start_time(member) != identity:
+                continue  # exited or PID reused
+            try:
+                with open(f"/proc/{member}/smaps_rollup", encoding="ascii") as smaps:
+                    pss_kib = next(
+                        int(line.split()[1]) for line in smaps if line.startswith("Pss:")
+                    )
+                pss_total += pss_kib * 1024
+            except FileNotFoundError:
+                continue  # exited during polling
+            except (OSError, StopIteration, ValueError):
+                pss_available = False
+                break
+        if pss_available and pss_total:
+            return pss_total
+
+        # Conservative fallback. /proc/<pid>/statm is normally readable even
+        # when the kernel denies smaps after a uid change. Recurse through every
+        # descendant; the previous fallback only visited direct children.
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        rss_total = 0
+        for member, identity in members:
+            if start_time(member) != identity:
+                continue
+            try:
+                with open(f"/proc/{member}/statm", encoding="ascii") as statm:
+                    rss_total += int(statm.read().split()[1]) * page_size
+            except (OSError, IndexError, ValueError):
+                continue
+        return rss_total or None
+
+    # Other platforms: psutil accounts for descendants when installed.
     try:
         import psutil
 
@@ -164,31 +236,7 @@ def _get_process_tree_rss(pid: int) -> int | None:
     except Exception:
         pass
 
-    # Strategy 2: Linux /proc filesystem (RSS pages * page_size) + child tree
-    if sys.platform != "win32":
-        try:
-            total_rss = 0
-            page_size = os.sysconf("SC_PAGE_SIZE")
-            pids = [pid]
-            try:
-                with open(f"/proc/{pid}/task/{pid}/children", "r") as f:
-                    pids.extend(int(p) for p in f.read().split())
-            except Exception:
-                pass
-
-            for p in pids:
-                try:
-                    with open(f"/proc/{p}/statm", "r") as f:
-                        parts = f.read().split()
-                        if len(parts) >= 2:
-                            total_rss += int(parts[1]) * page_size
-                except Exception:
-                    pass
-            return total_rss if total_rss > 0 else None
-        except Exception:
-            return None
-
-    # Strategy 3: Windows psapi via ctypes (measures physical WorkingSetSize, NOT commit charge)
+    # Windows psapi via ctypes (measures physical WorkingSetSize, NOT commit charge)
     try:
         import ctypes
         from ctypes import wintypes
@@ -236,6 +284,8 @@ async def _watch_process_memory(
     violation_flag: list[bool],
     stop_event: asyncio.Event,
     win_job=None,
+    isolated_group: bool = False,
+    expected_start_time: float | None = None,
 ) -> None:
     """Async background task that polls process-tree physical memory every 15ms and terminates on breach."""
     if not pid:
@@ -245,7 +295,9 @@ async def _watch_process_memory(
             mem = _get_process_tree_rss(pid)
             if mem is not None and mem > limit_bytes:
                 violation_flag[0] = True
-                _kill_process_group(pid, win_job=win_job)
+                _kill_process_group(
+                    pid, win_job=win_job, isolated_group=isolated_group, expected_start_time=expected_start_time
+                )
                 break
         except Exception:
             break
@@ -334,15 +386,37 @@ def _build_argv() -> list[str]:
     return base
 
 
-def _posix_preexec():
-    if hasattr(os, "setsid"):
-        try:
-            os.setsid()
-        except OSError:
-            pass
+def _proc_stat(pid: int) -> tuple[int, int] | None:
+    """Return Linux (parent PID, kernel start tick) without trusting the comm field."""
+    try:
+        with open(f"/proc/{pid}/stat", encoding="ascii") as stat_file:
+            fields = stat_file.read().rsplit(")", 1)[1].split()
+        return int(fields[1]), int(fields[19])
+    except (OSError, IndexError, ValueError):
+        return None
 
 
-def _kill_process_group(pid: int, win_job=None) -> None:
+def _process_start_time(pid: int) -> int | float | None:
+    if sys.platform.startswith("linux"):
+        stat = _proc_stat(pid)
+        if stat is not None:
+            return stat[1]
+    try:
+        import psutil
+
+        return psutil.Process(pid).create_time()
+    except Exception:
+        return None
+
+
+def _kill_process_group(
+    pid: int, win_job=None, *, isolated_group: bool = False, expected_start_time: int | float | None = None
+) -> None:
+    """Terminate a sandbox tree, using a POSIX group only when its isolation is known.
+
+    A PID supplied by another caller is not evidence that it leads a private group.
+    In particular, getpgid(pid) can return the server's own process group.
+    """
     if sys.platform == "win32":
         if win_job:
             _terminate_win32_job(win_job)
@@ -367,12 +441,75 @@ def _kill_process_group(pid: int, win_job=None) -> None:
         return
 
     sigkill = getattr(signal, "SIGKILL", getattr(signal, "SIGTERM", 9))
-    if hasattr(os, "killpg") and hasattr(os, "getpgid"):
+    if pid == os.getpid():
+        return
+    if isolated_group and hasattr(os, "killpg") and hasattr(os, "getpgrp"):
         try:
-            pgid = os.getpgid(pid)
-            os.killpg(pgid, sigkill)
-            return
+            # start_new_session=True makes the child's PID its process group ID.
+            # A live PID that no longer leads that group is evidence of PID reuse
+            # (or a broken launch contract); never signal its new group.
+            if pid == os.getpgrp():
+                return
+            try:
+                group_leader = os.getpgid(pid) == pid
+                if expected_start_time is not None and _process_start_time(pid) != expected_start_time:
+                    return
+            except ProcessLookupError:
+                # The leader has exited, but its group may still hold descendants.
+                group_leader = True
+            if group_leader and expected_start_time is not None:
+                os.killpg(pid, sigkill)
+                return
         except (ProcessLookupError, PermissionError, OSError):
+            pass
+    # A group may already be gone. Do not let either fallback path act on a
+    # different process that acquired the leader's numeric PID meanwhile.
+    if expected_start_time is not None and _process_start_time(pid) != expected_start_time:
+        return
+    try:
+        import psutil
+
+        target = psutil.Process(pid)
+        descendants = target.children(recursive=True)
+        for child in reversed(descendants):
+            try:
+                child.kill()
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        try:
+            target.kill()
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+        return
+    except Exception:
+        pass
+    # Production Linux does not require psutil. Snapshot parent links and start
+    # ticks before signaling so a reused descendant PID is not hit later.
+    if sys.platform.startswith("linux"):
+        try:
+            stats = {
+                int(entry.name): stat
+                for entry in os.scandir("/proc")
+                if entry.name.isdecimal() and (stat := _proc_stat(int(entry.name))) is not None
+            }
+            if expected_start_time is not None and stats.get(pid, (None, None))[1] != expected_start_time:
+                return
+            pending = [pid]
+            descendants = []
+            while pending:
+                parent = pending.pop()
+                children = [child for child, (ppid, _) in stats.items() if ppid == parent]
+                descendants.extend(children)
+                pending.extend(children)
+            for target in [*reversed(descendants), pid]:
+                stat = stats.get(target)
+                if stat is not None and _proc_stat(target) == stat:
+                    try:
+                        os.kill(target, sigkill)
+                    except (ProcessLookupError, PermissionError):
+                        pass
+            return
+        except OSError:
             pass
     try:
         os.kill(pid, sigkill)
@@ -406,9 +543,10 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
 
     started = time.perf_counter()
     argv = _build_argv()
-    preexec = _posix_preexec if sys.platform != "win32" else None
+    isolated_group = sys.platform != "win32"
 
     proc = None
+    proc_start_time = None
     win_job = None
     stop_watchdog = asyncio.Event()
     mem_violation = [False]
@@ -422,14 +560,18 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
             stderr=asyncio.subprocess.PIPE,
             cwd=workdir,
             env=env,
-            preexec_fn=preexec,
+            start_new_session=isolated_group,
         )
 
         if proc.pid:
+            proc_start_time = _process_start_time(proc.pid)
             if sys.platform == "win32":
                 win_job = _setup_win32_job_object(proc.pid)
             watchdog_task = asyncio.create_task(
-                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog, win_job=win_job)
+                _watch_process_memory(
+                    proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog, win_job=win_job,
+                    isolated_group=isolated_group, expected_start_time=proc_start_time,
+                )
             )
 
         stdout_bytes, stderr_bytes = await asyncio.wait_for(
@@ -439,7 +581,9 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
     except (asyncio.TimeoutError, TimeoutError):
         timed_out = True
         if proc and proc.pid:
-            _kill_process_group(proc.pid, win_job=win_job)
+            _kill_process_group(
+                proc.pid, win_job=win_job, isolated_group=isolated_group, expected_start_time=proc_start_time
+            )
             try:
                 await proc.wait()
             except Exception:
@@ -456,7 +600,10 @@ async def _run_one_async(code: str, entry_point: str, args: list, expected: Any,
         if win_job:
             _close_win32_job(win_job)
         if proc and proc.pid:
-            _kill_process_group(proc.pid, win_job=None)
+            _kill_process_group(
+                proc.pid, win_job=None, isolated_group=isolated_group, expected_start_time=proc_start_time
+            )
+            await proc.wait()
         shutil.rmtree(workdir, ignore_errors=True)
 
     runtime_ms = int((time.perf_counter() - started) * 1000)
@@ -589,9 +736,10 @@ async def execute_script_async(code: str) -> dict:
 
     started = time.perf_counter()
     argv = _build_argv()
-    preexec = _posix_preexec if sys.platform != "win32" else None
+    isolated_group = sys.platform != "win32"
 
     proc = None
+    proc_start_time = None
     win_job = None
     stop_watchdog = asyncio.Event()
     mem_violation = [False]
@@ -605,13 +753,17 @@ async def execute_script_async(code: str) -> dict:
             stderr=asyncio.subprocess.PIPE,
             cwd=workdir,
             env=env,
-            preexec_fn=preexec,
+            start_new_session=isolated_group,
         )
         if proc.pid:
+            proc_start_time = _process_start_time(proc.pid)
             if sys.platform == "win32":
                 win_job = _setup_win32_job_object(proc.pid)
             watchdog_task = asyncio.create_task(
-                _watch_process_memory(proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog, win_job=win_job)
+                _watch_process_memory(
+                    proc.pid, MEMORY_BYTES, mem_violation, stop_watchdog, win_job=win_job,
+                    isolated_group=isolated_group, expected_start_time=proc_start_time,
+                )
             )
 
         stdout_raw, stderr_raw = await asyncio.wait_for(
@@ -621,7 +773,9 @@ async def execute_script_async(code: str) -> dict:
     except (asyncio.TimeoutError, TimeoutError):
         timed_out = True
         if proc is not None and proc.pid:
-            _kill_process_group(proc.pid, win_job=win_job)
+            _kill_process_group(
+                proc.pid, win_job=win_job, isolated_group=isolated_group, expected_start_time=proc_start_time
+            )
             try:
                 await proc.wait()
             except Exception:
@@ -638,7 +792,10 @@ async def execute_script_async(code: str) -> dict:
         if win_job:
             _close_win32_job(win_job)
         if proc and proc.pid:
-            _kill_process_group(proc.pid, win_job=None)
+            _kill_process_group(
+                proc.pid, win_job=None, isolated_group=isolated_group, expected_start_time=proc_start_time
+            )
+            await proc.wait()
         shutil.rmtree(workdir, ignore_errors=True)
 
     runtime_ms = int((time.perf_counter() - started) * 1000)
@@ -670,7 +827,11 @@ async def execute_script_async(code: str) -> dict:
 
     if proc and proc.returncode and proc.returncode < 0:
         sig = -proc.returncode
-        if hasattr(signal, "SIGXCPU") and sig == signal.SIGXCPU:
+        if sig in (
+            getattr(signal, "SIGXCPU", -1),
+            getattr(signal, "SIGKILL", 9),
+            getattr(signal, "SIGTERM", 15),
+        ):
             return {
                 "status": "timeout",
                 "stdout": "",
@@ -708,5 +869,3 @@ async def execute_script_async(code: str) -> dict:
 async def run_custom_async(code: str, entry_point: str, args: list[Any]) -> TestResult:
     """Asynchronously run `code` against custom input arguments (for live problem testing)."""
     return await _run_one_async(code, entry_point, args, expected=None, index=0)
-
-
