@@ -282,7 +282,22 @@ export default function SapPlacementPage() {
               </div>
             )}
 
+            {currentProfile?.placement_locked && (
+              <div
+                role="status"
+                className="mb-6 border-2 border-ink bg-sky-50 p-4 text-xs text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <div className="font-mono font-bold uppercase text-sky-900">Placement locked</div>
+                <p className="mt-1 leading-relaxed">
+                  You have started SAP learning, so your placement can no longer be retaken or changed.
+                  Your completed and in-progress days are preserved. To earn concepts from days your
+                  placement skipped, use <span className="font-bold">Take Challenge</span> on those days in the roadmap.
+                </p>
+              </div>
+            )}
+
             {/* 3 Experience Options */}
+            {!currentProfile?.placement_locked && (
             <div className="space-y-4 mb-8">
               {/* Option 1: Fresher */}
               <div className="border-3 border-ink bg-surface p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px]">
@@ -368,6 +383,7 @@ export default function SapPlacementPage() {
                 </button>
               </div>
             </div>
+            )}
 
             <div className="border-t-2 border-ink pt-4 flex items-center justify-between">
               <Link
@@ -663,8 +679,8 @@ export default function SapPlacementPage() {
                     : `START FROM DAY ${placementResult.recommended_start_day} →`}
                 </Link>
 
-                {/* Option to start from Day 1 if recommended Day > 1 */}
-                {placementResult.recommended_start_day > 1 && (
+                {/* Option to start from Day 1 if recommended Day > 1 (only before learning starts) */}
+                {placementResult.recommended_start_day > 1 && !placementResult.placement_locked && (
                   <button
                     onClick={handleChooseStartDayOne}
                     disabled={changingStart}
@@ -679,15 +695,17 @@ export default function SapPlacementPage() {
               </div>
 
               <div className="flex items-center gap-4 justify-end">
-                <button
-                  onClick={() => {
-                    setStage("select_level");
-                    setAnswers({});
-                  }}
-                  className="text-xs font-bold text-muted hover:text-ink underline"
-                >
-                  Retake Diagnostic
-                </button>
+                {!placementResult.placement_locked && (
+                  <button
+                    onClick={() => {
+                      setStage("select_level");
+                      setAnswers({});
+                    }}
+                    className="text-xs font-bold text-muted hover:text-ink underline"
+                  >
+                    Retake Diagnostic
+                  </button>
+                )}
                 <Link
                   href="/sap/learning"
                   className="text-xs font-bold text-ink underline"

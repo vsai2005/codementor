@@ -132,6 +132,25 @@ export interface SapPlacementProfile {
   }>;
   demonstrated_concepts?: string[];
   gap_concepts?: string[];
+  /** True once SAP learning has started: placement can no longer be retaken or switched. */
+  placement_locked?: boolean;
+}
+
+/** A placement-waived day's assessment (no answer keys, no lesson content). */
+export interface SapWaivedDayChallenge {
+  day_number: number;
+  day_title: string;
+  title: string;
+  assessment_id: string;
+  assessment_type: string;
+  questions: Array<{
+    id?: string;
+    question_id?: string;
+    prompt?: string;
+    question?: string;
+    concept_slug?: string;
+    options?: Array<{ id: string; label?: string; text?: string }>;
+  }>;
 }
 
 export type SapExecutionCategory =

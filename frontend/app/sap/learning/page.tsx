@@ -116,11 +116,12 @@ export default function SapLearningPage() {
     ? "START SAP LEARNING"
     : `CONTINUE LEARNING — DAY ${currentDay}`;
 
-  // Waived days set (must NOT count towards completed days)
-  const waivedSet = new Set<number>([
-    ...(progress?.waived_days || []),
-    ...(placement?.waived_days || []),
-  ]);
+  // Waived days set (must NOT count towards completed days). Server progress is
+  // authoritative (it never reports a completed day as waived); the placement profile is
+  // only a fallback while progress is unavailable.
+  const waivedSet = new Set<number>(
+    progress ? progress.waived_days || [] : placement?.waived_days || []
+  );
   const completedDaysCount = (progress?.completed_days || []).filter(
     (d) => !waivedSet.has(d)
   ).length;
@@ -129,7 +130,8 @@ export default function SapLearningPage() {
   // Exact 4-State Meaningful Per-Day CTA Engine
   const getDayDetails = (dayNumber: number) => {
     const dayState = progress?.day_states?.[String(dayNumber)];
-    const isWaived = Boolean(
+    // An earned completion always wins over a placement waiver.
+    const isWaived = !dayState?.completed && Boolean(
       dayState?.status === "waived_by_placement" ||
         dayState?.waived ||
         waivedSet.has(dayNumber)
@@ -455,12 +457,27 @@ export default function SapLearningPage() {
                         >
                           {ctaState} →
                         </Link>
+                      ) : isWaived ? (
+                        <span className="flex items-center gap-2">
+                          <button
+                            disabled
+                            className={`px-3 py-1.5 text-xs transition-all ${buttonClass}`}
+                          >
+                            {ctaState}
+                          </button>
+                          <Link
+                            href={`/sap/learning/day/${day.day_number}/challenge`}
+                            className="border-2 border-ink bg-surface px-3 py-1.5 text-xs font-bold text-ink hover:bg-sky-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          >
+                            TAKE CHALLENGE →
+                          </Link>
+                        </span>
                       ) : (
                         <button
                           disabled
                           className={`px-3 py-1.5 text-xs transition-all ${buttonClass}`}
                         >
-                          {isWaived ? ctaState : `🔒 ${ctaState}`}
+                          {`🔒 ${ctaState}`}
                         </button>
                       )}
                     </div>

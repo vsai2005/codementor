@@ -12,6 +12,7 @@ from app.sap.schemas.api import (
     SAPAssessmentSubmitRequest,
     SAPAssessmentSubmitResponse,
     SAPRemediationCapsuleDetail,
+    SAPWaivedDayChallenge,
 )
 from app.sap.services.assessment import SAPAssessmentService
 from app.sap.services.progression import SAPProgressionService
@@ -19,41 +20,31 @@ from app.sap.services.progression import SAPProgressionService
 router = APIRouter()
 
 
-@router.post("/submit", response_model=SAPAssessmentSubmitResponse)
-def submit_assessment(
-    payload: SAPAssessmentSubmitRequest,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> SAPAssessmentSubmitResponse:
-    # 1. Authoritative access and gating check
-    progress = SAPProgressionService.compute_user_progress(db, user.id)
-    day_info = progress["day_states"].get(str(payload.day_number))
-    if not day_info:
-        raise HTTPException(
-            status_code=404,
-            detail=f"SAP Day {payload.day_number} does not exist.",
-        )
+def _submit_response(result: dict) -> SAPAssessmentSubmitResponse:
+    remed_capsule = None
+    if result.get("remediation_capsule"):
+        remed_capsule = SAPRemediationCapsuleDetail(**result["remediation_capsule"])
 
-    if day_info.get("waived"):
-        raise HTTPException(
-            status_code=403,
-            detail=f"SAP Day {payload.day_number} was waived by diagnostic placement and cannot be submitted.",
-        )
+    return SAPAssessmentSubmitResponse(
+        submission_id=result["submission_id"],
+        passed=result["passed"],
+        score=result["score"],
+        feedback=result["feedback"],
+        evaluation_breakdown=result["evaluation_breakdown"],
+        mastery_updated=result["mastery_updated"],
+        concept_evaluations=result.get("concept_evaluations", []),
+        remediation_required=result["remediation_required"],
+        remediation_capsule=remed_capsule,
+        all_remediations=result.get("all_remediations", []),
+        day_completed=result.get("day_completed", False),
+        unlocked_next_day=result.get("unlocked_next_day", False),
+        current_day=result.get("current_day"),
+        next_day_number=result.get("next_day_number"),
+    )
 
-    if not day_info.get("unlocked") or day_info.get("status") == "locked":
-        raise HTTPException(
-            status_code=403,
-            detail=f"SAP Day {payload.day_number} is locked. Complete prerequisite days first.",
-        )
 
-    # 2. Mandatory practice requirement before assessment attempt
-    if not day_info.get("practice_completed") and not day_info.get("completed"):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Interactive practice is mandatory. Complete Day {payload.day_number} practice before attempting assessment.",
-        )
-
-    # 3. Authoritative server-side assessment identity binding
+def _bind_assessment_identity(payload: SAPAssessmentSubmitRequest) -> tuple[str, str]:
+    """Binds a submission to the day's authoritative assessment id and type (else 400/404)."""
     from app.data.sap_lessons import SAP_DAYS_CONTENT
 
     day_data = SAP_DAYS_CONTENT.get(payload.day_number)
@@ -129,6 +120,48 @@ def submit_assessment(
             ),
         )
 
+    return canonical_id, canonical_type
+
+
+
+
+@router.post("/submit", response_model=SAPAssessmentSubmitResponse)
+def submit_assessment(
+    payload: SAPAssessmentSubmitRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> SAPAssessmentSubmitResponse:
+    # 1. Authoritative access and gating check
+    progress = SAPProgressionService.compute_user_progress(db, user.id)
+    day_info = progress["day_states"].get(str(payload.day_number))
+    if not day_info:
+        raise HTTPException(
+            status_code=404,
+            detail=f"SAP Day {payload.day_number} does not exist.",
+        )
+
+    if day_info.get("waived"):
+        raise HTTPException(
+            status_code=403,
+            detail=f"SAP Day {payload.day_number} was waived by diagnostic placement and cannot be submitted.",
+        )
+
+    if not day_info.get("unlocked") or day_info.get("status") == "locked":
+        raise HTTPException(
+            status_code=403,
+            detail=f"SAP Day {payload.day_number} is locked. Complete prerequisite days first.",
+        )
+
+    # 2. Mandatory practice requirement before assessment attempt
+    if not day_info.get("practice_completed") and not day_info.get("completed"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Interactive practice is mandatory. Complete Day {payload.day_number} practice before attempting assessment.",
+        )
+
+    # 3. Authoritative server-side assessment identity binding
+    canonical_id, canonical_type = _bind_assessment_identity(payload)
+
     try:
         result = SAPAssessmentService.evaluate(
             db=db,
@@ -142,23 +175,82 @@ def submit_assessment(
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
 
-    remed_capsule = None
-    if result.get("remediation_capsule"):
-        remed_capsule = SAPRemediationCapsuleDetail(**result["remediation_capsule"])
+    return _submit_response(result)
 
-    return SAPAssessmentSubmitResponse(
-        submission_id=result["submission_id"],
-        passed=result["passed"],
-        score=result["score"],
-        feedback=result["feedback"],
-        evaluation_breakdown=result["evaluation_breakdown"],
-        mastery_updated=result["mastery_updated"],
-        concept_evaluations=result.get("concept_evaluations", []),
-        remediation_required=result["remediation_required"],
-        remediation_capsule=remed_capsule,
-        all_remediations=result.get("all_remediations", []),
-        day_completed=result.get("day_completed", False),
-        unlocked_next_day=result.get("unlocked_next_day", False),
-        current_day=result.get("current_day"),
-        next_day_number=result.get("next_day_number"),
+
+# =============================================================================
+# Waived-day challenges
+# =============================================================================
+
+def _require_waived_day(db: Session, user_id, day_number: int) -> None:
+    progress = SAPProgressionService.compute_user_progress(db, user_id)
+    day_info = progress["day_states"].get(str(day_number))
+    if not day_info:
+        raise HTTPException(status_code=404, detail=f"SAP Day {day_number} does not exist.")
+    if not day_info.get("waived"):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"SAP Day {day_number} was not waived by placement. Challenges are only for waived "
+                "days; take this day's assessment through its lesson."
+            ),
+        )
+
+
+@router.get("/challenge/{day_number}", response_model=SAPWaivedDayChallenge)
+def get_waived_day_challenge(
+    day_number: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> SAPWaivedDayChallenge:
+    """Returns ONLY the (answer-key-free) assessment of a day the learner's placement waived.
+
+    The waived lesson itself stays closed (GET /learning/lessons/{day} remains 403); this is
+    the path to earn that day's concepts from real graded evidence.
+    """
+    from app.data.sap_lessons import SAP_DAYS_CONTENT
+
+    _require_waived_day(db, user.id, day_number)
+    lesson = SAP_DAYS_CONTENT.get(day_number)
+    if not lesson:
+        raise HTTPException(status_code=404, detail=f"SAP Day {day_number} content definition not found.")
+    sanitized = SAPAssessmentService.sanitize_lesson_content(day_number, lesson)
+    step = next((s for s in sanitized["steps"] if s.get("step_type") == "assessment"), None)
+    if step is None:
+        raise HTTPException(status_code=404, detail=f"No assessment defined for SAP Day {day_number}.")
+    return SAPWaivedDayChallenge(
+        day_number=day_number,
+        day_title=lesson.get("title", f"Day {day_number}"),
+        title=step.get("title") or f"Day {day_number} Challenge",
+        assessment_id=step["assessment_id"],
+        assessment_type=step["assessment_type"],
+        questions=step.get("questions") or [],
     )
+
+
+@router.post("/challenge", response_model=SAPAssessmentSubmitResponse)
+def submit_waived_day_challenge(
+    payload: SAPAssessmentSubmitRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> SAPAssessmentSubmitResponse:
+    """Grades a waived day's assessment server-side and records the demonstrated concepts.
+
+    Mastery changes only from the graded answers. The day stays waived: no lesson, practice,
+    completion, unlock, or current-day change.
+    """
+    _require_waived_day(db, user.id, payload.day_number)
+    canonical_id, canonical_type = _bind_assessment_identity(payload)
+    try:
+        result = SAPAssessmentService.evaluate(
+            db=db,
+            user_id=user.id,
+            day_number=payload.day_number,
+            assessment_id=canonical_id,
+            assessment_type=canonical_type,
+            submission_payload=payload.submission_payload,
+            waived_day_challenge=True,
+        )
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    return _submit_response(result)

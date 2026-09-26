@@ -31,15 +31,15 @@ async function currentOrder(page: Page): Promise<string[]> {
 
 async function arrange(page: Page, target: string[]) {
   // Selection-sort using the per-item "Move up" buttons.
-  for (let pos = 0; pos < target.length; pos++) {
+  for (const [pos, item] of target.entries()) {
     let order = await currentOrder(page);
-    let idx = order.indexOf(target[pos]);
+    let idx = order.indexOf(item);
     while (idx > pos) {
-      await page.getByRole('button', { name: `Move ${target[pos]} up` }).click();
+      await page.getByRole('button', { name: `Move ${item} up` }).click();
       idx -= 1;
     }
     order = await currentOrder(page);
-    expect(order[pos]).toBe(target[pos]);
+    expect(order[pos]).toBe(item);
   }
 }
 

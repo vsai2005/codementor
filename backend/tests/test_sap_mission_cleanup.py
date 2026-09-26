@@ -33,8 +33,8 @@ from app.models.sap_models import (
     SAPSkillEvidence,
     SAPUserConceptMastery,
 )
-from app.sap.data.placement_questions import EXPERIENCED_QUESTIONS, NOT_SURE_QUESTIONS
 from app.sap.services.missions import SAPMissionRegistry, SAPMissionService
+from tests.sap_concept_paths import assessment_evidence_concepts, mission_fixpoint, placement_concepts
 
 client = TestClient(app, raise_server_exceptions=False)
 
@@ -51,42 +51,11 @@ FORBIDDEN_KEYS = {
 # Helpers
 # =============================================================================
 
-def assessment_evidence_concepts(day_number: int) -> set[str]:
-    """Concepts SAPAssessmentService.evaluate credits for a day (mirrors its rules).
-
-    Question-based assessments credit each question's concept_slug, falling back to the
-    step's concept_slug, then the day's first atomic concept. Assessments without
-    questions credit only the step's concept_slug.
-    """
-    lesson = SAP_DAYS_CONTENT[day_number]
-    step = next(s for s in lesson["steps"] if s["step_type"] == "assessment")
-    root = step.get("concept_slug") or (lesson.get("atomic_concepts") or [f"sap-day-{day_number}"])[0]
-    questions = step.get("questions") or []
-    if questions:
-        return {q.get("concept_slug") or root for q in questions}
-    return {step["concept_slug"]} if step.get("concept_slug") else set()
-
-
 def earnable_concepts_and_reachable_missions() -> tuple[set[str], set[str]]:
-    engine = SAPCurriculumKnowledgeEngine.get_instance()
-    earnable = set()
+    seed: set[str] = set()
     for day in SAP_DAYS_CONTENT:
-        earnable |= assessment_evidence_concepts(day)
-    earnable |= {q["concept_slug"] for q in EXPERIENCED_QUESTIONS + NOT_SURE_QUESTIONS if q.get("concept_slug")}
-    earnable = {c for c in earnable if engine.get_concept(c) is not None}
-
-    reachable: set[str] = set()
-    changed = True
-    while changed:
-        changed = False
-        for m in SAPMissionRegistry.get_all():
-            if m["slug"] in reachable:
-                continue
-            if m["difficulty"] <= 1 or all(p in earnable for p in m["prerequisite_concepts"]):
-                reachable.add(m["slug"])
-                earnable |= set(m["concept_slugs"])
-                changed = True
-    return earnable, reachable
+        seed |= assessment_evidence_concepts(day)
+    return mission_fixpoint(seed | placement_concepts())
 
 
 def find_forbidden(obj, path="$") -> list[str]:

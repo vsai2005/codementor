@@ -208,6 +208,10 @@ class SAPPlacementProfileResponse(BaseModel):
     topic_breakdown: list[dict[str, Any]] = Field(default_factory=list)
     demonstrated_concepts: list[str] = Field(default_factory=list)
     gap_concepts: list[str] = Field(default_factory=list)
+    placement_locked: bool = Field(
+        default=False,
+        description="True once SAP learning has started; placement can no longer be retaken or switched.",
+    )
 
 
 
@@ -242,6 +246,16 @@ class SAPAssessmentSubmitRequest(BaseModel):
     )
     rubric_spec: dict[str, Any] = Field(default_factory=dict)
     submission_payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class SAPWaivedDayChallenge(BaseModel):
+    """A placement-waived day's assessment, without answer keys or lesson content."""
+    day_number: int
+    day_title: str
+    title: str
+    assessment_id: str
+    assessment_type: str
+    questions: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class SAPAssessmentSubmitResponse(BaseModel):

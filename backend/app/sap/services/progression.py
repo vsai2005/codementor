@@ -42,8 +42,14 @@ class SAPProgressionService:
         ).scalars().all()
         state_by_day = {r.day_number: r for r in rows}
 
+        def _earned(day: int) -> bool:
+            r = state_by_day.get(day)
+            return bool(r and r.lesson_completed and r.practice_completed and r.assessment_passed)
+
+        # Earned completion is permanent: a placement waiver can never hide or replace a day
+        # the learner actually completed (this also repairs rows corrupted by old reruns).
         completed_days: list[int] = []
-        waived_days: list[int] = sorted(list(waived_by_placement))
+        waived_days: list[int] = sorted(d for d in waived_by_placement if not _earned(d))
         day_states: dict[str, dict] = {}
         found_current = False
         current_day = starting_day
@@ -54,10 +60,10 @@ class SAPProgressionService:
             lesson_done = bool(r.lesson_completed) if r else False
             assessment_done = bool(r.assessment_passed) if r else False
             practice_done = bool(r.practice_completed) if r else False
-            is_waived = (day in waived_by_placement) or (bool(r.waived) if r else False)
-
-            # Strictly completed ONLY if lesson, practice, and assessment were passed and not waived
-            is_completed = lesson_done and practice_done and assessment_done and not is_waived
+            is_completed = lesson_done and practice_done and assessment_done
+            is_waived = not is_completed and (
+                (day in waived_by_placement) or (bool(r.waived) if r else False)
+            )
 
             if is_completed:
                 completed_days.append(day)

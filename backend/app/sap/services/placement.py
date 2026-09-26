@@ -16,9 +16,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.sap_models import (
+    SAPAssessmentAttempt,
     SAPDayStatus,
+    SAPMissionAttempt,
     SAPPlacementProfile,
     SAPPlacementStatus,
+    SAPSkillEvidence,
     SAPUserDayState,
     SAPUserState,
 )
@@ -26,7 +29,20 @@ from app.sap.data.placement_questions import evaluate_assessment_answers
 from app.sap.services.mastery import SAPMasteryService
 
 
+class SAPPlacementLockedError(ValueError):
+    """Placement can no longer change: the learner has started learning (HTTP 409)."""
+
+
 class SAPPlacementService:
+    """Placement lifecycle.
+
+    Placement is an onboarding decision. It may be taken, retaken, or switched between
+    Day 1 and the assessed day any number of times UNTIL the learner produces learning
+    evidence (see learning_evidence). From then on placement is locked: submit and
+    choose-start raise SAPPlacementLockedError before any write, so historical days can
+    never be waived, relocked, reset, or moved backward by a later diagnostic.
+    """
+
     PERSONA_CONFIG = {
         "fresher": {
             "title": "Fresher / ERP Newcomer",
@@ -61,6 +77,53 @@ class SAPPlacementService:
     }
 
     @classmethod
+    def learning_evidence(cls, db: Session, user_id: uuid.UUID) -> list[str]:
+        """Kinds of SAP learning evidence the learner has; empty means placement may change.
+
+        Placement's own outputs (profile, waived/start day rows, diagnostic mastery) are not
+        learning evidence. Anything the learner did after placement is.
+        """
+        found: list[str] = []
+        day_progress = db.execute(
+            select(SAPUserDayState.id).where(
+                SAPUserDayState.user_id == user_id,
+                (SAPUserDayState.lesson_started.is_(True))
+                | (SAPUserDayState.lesson_completed.is_(True))
+                | (SAPUserDayState.practice_completed.is_(True))
+                | (SAPUserDayState.assessment_passed.is_(True))
+                | (SAPUserDayState.completed.is_(True)),
+            ).limit(1)
+        ).first()
+        if day_progress:
+            found.append("day_progress")
+        for label, model in (
+            ("assessment_attempts", SAPAssessmentAttempt),
+            ("mission_attempts", SAPMissionAttempt),
+            ("skill_evidence", SAPSkillEvidence),
+        ):
+            if db.execute(select(model.id).where(model.user_id == user_id).limit(1)).first():
+                found.append(label)
+        return found
+
+    @classmethod
+    def require_placement_changeable(cls, db: Session, user_id: uuid.UUID) -> None:
+        evidence = cls.learning_evidence(db, user_id)
+        if evidence:
+            raise SAPPlacementLockedError(
+                "Placement is locked because SAP learning has started "
+                f"({', '.join(evidence)}). Your completed and in-progress days are preserved; "
+                "use waived-day challenges to earn skipped concepts instead of retaking placement."
+            )
+
+    @staticmethod
+    def _placement_outcome(profile_or_results: dict) -> dict:
+        keys = (
+            "experience_level", "overall_score", "waived_days", "original_recommended_day",
+            "demonstrated_concepts", "gap_concepts",
+        )
+        return {k: profile_or_results.get(k) for k in keys}
+
+    @classmethod
     def evaluate_diagnostic(
         cls,
         db: Session,
@@ -78,7 +141,12 @@ class SAPPlacementService:
         - 'fresher' -> No assessment required, places at Day 1.
         - 'experienced' -> Graded against 10 technical questions; evaluated on overall score + topic scores + prerequisite mastery.
         - 'not_sure' -> Graded against 6 fundamental questions; evaluated on foundational grasp.
+
+        Raises SAPPlacementLockedError (no writes) once learning has started. An identical
+        retake returns the stored profile unchanged. Diagnostic mastery is awarded once per
+        concept across retakes, so retaking never inflates mastery.
         """
+        cls.require_placement_changeable(db, user_id)
         level = (experience_level or persona_self_select or "fresher").strip().lower()
         if level in ("fresher", "beginner_fresher"):
             level = "fresher"
@@ -190,18 +258,6 @@ class SAPPlacementService:
 
         now = datetime.now(timezone.utc)
 
-        # Record concept evidence for demonstrated concepts into the DAG
-        for c_slug in demonstrated_concepts:
-            try:
-                SAPMasteryService.record_concept_attempt(
-                    db=db,
-                    user_id=user_id,
-                    concept_slug=c_slug,
-                    score=100.0,
-                )
-            except Exception:
-                pass
-
         # Build topic breakdown for client visualization
         for topic_key, score_val in evaluated_domain_scores.items():
             topic_breakdown.append({
@@ -215,7 +271,14 @@ class SAPPlacementService:
             select(SAPPlacementProfile).where(SAPPlacementProfile.user_id == user_id)
         ).scalar_one_or_none()
 
+        previous_results = dict(profile.diagnostic_results or {}) if profile else {}
+        already_awarded = set(
+            previous_results.get("awarded_concepts", previous_results.get("demonstrated_concepts", []))
+        )
+        new_awards = [c for c in demonstrated_concepts if c not in already_awarded]
+
         diagnostic_results = {
+            "awarded_concepts": sorted(already_awarded | set(demonstrated_concepts)),
             "overall_score": overall_score,
             "experience_level": level,
             "waived_days": waived_days,
@@ -227,6 +290,16 @@ class SAPPlacementService:
             "topic_breakdown": topic_breakdown,
             "evaluation_timestamp": now.isoformat(),
         }
+
+        # Identical retake while still changeable: nothing to change.
+        if (
+            profile is not None
+            and profile.recommended_start_day == starting_day
+            and previous_results.get("waived_days") == waived_days
+            and cls._placement_outcome(previous_results) == cls._placement_outcome(diagnostic_results)
+            and not new_awards
+        ):
+            return profile
 
         if profile is None:
             profile = SAPPlacementProfile(
@@ -302,12 +375,9 @@ class SAPPlacementService:
                     completed=False,
                 )
                 db.add(day_state)
-            else:
+            elif not cls._has_progress(day_state):
                 day_state.status = SAPDayStatus.WAIVED_BY_PLACEMENT.value
                 day_state.waived = True
-                if not day_state.completed:
-                    day_state.lesson_completed = False
-                    day_state.assessment_passed = False
 
         # Ensure starting day is accessible and not waived
         start_day_state = existing_day_map.get(starting_day)
@@ -328,9 +398,28 @@ class SAPPlacementService:
             if not start_day_state.completed and not start_day_state.lesson_started:
                 start_day_state.status = SAPDayStatus.AVAILABLE.value
 
+        # Award diagnostic mastery only for concepts newly demonstrated in this placement.
+        for c_slug in new_awards:
+            try:
+                SAPMasteryService.record_concept_attempt(
+                    db=db,
+                    user_id=user_id,
+                    concept_slug=c_slug,
+                    score=100.0,
+                )
+            except ValueError:
+                pass  # unregistered concept slug in question data: award nothing
+
         db.commit()
         db.refresh(profile)
         return profile
+
+    @staticmethod
+    def _has_progress(day_state: SAPUserDayState) -> bool:
+        return bool(
+            day_state.lesson_started or day_state.lesson_completed or day_state.practice_completed
+            or day_state.assessment_passed or day_state.completed
+        )
 
     @classmethod
     def choose_start_day(
@@ -361,6 +450,8 @@ class SAPPlacementService:
 
         if not profile:
             raise ValueError("No diagnostic profile found for this user.")
+
+        cls.require_placement_changeable(db, user_id)
 
         diag_res = dict(profile.diagnostic_results or {})
         original_recommended_day = diag_res.get("original_recommended_day")
@@ -455,7 +546,7 @@ class SAPPlacementService:
                         completed=False,
                     )
                     db.add(ds)
-                elif not ds.completed:
+                elif not cls._has_progress(ds):
                     ds.waived = True
                     ds.status = SAPDayStatus.WAIVED_BY_PLACEMENT.value
 

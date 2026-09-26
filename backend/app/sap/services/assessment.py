@@ -138,8 +138,15 @@ class SAPAssessmentService:
         assessment_type: str,
         rubric_spec: dict[str, Any] | None = None,
         submission_payload: dict[str, Any] | None = None,
+        waived_day_challenge: bool = False,
     ) -> dict[str, Any]:
-        """Evaluates an assessment attempt strictly from server-side definitions."""
+        """Evaluates an assessment attempt strictly from server-side definitions.
+
+        waived_day_challenge: grades a placement-waived day's assessment so the learner can
+        earn its concepts. The attempt and skill evidence are recorded (source
+        "placement_challenge"), but day and macro progression are never touched: the day
+        stays waived and its lesson stays closed.
+        """
         from app.data.sap_lessons import SAP_DAYS_CONTENT
 
         # 1. Authoritative lesson content lookup
@@ -325,7 +332,11 @@ class SAPAssessmentService:
         attempt = SAPAssessmentAttempt(
             user_id=user_id,
             assessment_id=assessment.id,
-            attempt_type=SAPAssessmentAttemptType.DAILY_CHECK.value,
+            attempt_type=(
+                SAPAssessmentAttemptType.PLACEMENT_TEST.value
+                if waived_day_challenge
+                else SAPAssessmentAttemptType.DAILY_CHECK.value
+            ),
             response=submission_payload,
             evaluation=breakdown,
             score=score,
@@ -356,7 +367,11 @@ class SAPAssessmentService:
                 concept_slug=c_slug,
                 evidence={
                     "score": c_score,
-                    "source_type": "capstone_assessment" if is_capstone else "guided_assessment",
+                    "source_type": (
+                        "placement_challenge" if waived_day_challenge
+                        else "capstone_assessment" if is_capstone
+                        else "guided_assessment"
+                    ),
                     "source_id": str(assessment.id),
                     "mode": "GUIDED",
                     "assistance_level": "TRAINING",
@@ -397,8 +412,8 @@ class SAPAssessmentService:
         current_day = day_number
         next_day_number = min(100, day_number + 1) if day_number < 100 else None
 
-        # 5. If passed, update day state & macro user state
-        if passed:
+        # 5. If passed, update day state & macro user state (never for waived-day challenges)
+        if passed and not waived_day_challenge:
             day_state = db.execute(
                 select(SAPUserDayState).where(
                     SAPUserDayState.user_id == user_id,

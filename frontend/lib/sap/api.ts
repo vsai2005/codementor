@@ -9,6 +9,7 @@ import type {
   SapAssessmentSubmitResponse,
   SapCompleteLessonResponse,
   SapCompletePracticeResponse,
+  SapWaivedDayChallenge,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -96,6 +97,16 @@ export const sapApi = {
 
   submitAssessment: (payload: SapAssessmentSubmitRequest): Promise<SapAssessmentSubmitResponse> =>
     request<SapAssessmentSubmitResponse>("/api/sap/assessments/submit", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  /** A waived day's graded challenge: earns its concepts; the day stays waived. */
+  getWaivedDayChallenge: (dayNumber: number): Promise<SapWaivedDayChallenge> =>
+    request<SapWaivedDayChallenge>(`/api/sap/assessments/challenge/${dayNumber}`),
+
+  submitWaivedDayChallenge: (payload: SapAssessmentSubmitRequest): Promise<SapAssessmentSubmitResponse> =>
+    request<SapAssessmentSubmitResponse>("/api/sap/assessments/challenge", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

@@ -20,6 +20,7 @@ import ast
 from pathlib import Path
 import uuid
 import pytest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from app.api.deps import get_current_user
@@ -577,7 +578,9 @@ def test_dag_complete_reachability_and_cycle_freedom():
 # 13. Evidence-Based Placement & Untested Concept Protection
 # =============================================================================
 
-def test_placement_evidence_routing_and_untested_concept_protection():
+# A mocked DB cannot answer the learning-evidence queries; model a fresh learner.
+@patch.object(SAPPlacementService, "learning_evidence", return_value=[])
+def test_placement_evidence_routing_and_untested_concept_protection(_no_learning_evidence):
     """Verifies that placement routes based on domain evidence and waives days without falsely marking untested concepts as mastered."""
     from unittest.mock import MagicMock
 
