@@ -227,7 +227,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
     try {
       const res = await sapApi.submitAssessment({
         day_number: lesson.day_number,
-        assessment_id: currentStep.step_id || `day-${lesson.day_number}-assessment`,
+        assessment_id: currentStep.assessment_id || currentStep.step_id || `day-${lesson.day_number}-assessment`,
         assessment_type: (currentStep.assessment_type as any) || (currentStep.multi_concept_eval ? "capstone_multi_concept" : "mcq"),
         submission_payload: {
           answers: payloadAnswers,
@@ -660,7 +660,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
                     className="border-2 border-ink bg-surface-raised p-4"
                   >
                     <legend className="sr-only">
-                      Question {qIdx + 1} of {(currentStep.questions || []).length}: {q.prompt}
+                      Question {qIdx + 1} of {(currentStep.questions || []).length}: {q.prompt || q.question}
                     </legend>
                     <div className="flex items-center justify-between text-xs font-mono font-bold mb-2">
                       <span className="text-ink">Question {qIdx + 1} of {(currentStep.questions || []).length}</span>
@@ -672,7 +672,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
                     </div>
 
                     <div className="text-sm font-black text-ink mb-3 leading-snug">
-                      {q.prompt}
+                      {q.prompt || q.question}
                     </div>
 
                     <div className="space-y-2">
@@ -704,7 +704,7 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
                               <span className="font-mono font-black mr-2">
                                 [{opt.id}]
                               </span>
-                              {opt.label}
+                              {opt.label || opt.text}
                             </span>
                           </label>
                         );

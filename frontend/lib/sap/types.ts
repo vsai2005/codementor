@@ -358,6 +358,7 @@ export interface SapLessonStep {
   } | null;
   is_capstone?: boolean | null;
   assessment_type?: SapAssessmentType | string | null;
+  assessment_id?: string | null;
   multi_concept_eval?: boolean | null;
   concepts_evaluated?: string[] | null;
 }

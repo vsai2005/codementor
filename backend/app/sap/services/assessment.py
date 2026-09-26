@@ -22,6 +22,102 @@ from app.sap.services.mastery import SAPMasteryService
 
 class SAPAssessmentService:
     @classmethod
+    def sanitize_lesson_content(cls, day_number: int, lesson_dict: dict[str, Any]) -> dict[str, Any]:
+        """Deep-copies and strictly sanitizes lesson content before returning to client.
+
+        - Preserves all authoritative data server-side (does not mutate lesson_dict).
+        - Populates canonical assessment_type and assessment_id on the assessment step.
+        - Recursively scrubs answer keys, scoring keys, rubrics, expected outputs,
+          and hidden evaluator fields from assessment steps, questions, and options.
+        - Preserves everything the frontend legitimately needs to render questions:
+          ids, prompts, question text, concept_slug, and option id, text, and label.
+        """
+        import copy
+        sanitized = copy.deepcopy(lesson_dict)
+
+        SENSITIVE_OPTION_KEYS = {
+            "is_correct", "explanation", "scoring_key", "rubric", "expected_output",
+            "correct", "correct_answer", "correct_option_id",
+        }
+        SENSITIVE_QUESTION_KEYS = {
+            "explanation", "correct_answer", "correct_option_id", "scoring_key",
+            "rubric", "evaluator", "expected_output", "solution",
+        }
+        SENSITIVE_STEP_KEYS = {
+            "rubric", "rubric_or_solution", "scoring_criteria", "solution", "expected_output",
+        }
+
+        for step in sanitized.get("steps", []):
+            st = step.get("step_type")
+            is_assessment = (st == "assessment" or "questions" in step)
+
+            if is_assessment:
+                # 1. Determine canonical assessment type & id
+                raw_type = step.get("assessment_type")
+                if raw_type:
+                    canonical_type = raw_type
+                elif step.get("multi_concept_eval") or step.get("is_capstone"):
+                    canonical_type = "capstone_multi_concept"
+                else:
+                    canonical_type = "mcq"
+
+                step["assessment_type"] = canonical_type
+                step["assessment_id"] = step.get("assessment_id") or step.get("step_id") or f"d{day_number}_s6_assessment"
+
+                # 2. Strip sensitive keys from the assessment step
+                for k in list(step.keys()):
+                    if k in SENSITIVE_STEP_KEYS or k.startswith("hidden_"):
+                        del step[k]
+
+                # 3. Sanitize questions & options
+                if "questions" in step and isinstance(step["questions"], list):
+                    sanitized_questions = []
+                    for q in step["questions"]:
+                        if not isinstance(q, dict):
+                            continue
+                        clean_q = {}
+                        for k, v in q.items():
+                            if k in SENSITIVE_QUESTION_KEYS or k.startswith("hidden_"):
+                                continue
+                            if k == "options" and isinstance(v, list):
+                                clean_opts = []
+                                for opt in v:
+                                    if not isinstance(opt, dict):
+                                        continue
+                                    clean_opt = {
+                                        ok: ov for ok, ov in opt.items()
+                                        if ok not in SENSITIVE_OPTION_KEYS and not ok.startswith("hidden_")
+                                    }
+                                    # Normalize text & label for resilient rendering
+                                    if "text" in clean_opt and "label" not in clean_opt:
+                                        clean_opt["label"] = clean_opt["text"]
+                                    elif "label" in clean_opt and "text" not in clean_opt:
+                                        clean_opt["text"] = clean_opt["label"]
+                                    clean_opts.append(clean_opt)
+                                clean_q["options"] = clean_opts
+                            else:
+                                clean_q[k] = v
+
+                        # Normalize prompt & question
+                        if "prompt" in clean_q and "question" not in clean_q:
+                            clean_q["question"] = clean_q["prompt"]
+                        elif "question" in clean_q and "prompt" not in clean_q:
+                            clean_q["prompt"] = clean_q["question"]
+
+                        sanitized_questions.append(clean_q)
+                    step["questions"] = sanitized_questions
+
+            elif st == "interactive_practice":
+                # Remove unused option answer leakage in interactive practice
+                if "options" in step and isinstance(step["options"], list):
+                    step["options"] = [
+                        {k: v for k, v in opt.items() if k not in SENSITIVE_OPTION_KEYS and not k.startswith("hidden_")}
+                        for opt in step["options"] if isinstance(opt, dict)
+                    ]
+
+        return sanitized
+
+    @classmethod
     def evaluate(
         cls,
         db: Session,
@@ -93,6 +189,8 @@ class SAPAssessmentService:
         allowed_types = {
             "mcq",
             "capstone_multi_concept",
+            "capstone_quiz",
+            "concept_quiz",
             "scenario_decision",
             "process_ordering",
             "rubric_based",
@@ -101,6 +199,10 @@ class SAPAssessmentService:
             "abap_challenge",
             "cds_challenge",
             "rap_challenge",
+            "technical_audit",
+            "data_modeling",
+            "decision_matrix",
+            "analytics_eval",
         }
         if canonical_type not in allowed_types:
             raise ValueError(f"Unsupported assessment type: '{canonical_type}'.")
@@ -201,6 +303,9 @@ class SAPAssessmentService:
                 pass_score=int(pass_score),
             )
             db.add(assessment)
+            db.flush()
+        elif assessment.assessment_type != canonical_type:
+            assessment.assessment_type = canonical_type
             db.flush()
 
         now = datetime.now(timezone.utc)
@@ -375,7 +480,7 @@ class SAPAssessmentService:
         correct = set(spec.get("correct_option_ids", []))
 
         if not correct:
-            return 100.0, "Passed.", {"matches": True}
+            raise ValueError("Assessment configuration error: no correct option defined.")
 
         if selected == correct:
             return 100.0, "Correct! Exceptional understanding of S/4HANA principles.", {"accuracy": 1.0}
@@ -393,7 +498,7 @@ class SAPAssessmentService:
         target = spec.get("target_ordered_ids", [])
 
         if not target:
-            return 100.0, "Ordered.", {"match_ratio": 1.0}
+            raise ValueError("Assessment configuration error: no target sequence defined.")
 
         if submitted == target:
             return 100.0, "Process sequence perfectly ordered!", {"match_ratio": 1.0}
@@ -407,7 +512,13 @@ class SAPAssessmentService:
         chosen_id = payload.get("decision_id")
         decisions = spec.get("decisions", {})
 
-        outcome = decisions.get(chosen_id, {})
+        if not decisions:
+            raise ValueError("Assessment configuration error: no scenario decisions defined.")
+
+        outcome = decisions.get(chosen_id)
+        if outcome is None:
+            return 0.0, "Unrecognized or invalid scenario decision.", {"matched": False}
+
         score = float(outcome.get("score", 0.0))
         feedback = outcome.get("rationale", "Decision evaluated against enterprise guidelines.")
         return score, feedback, outcome.get("impact_metrics", {})
@@ -415,6 +526,9 @@ class SAPAssessmentService:
     @staticmethod
     def _eval_rubric(spec: dict, payload: dict) -> tuple[float, str, dict]:
         criteria = spec.get("criteria", [])
+        if not criteria:
+            raise ValueError("Assessment configuration error: no rubric criteria defined.")
+
         ratings = payload.get("ratings", {})
 
         total_score = 0.0

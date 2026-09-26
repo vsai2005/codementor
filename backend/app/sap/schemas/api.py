@@ -434,6 +434,8 @@ class SAPLessonStep(BaseModel):
     is_capstone: bool | None = None
     multi_concept_eval: bool | None = None
     concepts_evaluated: list[str] | None = None
+    assessment_type: str | None = None
+    assessment_id: str | None = None
 
 
 class SAPLessonDetail(BaseModel):

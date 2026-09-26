@@ -17,6 +17,7 @@ from app.sap.schemas.api import (
     SAPLessonDetail,
     SAPProgressResponse,
 )
+from app.sap.services.assessment import SAPAssessmentService
 from app.sap.services.progression import SAPProgressionService
 
 router = APIRouter()
@@ -72,7 +73,8 @@ def get_lesson_content(
             detail=f"Day {day_number} is locked. Complete prior days or take the diagnostic placement first.",
         )
 
-    return SAPLessonDetail(**lesson)
+    sanitized = SAPAssessmentService.sanitize_lesson_content(day_number, lesson)
+    return SAPLessonDetail(**sanitized)
 
 
 @router.post("/complete-lesson", response_model=SAPCompleteLessonResponse)
