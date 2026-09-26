@@ -207,8 +207,9 @@ export interface SapMissionStep {
   title: string;
   step_type: string;
   instruction: string;
-  options?: Array<{ id: string; label: string; is_correct?: boolean }>;
-  correct_order?: string[];
+  options?: Array<{ id: string; label: string }>;
+  /** order_process steps: items to arrange, in a random order (never the answer key). */
+  items?: string[];
 }
 
 export interface SapMissionDetail {

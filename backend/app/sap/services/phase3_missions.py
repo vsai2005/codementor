@@ -20,7 +20,12 @@ PHASE_3_SEED_MISSIONS: list[dict[str, Any]] = [
         "estimated_minutes": 25,
         "related_days": [23, 24, 25, 28],
         "concept_slugs": ["p2p-pr-creation", "account-assignment-categories", "flexible-workflow"],
-        "prerequisite_concepts": ["invoice-verification-miro", "goods-receipt-migo", "erp-foundations-synthesis"],
+        "prerequisite_concepts": [
+            "p2p-invoice-verification-miro",
+            "p2p-goods-receipt-migo",
+            "three-tier-architecture",
+            "module-interconnectivity",
+        ],
         "company_context": {
             "company_name": "Nova Manufacturing Corp",
             "company_code": "NM01",
@@ -421,7 +426,7 @@ PHASE_3_SEED_MISSIONS: list[dict[str, Any]] = [
         "estimated_minutes": 25,
         "related_days": [33, 34],
         "concept_slugs": ["o2c-billing-creation", "revenue-recognition-posting", "o2c-post-goods-issue"],
-        "prerequisite_concepts": ["o2c-outbound-delivery"],
+        "prerequisite_concepts": ["shipping-point-determination"],
         "company_context": {
             "company_name": "Nova Manufacturing Corp",
             "company_code": "NM01",
@@ -497,7 +502,7 @@ PHASE_3_SEED_MISSIONS: list[dict[str, Any]] = [
         "estimated_minutes": 25,
         "related_days": [35, 38],
         "concept_slugs": ["period-end-closing", "foreign-currency-valuation", "asset-depreciation-afab"],
-        "prerequisite_concepts": ["gl-journal-entry"],
+        "prerequisite_concepts": ["posting-keys"],
         "company_context": {
             "company_name": "Nova Manufacturing Corp",
             "company_code": "NM01",
@@ -725,7 +730,7 @@ PHASE_3_SEED_MISSIONS: list[dict[str, Any]] = [
         ],
         "prerequisite_concepts": [
             "p2p-f110-payment-run",
-            "o2c-billing-revenue-accounting",
+            "revenue-recognition-posting",
             "production-order-settlement"
         ],
         "company_context": {

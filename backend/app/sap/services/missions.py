@@ -7,6 +7,7 @@ and skill evidence generation.
 from __future__ import annotations
 
 import copy
+import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -530,7 +531,7 @@ SEED_MISSIONS: list[dict[str, Any]] = [
             "automatic-account-determination",
             "double-entry-accounting",
         ],
-        "prerequisite_concepts": ["invoice-verification-miro", "goods-receipt-migo"],
+        "prerequisite_concepts": ["p2p-invoice-verification-miro", "p2p-goods-receipt-migo"],
         "company_context": {
             "company_name": "Nova Manufacturing Corp",
             "tcode": "MIRO",
@@ -850,16 +851,11 @@ class SAPMissionService:
             ).order_by(SAPMissionAttempt.started_at.desc())
         ).scalars().first()
 
-        # Sanitize steps so is_correct is not leaked to the frontend
-        sanitized_steps = []
-        for step in (mission.steps or []):
-            s_copy = dict(step)
-            if "options" in s_copy:
-                s_copy["options"] = [
-                    {k: v for k, v in opt.items() if k != "is_correct"}
-                    for opt in s_copy["options"]
-                ]
-            sanitized_steps.append(s_copy)
+        # Learner-facing projection of the registered steps; answer keys stay server-side.
+        definition = SAPMissionRegistry.get(mission.slug) or {}
+        sanitized_steps = [
+            cls._learner_step(step) for step in (definition.get("steps") or mission.steps or [])
+        ]
 
         return {
             "id": str(mission.id),
@@ -1231,23 +1227,54 @@ class SAPMissionService:
                     f"A valid selected_option_id is required for step '{step_ref}'."
                 )
             if selected_id != correct[0].get("id"):
-                return False, f"Incorrect choice. Best practice: {correct[0].get('label')}"
-            return True, "Correct selection! Architectural requirement satisfied."
+                # Never name the correct option: that would hand out the answer key.
+                return False, "Incorrect choice. Review the scenario and try again."
+            return True, correct[0].get("explanation") or "Correct selection! Architectural requirement satisfied."
 
         if step_type == "order_process":
             expected_order = step.get("correct_order")
             if not isinstance(expected_order, list) or not expected_order:
                 raise SAPMissionSubmissionError(f"Step '{step_ref}' has no gradable answer key.")
             submitted_order = payload.get("ordered_items")
-            if not isinstance(submitted_order, list) or not all(isinstance(i, str) for i in submitted_order):
+            # Only a complete, duplicate-free permutation of the step's items is gradable.
+            if (
+                not isinstance(submitted_order, list)
+                or not all(isinstance(i, str) for i in submitted_order)
+                or len(submitted_order) != len(expected_order)
+                or len(set(submitted_order)) != len(submitted_order)
+                or set(submitted_order) != set(expected_order)
+            ):
                 raise SAPMissionSubmissionError(
-                    f"ordered_items (list of strings) is required for step '{step_ref}'."
+                    f"ordered_items must be a complete ordering of every item in step '{step_ref}', "
+                    "each exactly once."
                 )
             if submitted_order != expected_order:
-                return False, "Order mismatch in organizational hierarchy."
+                return False, "Order mismatch. Review the hierarchy and try again."
             return True, "Hierarchy ordering verified."
 
         raise SAPMissionSubmissionError(f"Step '{step_ref}' has unsupported step type '{step_type}'.")
+
+    @staticmethod
+    def _learner_step(step: dict[str, Any]) -> dict[str, Any]:
+        """Allowlisted, learner-facing view of a mission step.
+
+        Only presentation fields leave the server. Option correctness and explanations,
+        correct_order, expected_state_patch, and any other evaluator data are dropped. An
+        ordering step exposes its items in a fresh uniformly random order per request, so
+        the presented order carries no information about the answer.
+        """
+        view: dict[str, Any] = {
+            k: step[k] for k in ("step_id", "title", "step_type", "instruction") if k in step
+        }
+        if isinstance(step.get("options"), list):
+            view["options"] = [
+                {"id": o.get("id"), "label": o.get("label") or o.get("text")}
+                for o in step["options"] if isinstance(o, dict)
+            ]
+        if step.get("step_type") == "order_process" and isinstance(step.get("correct_order"), list):
+            items = list(step["correct_order"])
+            view["items"] = secrets.SystemRandom().sample(items, len(items))
+        return view
 
     @staticmethod
     def _recorded_response(step: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:

@@ -363,13 +363,18 @@ class TestSAPPhase2EnterpriseMissions:
             assert len(training_rules.get("hints", [])) > 0
 
     def test_day_23_advanced_mission_remains_locked(self):
-        """Day 23 advanced incident requires invoice-verification-miro and goods-receipt-migo."""
+        """Day 23 advanced incident requires the canonical MIRO and MIGO concepts."""
+        from app.core.sap_curriculum_retrieval import SAPCurriculumKnowledgeEngine
+
         day_23_mission = next((m for m in SEED_MISSIONS if m["slug"] == "nova-p2p-workflow-incident"), None)
         assert day_23_mission is not None
         assert day_23_mission["difficulty"] >= 3
         assert 23 in day_23_mission["related_days"]
-        assert "invoice-verification-miro" in day_23_mission["prerequisite_concepts"]
-        assert "goods-receipt-migo" in day_23_mission["prerequisite_concepts"]
+        assert "p2p-invoice-verification-miro" in day_23_mission["prerequisite_concepts"]
+        assert "p2p-goods-receipt-migo" in day_23_mission["prerequisite_concepts"]
+        engine = SAPCurriculumKnowledgeEngine.get_instance()
+        for slug in day_23_mission["prerequisite_concepts"]:
+            assert engine.get_concept(slug) is not None, slug
 
     def test_mission_step_options_are_sanitized_no_answer_leak(self):
         """Verify get_mission_detail strips 'is_correct' and sensitive keys from options."""

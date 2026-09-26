@@ -24,7 +24,7 @@ PHASE_2_SEED_MISSIONS: list[dict[str, Any]] = [
             "compatibility-views-concept",
             "real-time-enterprise"
         ],
-        "prerequisite_concepts": ["erp-foundations-synthesis"],
+        "prerequisite_concepts": ["three-tier-architecture", "module-interconnectivity"],
         "company_context": {
             "company_name": "Nova Manufacturing Corp",
             "company_code": "NM01",
@@ -517,7 +517,7 @@ PHASE_2_SEED_MISSIONS: list[dict[str, Any]] = [
             "pfcg-authorizations",
             "fiori-role-assignment"
         ],
-        "prerequisite_concepts": ["fiori-launchpad-overview"],
+        "prerequisite_concepts": ["sap-gui-navigation"],
         "company_context": {
             "company_name": "Nova Manufacturing Corp",
             "company_code": "NM01",

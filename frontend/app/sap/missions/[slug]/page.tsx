@@ -22,6 +22,7 @@ export default function SapMissionDetailPage() {
   const [modesError, setModesError] = useState<string | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string>("");
+  const [orderedItems, setOrderedItems] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [stepResult, setStepResult] = useState<SapMissionStepAttemptResponse | null>(null);
   const [missionComplete, setMissionComplete] = useState(false);
@@ -56,7 +57,7 @@ export default function SapMissionDetailPage() {
       if (detail.current_attempt?.current_step_index !== undefined) {
         setCurrentStepIndex(detail.current_attempt.current_step_index);
       }
-      if (detail.current_attempt?.status === "COMPLETED") {
+      if (detail.current_attempt?.status?.toLowerCase() === "completed") {
         setMissionComplete(true);
       }
     } catch (err: any) {
@@ -97,12 +98,30 @@ export default function SapMissionDetailPage() {
     }
   };
 
+  // Ordering steps start from the server's (randomized) item order each time the step changes.
+  const activeStep = mission?.steps[currentStepIndex];
+  useEffect(() => {
+    setOrderedItems(activeStep?.step_type === "order_process" ? [...(activeStep.items || [])] : []);
+  }, [activeStep]);
+
+  const moveOrderedItem = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    if (target < 0 || target >= orderedItems.length) return;
+    const next = [...orderedItems];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved as string);
+    setOrderedItems(next);
+    setStepResult(null);
+    setActionError(null);
+  };
+
   const handleExecuteStep = async () => {
     if (!mission) return;
     const currentStep = mission.steps[currentStepIndex];
     if (!currentStep) return;
+    const isOrderStep = currentStep.step_type === "order_process";
 
-    if (!selectedOptionId) {
+    if (isOrderStep ? orderedItems.length === 0 : !selectedOptionId) {
       setActionError("Please select an action or configuration parameter to execute.");
       return;
     }
@@ -112,7 +131,7 @@ export default function SapMissionDetailPage() {
     try {
       const res: SapMissionStepAttemptResponse = await sapApi.attemptMissionStep(slug, {
         step_id: currentStep.step_id,
-        payload: { selected_option_id: selectedOptionId },
+        payload: isOrderStep ? { ordered_items: orderedItems } : { selected_option_id: selectedOptionId },
         assistance_level: assistanceLevel,
       });
 
@@ -413,6 +432,47 @@ export default function SapMissionDetailPage() {
               </fieldset>
             )}
 
+            {currentStep?.step_type === "order_process" && (
+              <div className="mb-6">
+                <div id="order-legend" className="text-xs font-mono uppercase text-muted font-bold block mb-2">
+                  Arrange from first (top) to last (bottom):
+                </div>
+                <ol aria-labelledby="order-legend" className="space-y-2">
+                  {orderedItems.map((item, idx) => (
+                    <li
+                      key={item}
+                      className="flex items-center justify-between gap-3 border-2 border-ink bg-surface p-3"
+                    >
+                      <span className="text-sm font-semibold text-ink">
+                        <span className="font-mono text-xs text-muted mr-2">{idx + 1}.</span>
+                        {item}
+                      </span>
+                      <span className="flex gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => moveOrderedItem(idx, -1)}
+                          disabled={idx === 0 || submitting}
+                          aria-label={`Move ${item} up`}
+                          className="border-2 border-ink bg-surface px-2 py-1 text-xs font-bold disabled:opacity-30 hover:bg-surface-raised"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveOrderedItem(idx, 1)}
+                          disabled={idx === orderedItems.length - 1 || submitting}
+                          aria-label={`Move ${item} down`}
+                          className="border-2 border-ink bg-surface px-2 py-1 text-xs font-bold disabled:opacity-30 hover:bg-surface-raised"
+                        >
+                          ↓
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
             {/* In-place Action Error Banner */}
             {actionError && (
               <div role="alert" className="border-2 border-rose-500 bg-rose-100 p-3 mb-6 text-xs text-rose-950 font-bold">
@@ -455,7 +515,10 @@ export default function SapMissionDetailPage() {
                 ) : (
                   <button
                     onClick={handleExecuteStep}
-                    disabled={submitting || !selectedOptionId}
+                    disabled={
+                      submitting ||
+                      (currentStep?.step_type === "order_process" ? orderedItems.length === 0 : !selectedOptionId)
+                    }
                     className="border-2 border-ink bg-amber-300 hover:bg-amber-400 px-5 py-2.5 text-xs font-bold text-ink shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 transition-all"
                   >
                     {submitting ? "Evaluating in Digital Twin..." : "Execute & Validate Step →"}
