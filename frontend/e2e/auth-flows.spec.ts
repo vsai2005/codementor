@@ -77,3 +77,19 @@ test('oversized login body is rejected with 413 and no session', async ({ page }
   const me = await page.evaluate(async () => (await fetch('/api/auth/me', { credentials: 'include' })).status);
   expect(me).toBe(401);
 });
+
+test('App Router page and API proxy still work with untrusted client-IP headers', async ({ page }) => {
+  await openForm(page, 'login');
+  await expect(page.getByRole('button', { name: /^sign in$/i })).toBeVisible();
+
+  const response = await page.request.get('/api/auth/me', {
+    headers: {
+      'x-codementor-client-ip': '203.0.113.9',
+      'x-codementor-proxy-auth': 'forged',
+      'x-forwarded-for': '203.0.113.9',
+    },
+  });
+  expect(response.status()).toBe(401);
+  expect(response.headers()['content-type']).toContain('application/json');
+  expect((await response.json()).detail).toBe('Not authenticated');
+});

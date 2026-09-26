@@ -1,5 +1,7 @@
 """JWT tests (PRD 5.3). Google verification is mocked -- no network in tests."""
 
+import base64
+import json
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -8,6 +10,11 @@ from jose import jwt
 
 from app.config import get_settings
 from app.core.security import AuthError, create_access_token, decode_access_token
+
+
+def _b64(data: dict) -> str:
+    raw = json.dumps(data, separators=(",", ":")).encode()
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
 
 
 def test_token_roundtrips_the_subject():
@@ -42,6 +49,34 @@ def test_token_signed_with_the_wrong_secret_is_rejected():
         decode_access_token(forged)
 
 
+def test_tampered_signature_is_rejected():
+    token = create_access_token("u")
+    header, payload, signature = token.split(".")
+    tampered = f"{header}.{payload}.{'A' if signature[0] != 'A' else 'B'}{signature[1:]}"
+    with pytest.raises(AuthError):
+        decode_access_token(tampered)
+
+
+def test_unexpected_hmac_algorithm_is_rejected():
+    settings = get_settings()
+    unexpected = "HS512" if settings.jwt_algorithm != "HS512" else "HS256"
+    token = jwt.encode(
+        {"sub": "u", "exp": int(time.time()) + 3600},
+        settings.jwt_secret,
+        algorithm=unexpected,
+    )
+    with pytest.raises(AuthError):
+        decode_access_token(token)
+
+
+def test_unexpected_asymmetric_algorithm_is_rejected():
+    token = create_access_token("u")
+    _, payload, signature = token.split(".")
+    forged = f'{_b64({"alg": "RS256", "typ": "JWT"})}.{payload}.{signature}'
+    with pytest.raises(AuthError):
+        decode_access_token(forged)
+
+
 def test_garbage_token_is_rejected():
     with pytest.raises(AuthError):
         decode_access_token("not.a.jwt")
@@ -54,14 +89,7 @@ def test_alg_none_attack_is_rejected():
     point. We still assert the decode side rejects it, since the attacker
     builds the token with base64 and a text editor, not with our library.
     """
-    import base64
-    import json
-
-    def b64(data: dict) -> str:
-        raw = json.dumps(data, separators=(",", ":")).encode()
-        return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
-
-    forged = f'{b64({"alg": "none", "typ": "JWT"})}.{b64({"sub": "admin", "exp": int(time.time()) + 3600})}.'
+    forged = f'{_b64({"alg": "none", "typ": "JWT"})}.{_b64({"sub": "admin", "exp": int(time.time()) + 3600})}.'
 
     with pytest.raises(AuthError):
         decode_access_token(forged)
