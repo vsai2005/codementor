@@ -126,3 +126,25 @@ npx playwright test e2e/sap-ux-gating.spec.ts            # 9 tests passing
 - **Backend**: Containerized FastAPI service on Render / Railway / AWS ECS. Set `ENVIRONMENT=production`, configure managed PostgreSQL + Redis URLs, and ensure `CORS_ORIGINS` points strictly to the frontend origin.
 - **Frontend**: Next.js App Router deployed on Vercel or containerized with standalone output. Set `BACKEND_URL` to route API proxy requests safely with HttpOnly cookie support.
 
+### Client IP for rate limiting (required)
+
+Production path: `browser -> Vercel (Next.js middleware + /api rewrite) -> Render edge -> FastAPI`.
+The backend only sees Render's proxy as its socket peer, and the public Render URL can be
+called directly with any forged `X-Forwarded-For`, so forwarding headers are not trusted by
+position. Instead, Vercel attests the client IP:
+
+1. Generate a secret: `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+2. Render (backend): set `PROXY_SHARED_SECRET` to it. Without it (or `TRUSTED_PROXY_CIDRS`)
+   the API still starts but logs an error, and every user shares the proxy's per-IP bucket.
+3. Vercel (frontend project, server-side env, not `NEXT_PUBLIC_`): set `PROXY_SHARED_SECRET`
+   to the same value, and leave `NEXT_PUBLIC_API_BASE_URL` unset so the browser uses the
+   `/api` proxy.
+
+`frontend/middleware.ts` copies the client IP that Vercel itself writes (`x-vercel-forwarded-for`,
+which clients cannot set) into `X-CodeMentor-Client-IP` and adds `X-CodeMentor-Proxy-Auth`.
+The backend (`backend/app/core/client_ip.py`) honors that IP only when the secret matches;
+otherwise it uses the socket peer. Uvicorn runs with `--no-proxy-headers` so it never rewrites
+the peer from headers itself. For other topologies (e.g. nginx on a private network), set
+`TRUSTED_PROXY_CIDRS` instead; `X-Forwarded-For` is then walked right-to-left through trusted
+hops only. Rotate the secret by updating both services together.
+

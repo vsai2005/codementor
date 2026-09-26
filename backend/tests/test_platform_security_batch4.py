@@ -22,6 +22,7 @@ from app.services.google_accounts import resolve_google_user, username_base
 from app.services.ratelimit import RedisRateLimiter
 
 PASSWORD = "CorrectHorse9!"
+PROXY_SECRET = "test-proxy-secret-" + "x" * 32
 
 
 # =============================================================================
@@ -51,9 +52,9 @@ def limits(monkeypatch):
 
 @pytest.fixture
 def per_ip(monkeypatch):
-    """Trust one proxy hop so tests can present distinct client IPs via X-Forwarded-For."""
-    monkeypatch.setattr(get_settings(), "trusted_proxy_hops", 1)
-    return lambda ip: {"X-Forwarded-For": ip}
+    """Present distinct client IPs the way production does: attested by the Vercel proxy."""
+    monkeypatch.setattr(get_settings(), "proxy_shared_secret", PROXY_SECRET)
+    return lambda ip: {"X-CodeMentor-Client-IP": ip, "X-CodeMentor-Proxy-Auth": PROXY_SECRET}
 
 
 def register(client, username, headers=None, **extra):
@@ -143,9 +144,11 @@ def test_per_ip_isolation_and_spoof_resistance(client, db, limits, per_ip):
         login(client, uname("x"), "x", headers=per_ip("203.0.113.1"))
     assert_429(login(client, name, headers=per_ip("203.0.113.1")))
     assert login(client, name, headers=per_ip("203.0.113.2")).status_code == 200
-    # A client-supplied left-most entry cannot choose the bucket: the trusted hop wins.
-    spoofed = {"X-Forwarded-For": "10.9.9.9, 203.0.113.1"}
-    assert_429(login(client, name, headers=spoofed))
+    # A caller without the proxy secret cannot choose a bucket via any header.
+    forged = {"X-CodeMentor-Client-IP": "203.0.113.3", "X-CodeMentor-Proxy-Auth": "guess",
+              "X-Forwarded-For": "203.0.113.4"}
+    peer_bucket_codes = [login(client, uname("y"), "x", headers=forged).status_code for _ in range(4)]
+    assert peer_bucket_codes == [401, 401, 401, 429]  # all land in the socket-peer bucket
 
 
 def test_without_trusted_proxies_forwarded_header_is_ignored(client, db, limits):

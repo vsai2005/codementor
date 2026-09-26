@@ -97,11 +97,14 @@ class Settings(BaseSettings):
     auth_google_identity_limit: int = 10
     auth_google_identity_window_s: int = 900
 
-    # Number of trusted reverse proxies in front of the API that append to
-    # X-Forwarded-For. 0 = use the socket peer address (safe default, cannot be spoofed).
-    # Behind Vercel (frontend rewrite) -> Render, set this to the real hop count so the
-    # client IP, not the proxy IP, keys per-IP limits.
-    trusted_proxy_hops: int = Field(default=0, ge=0, le=5)
+    # Client-IP trust for per-IP rate limits (see app/core/client_ip.py). Unset = use the
+    # socket peer, which is correct for direct connections and local development.
+    # PROXY_SHARED_SECRET: shared with the Vercel frontend; requests carrying it may state
+    # the client IP (production path Vercel -> Render). Must be >= 32 characters.
+    proxy_shared_secret: str | None = None
+    # TRUSTED_PROXY_CIDRS: comma-separated networks of reverse proxies whose
+    # X-Forwarded-For entries are trusted (generic deployments). Empty = trust none.
+    trusted_proxy_cidrs: str = ""
 
     @model_validator(mode="after")
     def validate_production_config(self) -> Self:
@@ -112,6 +115,20 @@ class Settings(BaseSettings):
         elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
             url = url.replace("postgresql://", "postgresql+psycopg://", 1)
         self.database_url = url
+
+        # Client-IP trust configuration (all environments): fail on malformed values.
+        if self.proxy_shared_secret is not None:
+            self.proxy_shared_secret = self.proxy_shared_secret.strip() or None
+        if self.proxy_shared_secret is not None and len(self.proxy_shared_secret) < 32:
+            raise ValueError(
+                "PROXY_SHARED_SECRET must be at least 32 characters (generate with "
+                "`python -c \"import secrets; print(secrets.token_urlsafe(48))\"`)."
+            )
+        from app.core.client_ip import parse_cidrs  # local import: avoids import cycles
+        try:
+            parse_cidrs(self.trusted_proxy_cidrs)
+        except ValueError as exc:
+            raise ValueError(f"TRUSTED_PROXY_CIDRS is invalid: {exc}") from exc
 
         if self.is_production:
             # 1. JWT Secret Validation
@@ -159,6 +176,15 @@ class Settings(BaseSettings):
         return self
 
     @property
+    def client_ip_trust_source(self) -> str:
+        """How per-IP rate limits identify clients: attested, trusted-cidrs, or socket-peer."""
+        if self.proxy_shared_secret:
+            return "attested"
+        if self.trusted_proxy_cidrs.strip():
+            return "trusted-cidrs"
+        return "socket-peer"
+
+    @property
     def is_production(self) -> bool:
         return self.environment.lower() in ("production", "prod")
 
@@ -177,3 +203,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+

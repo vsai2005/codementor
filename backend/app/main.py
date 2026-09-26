@@ -30,8 +30,19 @@ if "*" in origins:
     )
 
 
+CLIENT_IP_MISCONFIGURED = (
+    "Client IP trust is not configured (PROXY_SHARED_SECRET / TRUSTED_PROXY_CIDRS unset): per-IP "
+    "rate limits use the socket peer. Behind Vercel -> Render that is the platform proxy, so all "
+    "users share one per-IP bucket. Set PROXY_SHARED_SECRET on both services (see README)."
+)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.is_production and settings.client_ip_trust_source == "socket-peer":
+        # Deliberately not fatal: the socket-peer fallback cannot be spoofed, and refusing to
+        # boot would turn a missing secret into an outage. It is loud instead.
+        logging.error(CLIENT_IP_MISCONFIGURED)
     # Verify DB connectivity on boot in production
     if settings.is_production:
         try:

@@ -9,6 +9,7 @@ def test_valid_production_config_succeeds():
         jwt_secret="super-secret-random-jwt-key-with-sufficient-length-32",
         database_url="postgresql+psycopg://codementor:secret@db.render.com:5432/codementor",
         redis_url="rediss://default:password@upstash-redis.com:6379",
+        proxy_shared_secret="p" * 40,
     )
     assert settings.is_production is True
     assert settings.jwt_secret == "super-secret-random-jwt-key-with-sufficient-length-32"

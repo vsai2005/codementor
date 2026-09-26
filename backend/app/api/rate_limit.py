@@ -7,27 +7,33 @@ policies, and account identifiers are hashed so raw emails/usernames never reach
 from __future__ import annotations
 
 import hashlib
+from functools import lru_cache
 
 from fastapi import HTTPException, Request, status
 
 from app.config import get_settings
+from app.core.client_ip import parse_cidrs, resolve_client_ip
 from app.services.ratelimit import get_policy_rate_limiter
 
 
-def client_ip(request: Request) -> str:
-    """The caller's IP.
+@lru_cache(maxsize=8)
+def _trusted_networks(spec: str):
+    return tuple(parse_cidrs(spec))
 
-    With trusted_proxy_hops = N > 0, the address N entries from the right of
-    X-Forwarded-For is used (each trusted proxy appends the address it received the
-    request from, so entries further left can be forged by the client). Otherwise, or when
-    the header is shorter than expected, the socket peer address is used.
+
+def client_ip(request: Request) -> str:
+    """Rate-limit key for the caller's IP (see app.core.client_ip for the trust model).
+
+    Forwarded addresses are honored only from an authenticated proxy (shared secret) or a
+    trusted proxy network; otherwise the socket peer is used.
     """
-    hops = get_settings().trusted_proxy_hops
-    if hops > 0:
-        forwarded = [p.strip() for p in request.headers.get("x-forwarded-for", "").split(",") if p.strip()]
-        if len(forwarded) >= hops:
-            return forwarded[-hops]
-    return request.client.host if request.client else "unknown"
+    settings = get_settings()
+    key, _source = resolve_client_ip(
+        request,
+        proxy_secret=settings.proxy_shared_secret,
+        trusted_proxies=_trusted_networks(settings.trusted_proxy_cidrs),
+    )
+    return key
 
 
 def account_subject(identifier: str) -> str:

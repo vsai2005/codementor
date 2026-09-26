@@ -7,7 +7,7 @@ services:
     runtime: python
     plan: free
     buildCommand: "pip install -r backend/requirements.txt"
-    startCommand: "sh -c 'cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT'"
+    startCommand: "sh -c 'cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --no-proxy-headers'"
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
@@ -25,6 +25,13 @@ services:
       - key: CORS_ORIGINS
         sync: false
       - key: REDIS_URL
+        sync: false
+      # Client-IP attestation for per-IP rate limits (>= 32 chars). Without it the API still runs
+      # (socket-peer fallback) but logs an error and all users share one per-IP bucket.
+      # Set the SAME value as PROXY_SHARED_SECRET on the Vercel frontend project. The Vercel
+      # middleware sends it with the platform-verified client IP; requests without it are
+      # keyed by the socket peer. See backend/app/core/client_ip.py.
+      - key: PROXY_SHARED_SECRET
         sync: false
       - key: LLM_MODEL
         value: nvidia/nemotron-3-ultra-550b-a55b

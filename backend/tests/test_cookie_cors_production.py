@@ -79,6 +79,7 @@ def test_login_sets_httponly_cookie_with_correct_attributes(client, test_user):
         jwt_secret="a" * 32,
         database_url="postgresql+psycopg://user:pass@db.example.com:5432/codementor",
         redis_url="rediss://default:secret@upstash.io:6379",
+        proxy_shared_secret="p" * 40,
     )
     with patch("app.api.routes.auth.get_settings", return_value=prod_settings):
         response = client.post("/api/auth/login", json={
@@ -116,6 +117,7 @@ def test_logout_clears_cookie_with_secure_flag(client, test_user):
         jwt_secret="a" * 32,
         database_url="postgresql+psycopg://user:pass@db.example.com:5432/codementor",
         redis_url="rediss://default:secret@upstash.io:6379",
+        proxy_shared_secret="p" * 40,
     )
     with patch("app.api.routes.auth.get_settings", return_value=prod_settings):
         response = client.post("/api/auth/logout")

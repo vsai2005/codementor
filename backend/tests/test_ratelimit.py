@@ -93,6 +93,7 @@ def test_production_rate_limiter_fails_fast_without_redis(monkeypatch):
         jwt_secret="a" * 32,
         database_url="postgresql+psycopg://codementor:pass@remote-db.render.com:5432/codementor",
         redis_url="redis://invalid-host-cannot-connect:6379/0",
+        proxy_shared_secret="p" * 40,
     )
 
     with monkeypatch.context() as m:
