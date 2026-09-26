@@ -19,7 +19,6 @@ from app.sap.schemas.api import (
     SAPPlacementDiagnosticRequest,
     SAPPlacementProfileResponse,
     SAPProgressResponse,
-    SAPRecordConceptMasteryRequest,
     SAPRemediationCapsuleDetail,
 )
 
@@ -35,7 +34,6 @@ __all__ = [
     "SAPCompleteLessonResponse",
     "SAPConceptMasteryItem",
     "SAPMasterySummaryResponse",
-    "SAPRecordConceptMasteryRequest",
     "SAPPlacementDiagnosticRequest",
     "SAPPlacementProfileResponse",
     "SAPAssessmentSubmitRequest",

@@ -28,6 +28,7 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.sap_practice_helpers import practice_payload
 from app.api.deps import get_current_user
 from app.database import get_db
 from app.main import app
@@ -138,7 +139,7 @@ def test_waived_day_progression_mutation_blocked(test_user, db):
         assert "waived" in res_lesson.json()["detail"].lower()
 
         # 2. complete-practice on waived Day 1
-        res_practice = client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        res_practice = client.post("/api/sap/learning/complete-practice", json=practice_payload(1))
         assert res_practice.status_code == 400
         assert "waived" in res_practice.json()["detail"].lower()
 
@@ -179,7 +180,7 @@ def test_waived_vs_completed_state_lifecycle(test_user, db):
         assert prog_init["day_states"]["1"]["completed"] is False
 
         # Complete practice & lesson for Day 1
-        client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        client.post("/api/sap/learning/complete-practice", json=practice_payload(1))
         client.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
 
         # Submit passing assessment for Day 1
@@ -220,7 +221,7 @@ def test_tightened_assessment_identity_adversarial(test_user, db):
     override_auth(test_user, db)
     try:
         # Complete practice first to satisfy Day 1 practice gating
-        p_res = client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        p_res = client.post("/api/sap/learning/complete-practice", json=practice_payload(1))
         assert p_res.status_code == 200
 
         # Snapshot DB state before invalid submissions
@@ -329,7 +330,7 @@ def test_cross_day_assessment_reuse_rejected(test_user, db):
     override_auth(test_user, db)
     try:
         # User advances to Day 2
-        client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        client.post("/api/sap/learning/complete-practice", json=practice_payload(1))
         client.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
         client.post(
             "/api/sap/assessments/submit",
@@ -340,7 +341,7 @@ def test_cross_day_assessment_reuse_rejected(test_user, db):
                 "submission_payload": {"answers": {"q1": "q1_a", "q2": "q2_a"}},
             },
         )
-        client.post("/api/sap/learning/complete-practice", json={"day_number": 2})
+        client.post("/api/sap/learning/complete-practice", json=practice_payload(2))
 
         # Attempt to submit Day 2 using Day 1's assessment ID
         bad_cross_day = client.post(
@@ -375,7 +376,7 @@ def test_forged_assessment_type_rejected(test_user, db):
     """Submitting an assessment with an incompatible or forged assessment_type returns 400."""
     override_auth(test_user, db)
     try:
-        client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        client.post("/api/sap/learning/complete-practice", json=practice_payload(1))
 
         for invalid_type in ("rap_challenge", "abap_challenge", "simulation", "exploit_type"):
             resp = client.post(
@@ -399,7 +400,7 @@ def test_client_rubric_tampering_ignored(test_user, db):
     """Client cannot tamper with pass_score or inject questions; evaluation binds strictly to server questions."""
     override_auth(test_user, db)
     try:
-        client.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        client.post("/api/sap/learning/complete-practice", json=practice_payload(1))
 
         # Client attempts to inject a pass_score of 0.0 and a fake single question
         tampered_payload = {

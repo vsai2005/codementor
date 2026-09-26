@@ -9,6 +9,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.sap_curriculum_retrieval import SAPCurriculumKnowledgeEngine
@@ -18,6 +19,7 @@ from app.models.sap_models import (
     SAPUserDayState,
     SAPUserState,
 )
+from app.sap.services.practice import grade_practice_submission
 
 
 class SAPProgressionService:
@@ -210,7 +212,16 @@ class SAPProgressionService:
         }
 
     @classmethod
-    def record_practice_completed(cls, db: Session, user_id: uuid.UUID, day_number: int) -> dict:
+    def submit_practice(
+        cls, db: Session, user_id: uuid.UUID, day_number: int, answers: dict
+    ) -> dict:
+        """Grades Practice evidence server-side and marks Practice completed only on a pass.
+
+        The client supplies only its chosen option per practice step. The server resolves the
+        day's canonical practice evidence steps, grades every one against the authored answer
+        key, and mutates state only when all are correct. Failed or malformed submissions
+        perform zero writes. A repeated valid submission is idempotent.
+        """
         if day_number < 1 or day_number > cls.TOTAL_DAYS:
             raise ValueError(f"SAP Day {day_number} does not exist. Valid curriculum days are 1–{cls.TOTAL_DAYS}.")
 
@@ -226,11 +237,49 @@ class SAPProgressionService:
         if not day_info["unlocked"]:
             raise ValueError(f"SAP Day {day_number} is locked. Complete Day {day_number - 1} or diagnostic placement first.")
 
+        # Raises SAPPracticeEvidenceError for evidence that does not belong to this day.
+        results = grade_practice_submission(day_number, answers)
+        passed = all(r["correct"] for r in results)
+
+        if not passed:
+            return {
+                "day_number": day_number,
+                "passed": False,
+                "practice_completed": bool(day_info["practice_completed"]),
+                "results": results,
+                "day_completed": bool(day_info["completed"]),
+                "unlocked_next_day": False,
+                "current_day": progress["current_day"],
+                "day_state": day_info,
+            }
+
+        try:
+            r = cls._mark_practice_completed(db, user_id, day_number)
+        except IntegrityError:
+            # A concurrent first submission created the day row; retry against it once.
+            db.rollback()
+            r = cls._mark_practice_completed(db, user_id, day_number)
+
+        updated = cls.compute_user_progress(db, user_id)
+        return {
+            "day_number": day_number,
+            "passed": True,
+            "practice_completed": True,
+            "results": results,
+            "day_completed": r.completed,
+            "unlocked_next_day": r.completed and day_number < cls.TOTAL_DAYS,
+            "current_day": updated["current_day"],
+            "day_state": updated["day_states"][str(day_number)],
+        }
+
+    @classmethod
+    def _mark_practice_completed(cls, db: Session, user_id: uuid.UUID, day_number: int) -> SAPUserDayState:
+        """Persists a graded Practice pass. Only called after server-side grading succeeded."""
         r = db.execute(
             select(SAPUserDayState).where(
                 SAPUserDayState.user_id == user_id,
                 SAPUserDayState.day_number == day_number,
-            )
+            ).with_for_update()
         ).scalar_one_or_none()
 
         now = datetime.now(timezone.utc)
@@ -247,7 +296,8 @@ class SAPProgressionService:
             db.add(r)
         else:
             r.practice_completed = True
-            r.practice_completed_at = now
+            if not r.practice_completed_at:
+                r.practice_completed_at = now
             if not r.completed and r.status != SAPDayStatus.WAIVED_BY_PLACEMENT.value:
                 r.status = SAPDayStatus.IN_PROGRESS.value
 
@@ -291,13 +341,4 @@ class SAPProgressionService:
 
         db.commit()
         db.refresh(r)
-
-        updated = cls.compute_user_progress(db, user_id)
-        return {
-            "day_number": day_number,
-            "practice_completed": True,
-            "day_completed": r.completed,
-            "unlocked_next_day": r.completed and day_number < cls.TOTAL_DAYS,
-            "current_day": updated["current_day"],
-            "day_state": updated["day_states"][str(day_number)],
-        }
+        return r

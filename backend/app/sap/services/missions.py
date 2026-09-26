@@ -10,7 +10,7 @@ import copy
 import uuid
 from datetime import datetime, timezone
 from typing import Any
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.core.sap_curriculum_retrieval import SAPCurriculumKnowledgeEngine
@@ -664,8 +664,31 @@ SAPMissionRegistry.initialize()
 SEED_MISSIONS = SAPMissionRegistry.get_all()
 
 
+OPTION_STEP_TYPES = frozenset({
+    "read_context", "choose_action", "make_decision", "decision", "troubleshoot", "config",
+})
+
+
+class SAPMissionNotFoundError(ValueError):
+    """Mission slug is not in the authoritative registry (HTTP 404)."""
+
+
+class SAPMissionLockedError(ValueError):
+    """Learner has not satisfied the mission's prerequisites (HTTP 403)."""
+
+
+class SAPMissionStepNotFoundError(ValueError):
+    """step_id is not one of the mission's registered steps (HTTP 404)."""
+
+
+class SAPMissionSubmissionError(ValueError):
+    """Submission is malformed for the step, or the step is not gradable (HTTP 400)."""
+
+
 class SAPMissionService:
     """Service managing authored missions, attempts, state consequences, and skill evidence."""
+
+    PREREQUISITE_MASTERY_THRESHOLD = 70.0
 
     @classmethod
     def seed_missions_if_needed(cls, db: Session) -> list[SAPMission]:
@@ -742,7 +765,10 @@ class SAPMissionService:
         mastery_rows = db.execute(
             select(SAPUserConceptMastery).where(SAPUserConceptMastery.user_id == user_id)
         ).scalars().all()
-        mastered_concept_ids = {r.concept_id for r in mastery_rows if r.mastery_score >= 70.0}
+        mastered_concept_ids = {
+            r.concept_id for r in mastery_rows
+            if r.mastery_score >= cls.PREREQUISITE_MASTERY_THRESHOLD
+        }
 
         # Get concepts mapping
         concepts = db.execute(select(SAPConcept)).scalars().all()
@@ -761,17 +787,13 @@ class SAPMissionService:
         results: list[dict[str, Any]] = []
         for m in missions:
             # Check DAG prerequisites: all required concepts must be mastered or introduced
-            prereqs = list(m.prerequisite_concepts or [])
-            is_unlocked = True
-            missing_prereqs: list[str] = []
-
-            for p_slug in prereqs:
-                cid = slug_to_id.get(p_slug)
-                if cid and cid not in mastered_concept_ids:
-                    # If this is early mission 1 or learner is fresher, allow mission 1
-                    if m.difficulty > 1:
-                        is_unlocked = False
-                        missing_prereqs.append(p_slug)
+            missing_prereqs = cls._missing_prerequisites(
+                m.difficulty,
+                m.prerequisite_concepts,
+                slug_to_id=slug_to_id,
+                mastered_concept_ids=mastered_concept_ids,
+            )
+            is_unlocked = not missing_prereqs
 
             att = attempt_map.get(m.id)
             results.append({
@@ -871,47 +893,17 @@ class SAPMissionService:
         slug: str,
         assistance_level: str = SAPAssistanceLevel.TRAINING.value,
     ) -> SAPMissionAttempt:
-        """Starts or resumes a mission attempt."""
-        mission = db.execute(
-            select(SAPMission).where(SAPMission.slug == slug)
-        ).scalar_one_or_none()
-        if not mission:
-            cls.seed_missions_if_needed(db)
-            mission = db.execute(
-                select(SAPMission).where(SAPMission.slug == slug)
-            ).scalar_one_or_none()
-        if not mission:
-            raise ValueError(f"Mission '{slug}' not found.")
+        """Starts or resumes a mission attempt after verifying prerequisites server-side.
 
-        # Check existing active attempt
-        attempt = db.execute(
-            select(SAPMissionAttempt).where(
-                SAPMissionAttempt.user_id == user_id,
-                SAPMissionAttempt.mission_id == mission.id,
-                SAPMissionAttempt.status.in_([SAPMissionAttemptStatus.STARTED.value, SAPMissionAttemptStatus.IN_PROGRESS.value]),
-            )
-        ).scalar_one_or_none()
+        Raises SAPMissionNotFoundError for unregistered slugs and SAPMissionLockedError when
+        the learner has not mastered the mission's prerequisite concepts; both leave state
+        untouched. A mission that was already completed returns its completed attempt.
+        """
+        cls._validate_assistance_level(assistance_level)
+        mission, definition = cls._resolve_mission(db, slug)
+        cls._require_unlocked(db, user_id, definition)
 
-        now = datetime.now(timezone.utc)
-        if attempt is None:
-            attempt = SAPMissionAttempt(
-                user_id=user_id,
-                mission_id=mission.id,
-                status=SAPMissionAttemptStatus.IN_PROGRESS.value,
-                assistance_level=assistance_level,
-                current_step_index=0,
-                steps_completed=[],
-                learner_responses={},
-                state_mutations=[],
-                score=0.0,
-                passed=False,
-                feedback={"message": "Mission started"},
-                started_at=now,
-            )
-            db.add(attempt)
-        else:
-            attempt.assistance_level = assistance_level
-
+        attempt = cls._get_or_create_attempt(db, user_id, mission, assistance_level)
         db.commit()
         db.refresh(attempt)
         return attempt
@@ -926,59 +918,77 @@ class SAPMissionService:
         payload: dict[str, Any],
         assistance_level: str = SAPAssistanceLevel.TRAINING.value,
     ) -> dict[str, Any]:
-        """Evaluates a mission step or complete mission, records skill evidence, and applies state mutations."""
-        cls.seed_missions_if_needed(db)
-        mission = db.execute(
-            select(SAPMission).where(SAPMission.slug == slug)
-        ).scalar_one_or_none()
-        if not mission:
-            raise ValueError(f"Mission '{slug}' not found.")
+        """Grades one registered mission step; completion derives only from graded steps.
 
-        attempt = cls.start_mission(db, user_id, slug, assistance_level)
+        - Unknown mission -> SAPMissionNotFoundError; locked -> SAPMissionLockedError;
+          unknown step -> SAPMissionStepNotFoundError; malformed payload ->
+          SAPMissionSubmissionError. All raise before any write.
+        - A wrong answer returns step_success=False and writes nothing.
+        - A correct answer marks that exact step passed once; repeats are idempotent.
+        - The mission completes (state mutation + skill evidence, exactly once) when every
+          registered step has been passed.
+        """
+        cls._validate_assistance_level(assistance_level)
+        mission, definition = cls._resolve_mission(db, slug)
+        cls._require_unlocked(db, user_id, definition)
 
-        steps = list(mission.steps or [])
+        # The registered definition is authoritative for steps, answer keys, and pass criteria.
+        steps = list(definition.get("steps") or [])
+        canonical_ids = [s.get("step_id") for s in steps]
+        total_steps = len(canonical_ids)
         target_step = next((s for s in steps if s.get("step_id") == step_id), None)
-        if not target_step and steps:
-            target_step = steps[0]
+        if target_step is None:
+            raise SAPMissionStepNotFoundError(f"Step '{step_id}' not found in mission '{slug}'.")
 
-        step_type = target_step.get("step_type", "choose_action") if target_step else "choose_action"
-        is_step_correct = True
-        step_feedback = ""
+        is_step_correct, step_feedback = cls._grade_step(target_step, payload)
 
-        # Step validation logic
-        if step_type in {"read_context", "choose_action", "make_decision", "decision", "troubleshoot", "config"}:
-            selected_id = payload.get("selected_option_id")
-            options = target_step.get("options", []) if target_step else []
-            correct_opt = next((o for o in options if o.get("is_correct")), None)
-            if correct_opt and selected_id != correct_opt.get("id"):
-                is_step_correct = False
-                step_feedback = f"Incorrect choice. Best practice: {correct_opt.get('label')}"
-            else:
-                step_feedback = "Correct selection! Architectural requirement satisfied."
+        if not is_step_correct:
+            existing = cls._find_latest_attempt(db, user_id, mission.id)
+            passed_ids = cls._passed_canonical_steps(existing, canonical_ids)
+            completed = bool(existing is not None and existing.passed)
+            return {
+                "step_id": step_id,
+                "step_success": False,
+                "step_feedback": step_feedback,
+                "mission_completed": completed,
+                "mission_passed": completed,
+                "current_score": cls._score(passed_ids, total_steps),
+                "steps_completed_count": len(passed_ids),
+                "total_steps": total_steps,
+            }
 
-        elif step_type == "order_process":
-            submitted_order = payload.get("ordered_items", [])
-            expected_order = target_step.get("correct_order", []) if target_step else []
-            if submitted_order != expected_order:
-                is_step_correct = False
-                step_feedback = "Order mismatch in organizational hierarchy."
-            else:
-                step_feedback = "Hierarchy ordering verified."
+        attempt = cls._get_or_create_attempt(db, user_id, mission, assistance_level, lock=True)
+
+        if attempt.status == SAPMissionAttemptStatus.COMPLETED.value:
+            # Already completed: idempotent, no new score, state mutation, or evidence.
+            passed_ids = cls._passed_canonical_steps(attempt, canonical_ids)
+            db.commit()
+            return {
+                "step_id": step_id,
+                "step_success": True,
+                "step_feedback": step_feedback,
+                "mission_completed": True,
+                "mission_passed": bool(attempt.passed),
+                "current_score": float(attempt.score),
+                "steps_completed_count": len(passed_ids),
+                "total_steps": total_steps,
+            }
 
         now = datetime.now(timezone.utc)
-        completed_steps = list(attempt.steps_completed or [])
-        if step_id not in completed_steps:
-            completed_steps.append(step_id)
-        attempt.steps_completed = completed_steps
+        passed_set = set(cls._passed_canonical_steps(attempt, canonical_ids)) | {step_id}
+        passed_ids = [sid for sid in canonical_ids if sid in passed_set]
+        attempt.steps_completed = passed_ids
+        responses = dict(attempt.learner_responses or {})
+        responses[step_id] = cls._recorded_response(target_step, payload)
+        attempt.learner_responses = responses
+        attempt.score = cls._score(passed_ids, total_steps)
+        attempt.current_step_index = next(
+            (i for i, sid in enumerate(canonical_ids) if sid not in passed_set),
+            max(0, total_steps - 1),
+        )
 
-        # Update attempt score
-        total_steps = max(1, len(steps))
-        step_score = (100.0 / total_steps) if is_step_correct else 0.0
-        attempt.score = round(min(100.0, float(attempt.score) + step_score), 1)
-
-        # Check overall pass criteria
-        min_pass = float((mission.success_criteria or {}).get("min_score", 70.0))
-        attempt.passed = bool(attempt.score >= min_pass and len(completed_steps) >= total_steps)
+        min_pass = float((definition.get("success_criteria") or {}).get("min_score", 70.0))
+        attempt.passed = bool(len(passed_ids) == total_steps and attempt.score >= min_pass)
 
         if attempt.passed:
             attempt.status = SAPMissionAttemptStatus.COMPLETED.value
@@ -987,83 +997,7 @@ class SAPMissionService:
                 attempt.duration_seconds = int((now - attempt.started_at).total_seconds())
 
             # 1. Apply deterministic enterprise state consequence
-            mutation_patch = {}
-            if mission.slug == "nova-org-structure-design":
-                mutation_patch = {
-                    "org_structure_status": "VALIDATED_ENTERPRISE_STRUCTURE",
-                    "primary_company_code": "NM01",
-                }
-            elif mission.slug == "nova-plant-expansion":
-                mutation_patch = {
-                    "plants": [
-                        {
-                            "id": "PL02",
-                            "name": "Austin Tech Center",
-                            "status": "ACTIVE_INTEGRATED",
-                            "company_code": "NM01",
-                        }
-                    ]
-                }
-            elif mission.slug == "nova-purchase-flow-trace":
-                mutation_patch = {
-                    "procurement_flow_audited": True,
-                    "last_p2p_trace": "PR_PO_MIGO_MIRO_VALIDATED",
-                }
-            elif mission.slug == "nova-sap-product-selection":
-                mutation_patch = {
-                    "landscape_governance": "CLEAN_CORE_BTP_ALIGNED",
-                }
-            elif mission.slug == "nova-architecture-layer-incident":
-                mutation_patch = {
-                    "architecture_incident": "RESOLVED_BGD_BATCH_CONFIGURED",
-                    "work_process_status": "STABLE_BALANCED",
-                }
-            elif mission.slug == "nova-s4hana-modernization-decision":
-                mutation_patch = {
-                    "modernization_blueprint": "S4HANA_SIMPLIFICATION_APPROVED",
-                    "table_simplification_validated": True,
-                }
-            elif mission.slug == "nova-universal-journal-investigation":
-                mutation_patch = {
-                    "acdoca_reconciliation_status": "VERIFIED_BALANCED",
-                    "parallel_ledgers_audited": True,
-                }
-            elif mission.slug == "nova-matdoc-inventory-incident":
-                mutation_patch = {
-                    "inventory_ledger_status": "MATDOC_HIGH_CONCURRENCY_ACTIVE",
-                    "table_lock_incident": "RESOLVED",
-                }
-            elif mission.slug == "nova-business-partner-migration":
-                mutation_patch = {
-                    "cvi_sync_status": "CVI_SYNCHRONIZED_ACTIVE",
-                    "legacy_customers_vendors_migrated": True,
-                }
-            elif mission.slug == "nova-cds-reporting-requirement":
-                mutation_patch = {
-                    "vdm_reporting_status": "BASIC_COMPOSITE_CONSUMPTION_DEPLOYED",
-                    "code_pushdown_active": True,
-                }
-            elif mission.slug == "nova-landscape-change-request":
-                mutation_patch = {
-                    "cts_transport_route_status": "DEV_QAS_PRD_RELEASED",
-                    "direct_prd_changes_blocked": True,
-                }
-            elif mission.slug == "nova-access-governance-incident":
-                mutation_patch = {
-                    "fiori_access_status": "SPACES_PAGES_RBAC_ENFORCED",
-                    "sod_conflict_resolved": True,
-                }
-            elif mission.slug == "nova-cross-module-document-trace":
-                mutation_patch = {
-                    "document_chain_trace": "VBFA_TRANSPARENT_AUDITED",
-                    "sales_to_finance_reconciliation": "BALANCED_CLEAR",
-                }
-            elif mission.slug == "nova-p2p-workflow-incident":
-                mutation_patch = {
-                    "pending_incident": "RESOLVED",
-                    "finance_state": {"gr_ir_clearing_status": "BALANCED_OK"},
-                }
-
+            mutation_patch = cls._completion_patch(mission.slug)
             if mutation_patch:
                 SAPEnterpriseService.apply_state_mutation(
                     db=db,
@@ -1075,12 +1009,12 @@ class SAPMissionService:
                 )
 
             # 2. Record Skill Evidence for all tested concepts in the mission
-            for c_slug in (mission.concept_slugs or []):
+            for c_slug in (definition.get("concept_slugs") or []):
                 evidence_data = {
                     "source_type": SAPSkillEvidenceSourceType.MISSION.value,
                     "source_id": str(mission.id),
                     "mode": SAPLearningMode.MISSION.value,
-                    "assistance_level": assistance_level,
+                    "assistance_level": attempt.assistance_level,
                     "difficulty": mission.difficulty,
                     "score": attempt.score,
                     "result": "passed",
@@ -1088,7 +1022,7 @@ class SAPMissionService:
                     "details": {
                         "mission_slug": mission.slug,
                         "mission_type": mission.mission_type,
-                        "steps_count": len(steps),
+                        "steps_count": total_steps,
                     },
                 }
                 SAPMasteryService.record_skill_evidence(
@@ -1103,11 +1037,302 @@ class SAPMissionService:
 
         return {
             "step_id": step_id,
-            "step_success": is_step_correct,
+            "step_success": True,
             "step_feedback": step_feedback,
             "mission_completed": attempt.passed,
             "mission_passed": attempt.passed,
             "current_score": attempt.score,
-            "steps_completed_count": len(completed_steps),
+            "steps_completed_count": len(passed_ids),
             "total_steps": total_steps,
         }
+
+    # -------------------------------------------------------------------------
+    # Internal helpers
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _validate_assistance_level(assistance_level: str) -> None:
+        if assistance_level not in {lvl.value for lvl in SAPAssistanceLevel}:
+            raise SAPMissionSubmissionError(
+                f"Invalid assistance level '{assistance_level}'. Use TRAINING, GUIDED, or JOB."
+            )
+
+    @classmethod
+    def _resolve_mission(cls, db: Session, slug: str) -> tuple[SAPMission, dict[str, Any]]:
+        """Resolves a registered mission: its DB row (attempt FK) and its registry definition."""
+        definition = SAPMissionRegistry.get(slug)
+        if definition is None:
+            raise SAPMissionNotFoundError(f"Mission '{slug}' not found.")
+        mission = db.execute(
+            select(SAPMission).where(SAPMission.slug == slug)
+        ).scalar_one_or_none()
+        if not mission:
+            cls.seed_missions_if_needed(db)
+            mission = db.execute(
+                select(SAPMission).where(SAPMission.slug == slug)
+            ).scalar_one_or_none()
+        if not mission:
+            raise SAPMissionNotFoundError(f"Mission '{slug}' not found.")
+        return mission, definition
+
+    @classmethod
+    def _missing_prerequisites(
+        cls,
+        difficulty: int,
+        prerequisite_concepts: list[str] | None,
+        slug_to_id: dict[str, uuid.UUID],
+        mastered_concept_ids: set[uuid.UUID],
+    ) -> list[str]:
+        """Authoritative unlock rule shared by the listing and every write path.
+
+        Entry-level (difficulty 1) missions are open to every learner. Any other mission
+        requires every prerequisite concept to be mastered; a prerequisite with no mastery
+        record (including one never materialized as a concept row) counts as missing.
+        """
+        if difficulty <= 1:
+            return []
+        return [
+            p for p in (prerequisite_concepts or [])
+            if slug_to_id.get(p) not in mastered_concept_ids
+        ]
+
+    @classmethod
+    def _require_unlocked(cls, db: Session, user_id: uuid.UUID, definition: dict[str, Any]) -> None:
+        prereqs = list(definition.get("prerequisite_concepts") or [])
+        difficulty = int(definition.get("difficulty", 1))
+        if difficulty <= 1 or not prereqs:
+            return
+        rows = db.execute(
+            select(SAPConcept.slug, SAPConcept.id)
+            .join(SAPUserConceptMastery, SAPUserConceptMastery.concept_id == SAPConcept.id)
+            .where(
+                SAPUserConceptMastery.user_id == user_id,
+                SAPUserConceptMastery.mastery_score >= cls.PREREQUISITE_MASTERY_THRESHOLD,
+                SAPConcept.slug.in_(prereqs),
+            )
+        ).all()
+        slug_to_id = {slug: cid for slug, cid in rows}
+        missing = cls._missing_prerequisites(
+            difficulty, prereqs, slug_to_id=slug_to_id, mastered_concept_ids=set(slug_to_id.values())
+        )
+        if missing:
+            raise SAPMissionLockedError(
+                f"Mission '{definition['slug']}' is locked. Master prerequisite concepts first: "
+                f"{', '.join(missing)}."
+            )
+
+    @staticmethod
+    def _lock_user_mission(db: Session, user_id: uuid.UUID, mission_id: uuid.UUID) -> None:
+        """Serializes concurrent attempt creation/completion for one learner and mission."""
+        bind = db.get_bind()
+        if getattr(getattr(bind, "dialect", None), "name", None) == "postgresql":
+            db.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:k, 0))"),
+                {"k": f"sap-mission:{user_id}:{mission_id}"},
+            )
+
+    @staticmethod
+    def _find_latest_attempt(
+        db: Session, user_id: uuid.UUID, mission_id: uuid.UUID
+    ) -> SAPMissionAttempt | None:
+        """The learner's completed attempt if one exists, else the newest active one. Read-only."""
+        attempts = db.execute(
+            select(SAPMissionAttempt).where(
+                SAPMissionAttempt.user_id == user_id,
+                SAPMissionAttempt.mission_id == mission_id,
+                SAPMissionAttempt.status.in_([
+                    SAPMissionAttemptStatus.STARTED.value,
+                    SAPMissionAttemptStatus.IN_PROGRESS.value,
+                    SAPMissionAttemptStatus.COMPLETED.value,
+                ]),
+            ).order_by(SAPMissionAttempt.started_at.desc())
+        ).scalars().all()
+        completed = next(
+            (a for a in attempts if a.status == SAPMissionAttemptStatus.COMPLETED.value), None
+        )
+        return completed or (attempts[0] if attempts else None)
+
+    @classmethod
+    def _get_or_create_attempt(
+        cls,
+        db: Session,
+        user_id: uuid.UUID,
+        mission: SAPMission,
+        assistance_level: str,
+        lock: bool = False,
+    ) -> SAPMissionAttempt:
+        """Returns the learner's completed or active attempt, creating one only if neither exists.
+
+        Does not commit. A completed mission never spawns a new attempt, so completion
+        consequences and skill evidence are recorded at most once per learner and mission.
+        """
+        cls._lock_user_mission(db, user_id, mission.id)
+        attempt = cls._find_latest_attempt(db, user_id, mission.id)
+        if attempt is not None:
+            if lock:
+                db.refresh(attempt, with_for_update=True)
+            if attempt.status != SAPMissionAttemptStatus.COMPLETED.value:
+                attempt.assistance_level = assistance_level
+            return attempt
+
+        attempt = SAPMissionAttempt(
+            user_id=user_id,
+            mission_id=mission.id,
+            status=SAPMissionAttemptStatus.IN_PROGRESS.value,
+            assistance_level=assistance_level,
+            current_step_index=0,
+            steps_completed=[],
+            learner_responses={},
+            state_mutations=[],
+            score=0.0,
+            passed=False,
+            feedback={"message": "Mission started"},
+            started_at=datetime.now(timezone.utc),
+        )
+        db.add(attempt)
+        db.flush()
+        return attempt
+
+    @staticmethod
+    def _passed_canonical_steps(
+        attempt: SAPMissionAttempt | None, canonical_ids: list[str]
+    ) -> list[str]:
+        """Registered step ids recorded as passed; ignores anything not in the registry."""
+        if attempt is None:
+            return []
+        recorded = set(attempt.steps_completed or [])
+        return [sid for sid in canonical_ids if sid in recorded]
+
+    @staticmethod
+    def _score(passed_ids: list[str], total_steps: int) -> float:
+        if total_steps <= 0:
+            return 0.0
+        return round(100.0 * len(passed_ids) / total_steps, 1)
+
+    @staticmethod
+    def _grade_step(step: dict[str, Any], payload: dict[str, Any]) -> tuple[bool, str]:
+        """Grades a submission against the step's authored key. Fails closed.
+
+        Raises SAPMissionSubmissionError when the payload is malformed for the step type or
+        the step has no gradable answer key; an ungradable step is never treated as passed.
+        """
+        payload = payload if isinstance(payload, dict) else {}
+        step_type = step.get("step_type")
+        step_ref = step.get("step_id")
+
+        if step_type in OPTION_STEP_TYPES:
+            options = [o for o in (step.get("options") or []) if isinstance(o, dict)]
+            correct = [o for o in options if o.get("is_correct") is True]
+            if len(correct) != 1:
+                raise SAPMissionSubmissionError(f"Step '{step_ref}' has no gradable answer key.")
+            selected_id = payload.get("selected_option_id")
+            if not isinstance(selected_id, str) or selected_id not in {o.get("id") for o in options}:
+                raise SAPMissionSubmissionError(
+                    f"A valid selected_option_id is required for step '{step_ref}'."
+                )
+            if selected_id != correct[0].get("id"):
+                return False, f"Incorrect choice. Best practice: {correct[0].get('label')}"
+            return True, "Correct selection! Architectural requirement satisfied."
+
+        if step_type == "order_process":
+            expected_order = step.get("correct_order")
+            if not isinstance(expected_order, list) or not expected_order:
+                raise SAPMissionSubmissionError(f"Step '{step_ref}' has no gradable answer key.")
+            submitted_order = payload.get("ordered_items")
+            if not isinstance(submitted_order, list) or not all(isinstance(i, str) for i in submitted_order):
+                raise SAPMissionSubmissionError(
+                    f"ordered_items (list of strings) is required for step '{step_ref}'."
+                )
+            if submitted_order != expected_order:
+                return False, "Order mismatch in organizational hierarchy."
+            return True, "Hierarchy ordering verified."
+
+        raise SAPMissionSubmissionError(f"Step '{step_ref}' has unsupported step type '{step_type}'.")
+
+    @staticmethod
+    def _recorded_response(step: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+        if step.get("step_type") == "order_process":
+            return {"ordered_items": list(payload.get("ordered_items") or [])}
+        return {"selected_option_id": payload.get("selected_option_id")}
+
+    @staticmethod
+    def _completion_patch(slug: str) -> dict[str, Any]:
+        """Deterministic enterprise state consequence applied when a mission completes."""
+        mutation_patch = {}
+        if slug == "nova-org-structure-design":
+            mutation_patch = {
+                "org_structure_status": "VALIDATED_ENTERPRISE_STRUCTURE",
+                "primary_company_code": "NM01",
+            }
+        elif slug == "nova-plant-expansion":
+            mutation_patch = {
+                "plants": [
+                    {
+                        "id": "PL02",
+                        "name": "Austin Tech Center",
+                        "status": "ACTIVE_INTEGRATED",
+                        "company_code": "NM01",
+                    }
+                ]
+            }
+        elif slug == "nova-purchase-flow-trace":
+            mutation_patch = {
+                "procurement_flow_audited": True,
+                "last_p2p_trace": "PR_PO_MIGO_MIRO_VALIDATED",
+            }
+        elif slug == "nova-sap-product-selection":
+            mutation_patch = {
+                "landscape_governance": "CLEAN_CORE_BTP_ALIGNED",
+            }
+        elif slug == "nova-architecture-layer-incident":
+            mutation_patch = {
+                "architecture_incident": "RESOLVED_BGD_BATCH_CONFIGURED",
+                "work_process_status": "STABLE_BALANCED",
+            }
+        elif slug == "nova-s4hana-modernization-decision":
+            mutation_patch = {
+                "modernization_blueprint": "S4HANA_SIMPLIFICATION_APPROVED",
+                "table_simplification_validated": True,
+            }
+        elif slug == "nova-universal-journal-investigation":
+            mutation_patch = {
+                "acdoca_reconciliation_status": "VERIFIED_BALANCED",
+                "parallel_ledgers_audited": True,
+            }
+        elif slug == "nova-matdoc-inventory-incident":
+            mutation_patch = {
+                "inventory_ledger_status": "MATDOC_HIGH_CONCURRENCY_ACTIVE",
+                "table_lock_incident": "RESOLVED",
+            }
+        elif slug == "nova-business-partner-migration":
+            mutation_patch = {
+                "cvi_sync_status": "CVI_SYNCHRONIZED_ACTIVE",
+                "legacy_customers_vendors_migrated": True,
+            }
+        elif slug == "nova-cds-reporting-requirement":
+            mutation_patch = {
+                "vdm_reporting_status": "BASIC_COMPOSITE_CONSUMPTION_DEPLOYED",
+                "code_pushdown_active": True,
+            }
+        elif slug == "nova-landscape-change-request":
+            mutation_patch = {
+                "cts_transport_route_status": "DEV_QAS_PRD_RELEASED",
+                "direct_prd_changes_blocked": True,
+            }
+        elif slug == "nova-access-governance-incident":
+            mutation_patch = {
+                "fiori_access_status": "SPACES_PAGES_RBAC_ENFORCED",
+                "sod_conflict_resolved": True,
+            }
+        elif slug == "nova-cross-module-document-trace":
+            mutation_patch = {
+                "document_chain_trace": "VBFA_TRANSPARENT_AUDITED",
+                "sales_to_finance_reconciliation": "BALANCED_CLEAR",
+            }
+        elif slug == "nova-p2p-workflow-incident":
+            mutation_patch = {
+                "pending_incident": "RESOLVED",
+                "finance_state": {"gr_ir_clearing_status": "BALANCED_OK"},
+            }
+
+        return mutation_patch

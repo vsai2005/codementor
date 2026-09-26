@@ -96,8 +96,17 @@ def complete_practice(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> SAPCompletePracticeResponse:
+    """Grades Practice evidence server-side; Practice is marked complete only on a pass.
+
+    - 400: day locked/waived, or evidence that does not belong to this day's Practice
+      (unknown step, missing step, or invalid option). Zero state mutation.
+    - 200 with passed=False: well-formed but incorrect answers. Zero state mutation.
+    - 200 with passed=True: Practice recorded (idempotent on repeat).
+    """
     try:
-        result = SAPProgressionService.record_practice_completed(db, user.id, payload.day_number)
+        result = SAPProgressionService.submit_practice(
+            db, user.id, payload.day_number, payload.answers
+        )
         return SAPCompletePracticeResponse(**result)
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))

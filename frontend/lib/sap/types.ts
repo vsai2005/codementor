@@ -76,9 +76,17 @@ export interface SapProgressResponse {
   day_states: Record<string, SapDayStateDetail>;
 }
 
+export interface SapPracticeStepResult {
+  step_id: string;
+  correct: boolean;
+  feedback?: string | null;
+}
+
 export interface SapCompletePracticeResponse {
   day_number: number;
+  passed: boolean;
   practice_completed: boolean;
+  results: SapPracticeStepResult[];
   day_completed?: boolean;
   unlocked_next_day?: boolean;
   current_day?: number | null;
@@ -359,6 +367,8 @@ export interface SapLessonStep {
   is_capstone?: boolean | null;
   assessment_type?: SapAssessmentType | string | null;
   assessment_id?: string | null;
+  /** Server-graded Practice step: answer key withheld; submit via completePractice. */
+  practice_evidence?: boolean | null;
   multi_concept_eval?: boolean | null;
   concepts_evaluated?: string[] | null;
 }

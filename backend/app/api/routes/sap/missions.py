@@ -17,9 +17,23 @@ from app.sap.schemas.api import (
     SAPMissionStepAttemptResponse,
     SAPMissionSummary,
 )
-from app.sap.services.missions import SAPMissionService
+from app.sap.services.missions import (
+    SAPMissionLockedError,
+    SAPMissionNotFoundError,
+    SAPMissionService,
+    SAPMissionStepNotFoundError,
+)
 
 router = APIRouter()
+
+
+def _mission_http_error(err: ValueError) -> HTTPException:
+    """Maps mission service errors: unknown mission/step 404, locked 403, otherwise 400."""
+    if isinstance(err, (SAPMissionNotFoundError, SAPMissionStepNotFoundError)):
+        return HTTPException(status_code=404, detail=str(err))
+    if isinstance(err, SAPMissionLockedError):
+        return HTTPException(status_code=403, detail=str(err))
+    return HTTPException(status_code=400, detail=str(err))
 
 
 @router.get("", response_model=list[SAPMissionSummary])
@@ -63,7 +77,7 @@ def start_mission(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> SAPMissionStartResponse:
-    """Starts or resumes a mission attempt."""
+    """Starts or resumes a mission attempt. Locked missions return 403 with no state change."""
     try:
         attempt = SAPMissionService.start_mission(
             db, user_id=user.id, slug=slug, assistance_level=assistance_level
@@ -76,7 +90,7 @@ def start_mission(
             current_step_index=attempt.current_step_index,
         )
     except ValueError as err:
-        raise HTTPException(status_code=404, detail=str(err))
+        raise _mission_http_error(err)
 
 
 @router.post("/{slug}/attempt", response_model=SAPMissionStepAttemptResponse)
@@ -98,7 +112,4 @@ def submit_step_attempt(
         )
         return SAPMissionStepAttemptResponse(**result)
     except ValueError as err:
-        err_msg = str(err)
-        if "not found" in err_msg.lower():
-            raise HTTPException(status_code=404, detail=err_msg)
-        raise HTTPException(status_code=400, detail=err_msg)
+        raise _mission_http_error(err)

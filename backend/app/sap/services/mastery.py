@@ -6,6 +6,7 @@ Strictly decoupled from Python's UserTopicState and tier-based difficulty.
 
 from __future__ import annotations
 
+import math
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import select
@@ -32,7 +33,16 @@ class SAPMasteryService:
         concept_slug: str,
         score: float,
     ) -> SAPUserConceptMastery:
-        """Records an assessment attempt against a concept and transitions mastery state."""
+        """Records an assessment attempt against a concept and transitions mastery state.
+
+        Internal only: callers must pass a score the server computed from graded evidence.
+        No API route forwards a client-supplied score here.
+        """
+        if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(score):
+            raise ValueError("Concept mastery score must be a finite number.")
+        if score < 0.0 or score > 100.0:
+            raise ValueError("Concept mastery score must be between 0 and 100.")
+        score = float(score)
         # Ensure concept exists in DB or create it from knowledge engine
         concept = db.execute(
             select(SAPConcept).where(SAPConcept.slug == concept_slug)
@@ -162,7 +172,12 @@ class SAPMasteryService:
             db.add(concept)
             db.flush()
 
-        score = float(evidence.get("score", 100.0))
+        if "score" not in evidence:
+            raise ValueError("Skill evidence requires a server-computed score.")
+        score = evidence["score"]
+        if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(score):
+            raise ValueError("Skill evidence score must be a finite number.")
+        score = float(score)
         record_evidence = SAPSkillEvidence(
             user_id=user_id,
             concept_id=concept.id,

@@ -18,6 +18,11 @@ from app.models.sap_models import (
     SAPUserState,
 )
 from app.sap.services.mastery import SAPMasteryService
+from app.sap.services.practice import (
+    PRACTICE_PHASE_STEP_TYPES,
+    PRACTICE_SENSITIVE_OPTION_KEYS,
+    practice_answer_key,
+)
 
 
 class SAPAssessmentService:
@@ -107,13 +112,19 @@ class SAPAssessmentService:
                         sanitized_questions.append(clean_q)
                     step["questions"] = sanitized_questions
 
-            elif st == "interactive_practice":
-                # Remove unused option answer leakage in interactive practice
+            elif st in PRACTICE_PHASE_STEP_TYPES:
+                # Practice-phase steps with an authored answer key are graded server-side as
+                # Practice evidence: flag them and hide the key and per-option rationale, which
+                # the server returns only for the learner's own choice after grading.
+                is_evidence = practice_answer_key(step) is not None
+                hidden = SENSITIVE_OPTION_KEYS | (PRACTICE_SENSITIVE_OPTION_KEYS if is_evidence else frozenset())
                 if "options" in step and isinstance(step["options"], list):
                     step["options"] = [
-                        {k: v for k, v in opt.items() if k not in SENSITIVE_OPTION_KEYS and not k.startswith("hidden_")}
+                        {k: v for k, v in opt.items() if k not in hidden and not k.startswith("hidden_")}
                         for opt in step["options"] if isinstance(opt, dict)
                     ]
+                if is_evidence:
+                    step["practice_evidence"] = True
 
         return sanitized
 

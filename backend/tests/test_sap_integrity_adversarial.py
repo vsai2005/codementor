@@ -30,6 +30,7 @@ from sqlalchemy.ext.compiler import compiles
 def compile_jsonb_sqlite(type_, compiler, **kw):
     return "TEXT"
 
+from tests.sap_practice_helpers import practice_payload
 from app.main import app
 from app.api.deps import get_current_user
 from app.database import get_db
@@ -111,7 +112,7 @@ def test_forged_rubric_questions_and_pass_score_ignored(client_auth, mock_user, 
     Server MUST ignore client questions and evaluate only against server definitions (Day 1).
     """
     # Complete practice first so assessment can be attempted
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
 
     forged_payload = {
         "day_number": 1,
@@ -146,7 +147,7 @@ def test_forged_rubric_questions_and_pass_score_ignored(client_auth, mock_user, 
 
 def test_malformed_and_empty_payloads_rejected(client_auth, mock_user, db_session):
     """Server must reject empty answers, whitespace answers, or non-dict payloads with 400."""
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
 
     # Empty answers dictionary
     resp_empty = client_auth.post(
@@ -177,7 +178,7 @@ def test_malformed_and_empty_payloads_rejected(client_auth, mock_user, db_sessio
 
 def test_unknown_assessment_type_rejected(client_auth, mock_user, db_session):
     """Server must reject unknown or exploit assessment types with 400/422 instead of defaulting to 100%."""
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
 
     resp = client_auth.post(
         "/api/sap/assessments/submit",
@@ -290,7 +291,7 @@ def test_missing_practice_blocks_day_completion(client_auth, mock_user, db_sessi
 def test_sequential_practice_lesson_assessment_unlocks_day_2(client_auth, mock_user, db_session):
     """Full legitimate sequence (practice + lesson + assessment) completes Day 1 and unlocks Day 2."""
     # 1. Practice
-    prac_resp = client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    prac_resp = client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
     assert prac_resp.status_code == 200
     assert prac_resp.json()["practice_completed"] is True
 
@@ -330,7 +331,7 @@ def test_assessment_retry_idempotency_does_not_double_advance(client_auth, mock_
     completed_days_count or double-advance current_recommended_day.
     """
     # Complete Day 1 legitimately
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
     client_auth.post(
         "/api/sap/assessments/submit",
@@ -447,7 +448,7 @@ class TestLockedLessonAccess:
     def test_completed_day_lesson_remains_accessible(self, client_auth, mock_user, db_session):
         """A completed day's lesson content must still be accessible (for review)."""
         # Complete Day 1 fully: practice + lesson + assessment
-        client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+        client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
         client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
         client_auth.post(
             "/api/sap/assessments/submit",

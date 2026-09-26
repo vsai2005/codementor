@@ -60,10 +60,14 @@ export const sapApi = {
       body: JSON.stringify({ day_number: dayNumber }),
     }),
 
-  completePractice: (dayNumber: number): Promise<SapCompletePracticeResponse> =>
+  /** Submits Practice evidence (step_id -> chosen option id); the server grades it. */
+  completePractice: (
+    dayNumber: number,
+    answers: Record<string, string>
+  ): Promise<SapCompletePracticeResponse> =>
     request<SapCompletePracticeResponse>("/api/sap/learning/complete-practice", {
       method: "POST",
-      body: JSON.stringify({ day_number: dayNumber }),
+      body: JSON.stringify({ day_number: dayNumber, answers }),
     }),
 
   getPlacementQuestions: (track: "experienced" | "not_sure" = "experienced"): Promise<PlacementQuestion[]> =>

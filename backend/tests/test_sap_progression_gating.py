@@ -26,6 +26,7 @@ from sqlalchemy.ext.compiler import compiles
 def compile_jsonb_sqlite(type_, compiler, **kw):
     return "TEXT"
 
+from tests.sap_practice_helpers import practice_payload
 from app.main import app
 from app.api.deps import get_current_user
 from app.database import get_db
@@ -105,7 +106,7 @@ def client_auth(mock_user, db_session):
 def test_normal_completion_flow(client_auth, mock_user, db_session):
     """Test full sequential lifecycle: practice -> assessment pass -> lesson complete -> Day 2 unlocked."""
     # Step 1: Complete interactive practice for Day 1
-    practice_resp = client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    practice_resp = client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
     assert practice_resp.status_code == 200
     practice_data = practice_resp.json()
     assert practice_data["practice_completed"] is True
@@ -170,7 +171,7 @@ def test_normal_completion_flow(client_auth, mock_user, db_session):
 def test_failed_assessment_blocks_day_completion(client_auth, mock_user, db_session):
     """Test that failing an assessment does NOT unlock the next day or complete the milestone."""
     # Complete Day 1 first
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
     client_auth.post(
         "/api/sap/assessments/submit",
@@ -185,7 +186,7 @@ def test_failed_assessment_blocks_day_completion(client_auth, mock_user, db_sess
     )
 
     # Now on Day 2: Complete practice and lesson
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 2})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(2))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 2})
 
     # Submit deliberate wrong answers to fail Day 2 assessment
@@ -233,7 +234,7 @@ def test_failed_assessment_blocks_day_completion(client_auth, mock_user, db_sess
 def test_assessment_retry_success(client_auth, mock_user, db_session):
     """Test that retrying a previously failed assessment with passing answers unlocks next milestone."""
     # Ensure Day 1 complete
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 1})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(1))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 1})
     client_auth.post(
         "/api/sap/assessments/submit",
@@ -247,7 +248,7 @@ def test_assessment_retry_success(client_auth, mock_user, db_session):
         },
     )
 
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 2})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(2))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 2})
 
     # Initial fail
@@ -297,7 +298,7 @@ def test_server_rejects_completing_locked_milestone(client_auth, mock_user, db_s
     assert "locked" in resp.json()["detail"].lower()
 
     # Practice on locked day must also be rejected
-    resp_prac = client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 5})
+    resp_prac = client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(5))
     assert resp_prac.status_code == 400
     assert "locked" in resp_prac.json()["detail"].lower()
 
@@ -334,7 +335,7 @@ def test_capstone_multi_concept_contract_acceptance(client_auth, mock_user, db_s
     db_session.commit()
 
     # Day 8 is now available
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 8})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(8))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 8})
 
     # Submit Day 8 capstone with assessment_type="capstone_multi_concept"
@@ -412,7 +413,7 @@ def test_waived_placement_days_progression(client_auth, mock_user, db_session):
     assert prog["day_states"]["10"]["unlocked"] is False
 
     # Complete Day 9
-    client_auth.post("/api/sap/learning/complete-practice", json={"day_number": 9})
+    client_auth.post("/api/sap/learning/complete-practice", json=practice_payload(9))
     client_auth.post("/api/sap/learning/complete-lesson", json={"day_number": 9})
     assess_resp = client_auth.post(
         "/api/sap/assessments/submit",

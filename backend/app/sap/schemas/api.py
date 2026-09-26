@@ -110,12 +110,30 @@ class SAPCompleteLessonResponse(BaseModel):
 
 
 class SAPCompletePracticeRequest(BaseModel):
+    """Practice evidence: the learner's chosen option for each of the day's practice steps.
+
+    There is no pass flag or score — the server grades `answers` against the authored keys.
+    """
     day_number: int = Field(..., ge=1, le=100, description="SAP day number for practice completion")
+    answers: dict[str, str] = Field(
+        ...,
+        min_length=1,
+        max_length=10,
+        description="Map of practice step_id -> selected option id",
+    )
+
+
+class SAPPracticeStepResult(BaseModel):
+    step_id: str
+    correct: bool
+    feedback: str | None = None
 
 
 class SAPCompletePracticeResponse(BaseModel):
     day_number: int
+    passed: bool
     practice_completed: bool
+    results: list[SAPPracticeStepResult] = Field(default_factory=list)
     day_completed: bool = False
     unlocked_next_day: bool = False
     current_day: int | None = None
@@ -139,11 +157,6 @@ class SAPMasterySummaryResponse(BaseModel):
     total_tracked: int
     breakdown: dict[str, int]
     concepts: list[SAPConceptMasteryItem]
-
-
-class SAPRecordConceptMasteryRequest(BaseModel):
-    concept_slug: str
-    score: float = Field(..., ge=0.0, le=100.0)
 
 
 # --- Placement Schemas ---
@@ -436,6 +449,7 @@ class SAPLessonStep(BaseModel):
     concepts_evaluated: list[str] | None = None
     assessment_type: str | None = None
     assessment_id: str | None = None
+    practice_evidence: bool | None = None
 
 
 class SAPLessonDetail(BaseModel):

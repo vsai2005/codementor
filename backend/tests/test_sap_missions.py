@@ -431,12 +431,21 @@ def test_mission_step_attempt_evaluation_and_duration():
         started_at=datetime.now(timezone.utc),
     )
 
-    with patch.object(SAPMissionService, "seed_missions_if_needed", return_value=[]), \
-         patch.object(SAPMissionService, "start_mission", return_value=attempt), \
+    # Registry definition the service grades against (steps, pass criteria, concepts)
+    definition = {
+        "slug": mock_mission.slug,
+        "difficulty": mock_mission.difficulty,
+        "prerequisite_concepts": [],
+        "steps": mock_mission.steps,
+        "success_criteria": mock_mission.success_criteria,
+        "concept_slugs": mock_mission.concept_slugs,
+    }
+
+    with patch.object(SAPMissionService, "_resolve_mission", return_value=(mock_mission, definition)), \
+         patch.object(SAPMissionService, "_find_latest_attempt", return_value=None), \
+         patch.object(SAPMissionService, "_get_or_create_attempt", return_value=attempt) as mock_get_attempt, \
          patch.object(SAPEnterpriseService, "apply_state_mutation") as mock_mutate, \
          patch.object(SAPMasteryService, "record_skill_evidence"):
-
-        mock_db.execute.return_value.scalar_one_or_none.return_value = mock_mission
 
         # 1. Attempt with wrong option
         res_fail = SAPMissionService.submit_step_attempt(
@@ -449,6 +458,9 @@ def test_mission_step_attempt_evaluation_and_duration():
         assert res_fail["step_success"] is False
         assert res_fail["mission_completed"] is False
         assert attempt.score == 0.0
+        # A wrong answer never creates, touches, or commits an attempt
+        mock_get_attempt.assert_not_called()
+        mock_db.commit.assert_not_called()
 
         # 2. Attempt with correct option
         res_pass = SAPMissionService.submit_step_attempt(

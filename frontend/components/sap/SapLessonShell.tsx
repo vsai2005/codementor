@@ -10,7 +10,7 @@ import { MasterDataClassifier } from "./MasterDataClassifier";
 import { ArchitectureLayerMapper } from "./ArchitectureLayerMapper";
 import { SAPProductSelector } from "./SAPProductSelector";
 import { ModuleInteractionVisualizer } from "./ModuleInteractionVisualizer";
-import { ScenarioDecision } from "./ScenarioDecision";
+import { GradedScenarioDecision, ScenarioDecision } from "./ScenarioDecision";
 import { MissionRecommendation } from "./MissionRecommendation";
 import { UniversalJournalVisualizer } from "./UniversalJournalVisualizer";
 import { MATDOCFlow } from "./MATDOCFlow";
@@ -90,6 +90,13 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
   );
   const [recordingPractice, setRecordingPractice] = useState<boolean>(false);
   const [practiceError, setPracticeError] = useState<string | null>(null);
+  // Practice evidence: learner's choice per server-graded step, and the server's verdicts
+  const [practiceAnswers, setPracticeAnswers] = useState<Record<string, string>>({});
+  const [practiceResults, setPracticeResults] = useState<
+    Record<string, { correct: boolean; feedback?: string | null }>
+  >({});
+  const practiceEvidenceSteps = steps.filter((s) => s.practice_evidence);
+  const allPracticeAnswered = practiceEvidenceSteps.every((s) => Boolean(practiceAnswers[s.step_id]));
 
   // Assessment State
   const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
@@ -189,21 +196,61 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
     }
   };
 
+  const handleSelectPracticeOption = (stepId: string, optionId: string) => {
+    setPracticeAnswers((prev) => ({ ...prev, [stepId]: optionId }));
+    setPracticeResults((prev) => {
+      const next = { ...prev };
+      delete next[stepId];
+      return next;
+    });
+    setPracticeError(null);
+  };
+
+  // Practice is verified only by the server grading the learner's decisions.
   const handleCompletePractice = async () => {
+    if (!allPracticeAnswered) {
+      setPracticeError("Make a decision on every practice scenario (Stages 4 and 5) before submitting.");
+      return;
+    }
     setRecordingPractice(true);
     setPracticeError(null);
     try {
-      await sapApi.completePractice(lesson.day_number);
-      setPracticeCompleted(true);
-      handleAdvanceTo(4);
+      const answers: Record<string, string> = {};
+      practiceEvidenceSteps.forEach((s) => {
+        answers[s.step_id] = practiceAnswers[s.step_id] ?? "";
+      });
+      const res = await sapApi.completePractice(lesson.day_number, answers);
+      const verdicts: Record<string, { correct: boolean; feedback?: string | null }> = {};
+      (res.results || []).forEach((r) => {
+        verdicts[r.step_id] = { correct: r.correct, feedback: r.feedback };
+      });
+      setPracticeResults(verdicts);
+      if (res.passed && res.practice_completed) {
+        setPracticeCompleted(true);
+        setMaxUnlockedIdx((prev) => Math.max(prev, 5));
+        setCurrentStepIdx(5);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        setPracticeError("Not all practice decisions were correct. Review the feedback, change your choice, and resubmit.");
+      }
     } catch (err: any) {
-      const msg = err?.message || "Failed to record practice completion. Please retry.";
-      setPracticeError(msg);
-      setPracticeCompleted(false);
+      setPracticeError(err?.message || "Failed to verify practice. Please retry.");
     } finally {
       setRecordingPractice(false);
     }
   };
+
+  const renderGradedDecision = (step: SapLessonStep, scenarioMd: string) => (
+    <GradedScenarioDecision
+      title={step.title}
+      scenarioMd={scenarioMd}
+      options={step.options || []}
+      selectedId={practiceAnswers[step.step_id] || null}
+      onSelect={(optionId) => handleSelectPracticeOption(step.step_id, optionId)}
+      result={practiceResults[step.step_id] || null}
+      locked={practiceCompleted || recordingPractice}
+    />
+  );
 
   // Submit Assessment
   const handleSubmitAssessment = async () => {
@@ -271,6 +318,9 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
 
   // Helper to render practice step
   const renderPracticeComponent = (step: SapLessonStep) => {
+    if (step.practice_evidence) {
+      return renderGradedDecision(step, step.instruction || "");
+    }
     switch (step.component_type) {
       case "ProcessFlow":
         return <ProcessFlow flowData={step.flow_data || []} />;
@@ -569,36 +619,23 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
 
             {renderPracticeComponent(currentStep)}
 
-            {practiceError && (
-              <div className="border-2 border-red-500 bg-red-50 text-red-800 p-3 text-xs font-mono font-bold flex items-center justify-between shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]">
-                <span>⚠️ {practiceError}</span>
-                <button
-                  type="button"
-                  onClick={handleCompletePractice}
-                  className="underline ml-2 hover:text-red-950"
-                >
-                  Retry Practice Save
-                </button>
-              </div>
-            )}
-
             <div className="border-3 border-ink bg-surface p-4 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               <div className="text-xs font-mono font-bold text-ink">
                 {practiceCompleted
-                  ? "✓ Interactive practice successfully verified and logged."
-                  : "Completed hands-on configuration or process tracing?"}
+                  ? "✓ Practice verified by the server."
+                  : currentStep.practice_evidence && !practiceAnswers[currentStep.step_id]
+                  ? "Make your decision above, then continue to the Scenario Challenge."
+                  : "Your practice decisions are verified together when you submit the Scenario Challenge."}
               </div>
               <button
                 type="button"
-                disabled={recordingPractice}
-                onClick={handleCompletePractice}
+                disabled={Boolean(
+                  !practiceCompleted && currentStep.practice_evidence && !practiceAnswers[currentStep.step_id]
+                )}
+                onClick={() => handleAdvanceTo(4)}
                 className="border-2 border-ink bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-ink px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
               >
-                {recordingPractice
-                  ? "Logging Practice..."
-                  : practiceCompleted
-                  ? "Re-verify Practice & Proceed →"
-                  : "Log Practice & Proceed to Scenario Challenge →"}
+                Continue to Scenario Challenge →
               </button>
             </div>
           </div>
@@ -607,27 +644,57 @@ export function SapLessonShell({ lesson, initialDayState, onDayComplete }: SapLe
         {/* STEP 5: CHALLENGE */}
         {currentStep.step_type === "challenge" && (
           <div className="space-y-4">
-            <ScenarioDecision
-              title={currentStep.title}
-              scenarioMd={currentStep.scenario_md || ""}
-              options={currentStep.options || []}
-            />
+            {currentStep.practice_evidence ? (
+              renderGradedDecision(currentStep, currentStep.scenario_md || currentStep.instruction || "")
+            ) : (
+              <ScenarioDecision
+                title={currentStep.title}
+                scenarioMd={currentStep.scenario_md || ""}
+                options={currentStep.options || []}
+              />
+            )}
+
+            {practiceError && (
+              <div
+                role="alert"
+                className="border-2 border-red-500 bg-red-50 text-red-800 p-3 text-xs font-mono font-bold flex flex-wrap items-center justify-between gap-2 shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]"
+              >
+                <span>⚠️ {practiceError}</span>
+                {practiceEvidenceSteps.some(
+                  (s) => s.step_id !== currentStep.step_id && practiceResults[s.step_id]?.correct === false
+                ) && (
+                  <button type="button" onClick={() => handleAdvanceTo(3)} className="underline hover:text-red-950">
+                    Revisit Stage 4 Practice
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="border-3 border-ink bg-surface p-4 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               {!practiceCompleted && !initialDayState?.completed && (
                 <div className="text-xs font-mono font-bold text-red-600">
-                  ⚠️ Interactive practice must be completed before entering the milestone assessment.
+                  ⚠️ Practice must be verified by the server before entering the milestone assessment.
                 </div>
               )}
               <div className="flex-1" />
-              <button
-                type="button"
-                disabled={!practiceCompleted && !initialDayState?.completed}
-                onClick={() => handleAdvanceTo(5)}
-                className="border-2 border-ink bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-              >
-                Proceed to Milestone Assessment (Step 6) →
-              </button>
+              {practiceCompleted || initialDayState?.completed ? (
+                <button
+                  type="button"
+                  onClick={() => handleAdvanceTo(5)}
+                  className="border-2 border-ink bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                  Proceed to Milestone Assessment (Step 6) →
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={recordingPractice || !allPracticeAnswered}
+                  onClick={handleCompletePractice}
+                  className="border-2 border-ink bg-emerald-400 hover:bg-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed text-ink px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                  {recordingPractice ? "Verifying Practice..." : "Submit Practice for Verification →"}
+                </button>
+              )}
             </div>
           </div>
         )}

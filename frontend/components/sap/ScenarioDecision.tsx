@@ -138,3 +138,98 @@ export function ScenarioDecision({
     </div>
   );
 }
+
+interface GradedScenarioDecisionProps {
+  title: string;
+  scenarioMd: string;
+  options: Array<Pick<DecisionOption, "id" | "label" | "text">>;
+  selectedId: string | null;
+  onSelect: (optionId: string) => void;
+  /** Server verdict for the currently selected option; null until graded. */
+  result: { correct: boolean; feedback?: string | null } | null;
+  locked?: boolean;
+}
+
+/**
+ * Server-graded variant: the answer key never reaches the browser. The learner picks an
+ * option; correctness and feedback come only from the server's grading of that choice.
+ */
+export function GradedScenarioDecision({
+  title,
+  scenarioMd,
+  options,
+  selectedId,
+  onSelect,
+  result,
+  locked = false,
+}: GradedScenarioDecisionProps) {
+  const getOptionLabel = (opt: { label?: string; text?: string }) => opt.label || opt.text || "Option";
+
+  return (
+    <div className="border-3 border-ink bg-surface p-6 shadow-hard">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[10px] font-mono font-bold uppercase bg-amber-300 border border-ink text-ink px-2.5 py-0.5">
+          Executive Dilemma
+        </span>
+        <h3 className="text-lg font-black text-ink">{title}</h3>
+      </div>
+
+      {scenarioMd && (
+        <div className="border-2 border-ink bg-surface-raised p-4 mb-6 text-sm text-ink leading-relaxed whitespace-pre-line font-medium">
+          {scenarioMd}
+        </div>
+      )}
+
+      <div role="radiogroup" aria-label="Decision Options" className="space-y-3 mb-4">
+        <div className="text-xs font-mono font-bold uppercase text-muted">
+          Select Your Architectural or Operational Course of Action:
+        </div>
+
+        {options.map((option) => {
+          const isSelected = selectedId === option.id;
+          let optionStyle = "border-2 border-ink bg-surface hover:bg-surface-raised text-ink";
+          if (isSelected && result) {
+            optionStyle = result.correct
+              ? "border-3 border-emerald-600 bg-emerald-100 text-emerald-950 font-bold"
+              : "border-3 border-red-600 bg-red-100 text-red-950 font-bold";
+          } else if (isSelected) {
+            optionStyle = "border-3 border-ink bg-amber-100 text-ink font-bold";
+          }
+
+          return (
+            <button
+              key={option.id}
+              role="radio"
+              aria-checked={isSelected}
+              disabled={locked}
+              type="button"
+              onClick={() => onSelect(option.id)}
+              className={`w-full text-left p-4 transition-all flex items-start gap-3 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none disabled:cursor-default ${optionStyle}`}
+            >
+              <span className="font-mono text-xs font-black px-2 py-1 bg-ink text-surface border border-ink shrink-0 uppercase">
+                {option.id.split("_").pop()}
+              </span>
+              <div className="text-xs sm:text-sm leading-snug font-medium">{getOptionLabel(option)}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {result && selectedId && (
+        <div
+          role="alert"
+          className={`border-3 p-4 ${
+            result.correct ? "bg-emerald-50 border-emerald-500 shadow-hard-sm" : "bg-red-50 border-red-500 shadow-hard-sm"
+          }`}
+        >
+          <span className="font-mono text-xs font-black uppercase">
+            {result.correct ? "✓ Verified by server" : "⚠️ Not the optimal decision — choose another option and resubmit"}
+          </span>
+          {result.feedback && (
+            <p className="mt-2 text-xs sm:text-sm text-ink leading-relaxed font-medium">{result.feedback}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
