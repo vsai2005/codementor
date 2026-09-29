@@ -726,6 +726,7 @@ def test_missing_or_invalid_mission_slug_returns_proper_404(db, make_user):
     """Asserts that querying or starting unknown/invalid mission slugs returns a clean 404 rather than 500."""
     user = make_user()
     app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_db] = lambda: db  # the isolated test transaction, not the app's DB
 
     try:
         invalid_slugs = [
