@@ -189,6 +189,16 @@ import subprocess, sys, time
 import psutil
 from app.services import sandbox
 
+def child_is_gone():
+    # is_running() and status() are separate lookups: on Windows the child can exit
+    # between them, and psutil then raises NoSuchProcess. That means "gone", which is
+    # exactly what this test is waiting for, so it must not be treated as a failure.
+    try:
+        return (not child.is_running()) or child.status() == psutil.STATUS_ZOMBIE
+    except psutil.NoSuchProcess:
+        return True
+
+
 proc = subprocess.Popen([
     sys.executable, "-c",
     "import subprocess,sys,time; subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)']);time.sleep(60)",
@@ -211,10 +221,10 @@ try:
             sys.modules['psutil'] = psutil
     proc.wait(timeout=5)
     for _ in range(100):
-        if not child.is_running() or child.status() == psutil.STATUS_ZOMBIE:
+        if child_is_gone():
             break
         time.sleep(0.01)
-    assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
+    assert child_is_gone()
 finally:
     if proc.poll() is None:
         proc.kill()

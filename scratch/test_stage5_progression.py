@@ -248,7 +248,7 @@ def run_stage5_tests() -> int:
 
     # Pass Day 160 capstone practice problem (word-search-ii)
     # Using reference solution from seed.py
-    import dev_backend.server as s
+    import legacy.dev_backend.server as s
     problem_160 = s._find_problem("word-search-ii")
     ref_160 = problem_160["reference_solution"]
     assert ref_160, "Reference solution for word-search-ii must exist"

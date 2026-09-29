@@ -12,15 +12,19 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import shutil
 import signal
+import subprocess
 import sys
 import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger(__name__)
 
 CPU_SECONDS = 3
 WALL_SECONDS = 3.5
@@ -39,6 +43,20 @@ CLEAN_ENV = {
 }
 
 _WIN32_QUOTA_EXCEEDED = (3221225540, -1073741756, 3221225495, -1073741801)
+
+
+def _optional_psutil():
+    """Return the psutil module, or None where it is not installed.
+
+    psutil is deliberately absent from production images. Callers must check for None
+    before naming ``psutil.Error`` in an ``except`` clause: evaluating the clause when
+    the import failed would raise NameError instead of falling back.
+    """
+    try:
+        import psutil
+    except ImportError:
+        return None
+    return psutil
 
 
 def _truncate_utf8(s: str, max_bytes: int = MAX_OUTPUT_BYTES) -> str:
@@ -119,6 +137,8 @@ def _setup_win32_job_object(pid: int):
 
         return job
     except Exception:
+        # Fail-open by design (the RSS watchdog still enforces memory), but never silent.
+        log.warning("could not create Win32 job object for sandbox pid %s", pid, exc_info=True)
         return None
 
 
@@ -128,7 +148,7 @@ def _terminate_win32_job(job) -> None:
             import ctypes
             ctypes.windll.kernel32.TerminateJobObject(job, 1)
         except Exception:
-            pass
+            log.warning("TerminateJobObject failed", exc_info=True)
 
 
 def _close_win32_job(job) -> None:
@@ -137,7 +157,7 @@ def _close_win32_job(job) -> None:
             import ctypes
             ctypes.windll.kernel32.CloseHandle(job)
         except Exception:
-            pass
+            log.warning("CloseHandle on Win32 job object failed", exc_info=True)
 
 
 def _get_process_tree_rss(pid: int) -> int | None:
@@ -220,25 +240,26 @@ def _get_process_tree_rss(pid: int) -> int | None:
         return rss_total or None
 
     # Other platforms: psutil accounts for descendants when installed.
-    try:
-        import psutil
-
-        proc = psutil.Process(pid)
-        total_rss = proc.memory_info().rss
-        for child in proc.children(recursive=True):
-            try:
-                total_rss += child.memory_info().rss
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                pass
-        return total_rss
-    except (psutil.NoSuchProcess, psutil.AccessDenied):
-        return None
-    except Exception:
-        pass
+    psutil = _optional_psutil()
+    if psutil is not None:
+        try:
+            proc = psutil.Process(pid)
+            total_rss = proc.memory_info().rss
+            for child in proc.children(recursive=True):
+                try:
+                    total_rss += child.memory_info().rss
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            return total_rss
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return None
+        except psutil.Error:
+            pass  # fall through to the psapi measurement
 
     # Windows psapi via ctypes (measures physical WorkingSetSize, NOT commit charge)
+    import ctypes
+
     try:
-        import ctypes
         from ctypes import wintypes
 
         class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
@@ -272,8 +293,9 @@ def _get_process_tree_rss(pid: int) -> int | None:
                     return counters.WorkingSetSize
             finally:
                 ctypes.windll.kernel32.CloseHandle(h)
-    except Exception:
-        pass
+    except (ImportError, AttributeError, OSError, ValueError, ctypes.ArgumentError):
+        # Not Windows, or psapi is unavailable: memory cannot be measured here.
+        log.debug("process-tree memory measurement unavailable", exc_info=True)
 
     return None
 
@@ -300,6 +322,9 @@ async def _watch_process_memory(
                 )
                 break
         except Exception:
+            # An unexpected failure ends memory enforcement for this run. Make that
+            # visible instead of silently disabling the watchdog.
+            log.exception("sandbox memory watchdog failed for pid %s; memory no longer enforced", pid)
             break
         try:
             await asyncio.wait_for(stop_event.wait(), timeout=0.015)
@@ -359,14 +384,11 @@ def _network_namespace_available() -> bool:
     if not shutil.which("unshare"):
         return False
     try:
-        probe = shutil.which("unshare")
-        if not probe:
-            return False
-        import subprocess
         res = subprocess.run(["unshare", "-n", "true"], capture_output=True, timeout=3)
-        return res.returncode == 0
-    except (OSError, Exception):
+    except (OSError, subprocess.SubprocessError):
+        # Cannot execute or the probe timed out: treat isolation as unavailable.
         return False
+    return res.returncode == 0
 
 
 _NETNS_AVAILABLE: bool | None = None
@@ -401,11 +423,12 @@ def _process_start_time(pid: int) -> int | float | None:
         stat = _proc_stat(pid)
         if stat is not None:
             return stat[1]
+    psutil = _optional_psutil()
+    if psutil is None:
+        return None
     try:
-        import psutil
-
         return psutil.Process(pid).create_time()
-    except Exception:
+    except psutil.Error:
         return None
 
 
@@ -420,23 +443,22 @@ def _kill_process_group(
     if sys.platform == "win32":
         if win_job:
             _terminate_win32_job(win_job)
-        try:
-            import psutil
-
-            parent = psutil.Process(pid)
-            children = parent.children(recursive=True)
-            for child in children:
-                try:
-                    child.kill()
-                except Exception:
-                    pass
-            parent.kill()
-            return
-        except Exception:
-            pass
+        psutil = _optional_psutil()
+        if psutil is not None:
+            try:
+                parent = psutil.Process(pid)
+                for child in parent.children(recursive=True):
+                    try:
+                        child.kill()
+                    except psutil.Error:
+                        pass
+                parent.kill()
+                return
+            except psutil.Error:
+                pass
         try:
             os.kill(pid, signal.SIGTERM)
-        except Exception:
+        except OSError:
             pass
         return
 
@@ -460,29 +482,29 @@ def _kill_process_group(
             if group_leader and expected_start_time is not None:
                 os.killpg(pid, sigkill)
                 return
-        except (ProcessLookupError, PermissionError, OSError):
+        except OSError:  # includes ProcessLookupError and PermissionError
             pass
     # A group may already be gone. Do not let either fallback path act on a
     # different process that acquired the leader's numeric PID meanwhile.
     if expected_start_time is not None and _process_start_time(pid) != expected_start_time:
         return
-    try:
-        import psutil
-
-        target = psutil.Process(pid)
-        descendants = target.children(recursive=True)
-        for child in reversed(descendants):
+    psutil = _optional_psutil()
+    if psutil is not None:
+        try:
+            target = psutil.Process(pid)
+            descendants = target.children(recursive=True)
+            for child in reversed(descendants):
+                try:
+                    child.kill()
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
             try:
-                child.kill()
+                target.kill()
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 pass
-        try:
-            target.kill()
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-        return
-    except Exception:
-        pass
+            return
+        except psutil.Error:
+            pass  # fall through to the /proc walk or a plain kill
     # Production Linux does not require psutil. Snapshot parent links and start
     # ticks before signaling so a reused descendant PID is not hit later.
     if sys.platform.startswith("linux"):
@@ -513,7 +535,7 @@ def _kill_process_group(
             pass
     try:
         os.kill(pid, sigkill)
-    except (ProcessLookupError, PermissionError, OSError):
+    except OSError:  # includes ProcessLookupError and PermissionError
         pass
 
 
@@ -857,7 +879,8 @@ async def execute_script_async(code: str) -> dict:
             "stderr": _truncate_utf8(err_msg, MAX_OUTPUT_BYTES),
             "runtime_ms": runtime_ms,
         }
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
+        # Non-JSON output, or JSON that is not an object (payload.get fails).
         return {
             "status": "error",
             "stdout": _truncate_utf8(stdout_raw.decode("utf-8", errors="replace"), MAX_OUTPUT_BYTES),

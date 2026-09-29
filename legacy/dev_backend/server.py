@@ -1,4 +1,8 @@
-"""Zero-dependency DEV backend for CodeMentor AI (Windows-friendly).
+"""LEGACY / ARCHIVED zero-dependency dev backend for CodeMentor AI (Windows-friendly).
+
+Not used in production. The only supported backend is `backend/` (FastAPI). This copy is
+kept only so the one-off scripts in `scratch/` can still read the seed problem bank.
+See legacy/README.md.
 
 Speaks the exact HTTP API the Next.js frontend expects (see frontend/lib/api.ts
 and frontend/lib/types.ts), but with NO Postgres, NO pgvector and NO Docker. It
@@ -10,14 +14,14 @@ What is real here:
   * "Run" / "Submit" actually execute your editor code against the real test
     cases in a subprocess (child_runner.py), so pass/fail is genuine.
   * overall_score uses the real weights + wrong-answer cap from schemas/review.py.
-  * If GEMINI_API_KEY is set (dev_backend/.env), the review + tutor call Google
+  * If GEMINI_API_KEY is set (legacy/dev_backend/.env), the review + tutor call Google
     Gemini for real; otherwise both fall back to a local heuristic.
 
 What is faked:
   * Auth: any id_token logs you in as a single demo user (no Google).
   * Adaptive difficulty + progress are tracked in memory and reset on restart.
 
-Run:  python dev_backend/server.py      (listens on http://localhost:8000)
+Run:  python legacy/dev_backend/server.py      (listens on http://localhost:8000)
 """
 
 from __future__ import annotations
@@ -43,10 +47,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SEED_PATH = os.path.join(HERE, "..", "backend", "app", "seed.py")
+SEED_PATH = os.path.join(HERE, "..", "..", "backend", "app", "seed.py")
 CHILD_RUNNER = os.path.join(HERE, "child_runner.py")
 
-sys.path.insert(0, os.path.join(HERE, "..", "backend"))
+sys.path.insert(0, os.path.join(HERE, "..", "..", "backend"))
 try:
     from app.core.curriculum_map import CURRICULUM_DAY_PRACTICE, PRACTICE_SLUG_TO_DAYS
 except Exception:
@@ -56,7 +60,7 @@ except Exception:
 
 
 def _load_env() -> None:
-    """Minimal .env loader (stdlib only) — reads dev_backend/.env if present."""
+    """Minimal .env loader (stdlib only) — reads legacy/dev_backend/.env if present."""
     path = os.path.join(HERE, ".env")
     if not os.path.exists(path):
         return

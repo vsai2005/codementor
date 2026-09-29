@@ -8,13 +8,16 @@ Includes server-authoritative reference solutions, robust test cases, and
 adaptive difficulty tier progression.
 
 Run:  python -m app.seed
+Runs at every deploy (render.yaml, backend/Dockerfile), after migrations and before the
+server starts. It only upserts seed slugs: AI-generated problems use the reserved
+``gen-`` slug prefix and are never touched.
 """
 
 from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.database import SessionLocal
 from app.models.models import Problem, Topic
@@ -2119,6 +2122,12 @@ def seed() -> None:
     db = SessionLocal()
     NS = uuid.UUID("00000000-0000-0000-0000-0000000c0de0")
     try:
+        # Seed rows use deterministic ids, so two instances starting at once against a
+        # fresh database would insert the same keys. Serialize them for this transaction;
+        # the second runner waits, then sees the committed rows and only updates.
+        if db.get_bind().dialect.name == "postgresql":
+            db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended('problem-seed', 0))"))
+
         topic_ids: dict[str, uuid.UUID] = {}
         for slug, name in TOPICS:
             topic = db.execute(select(Topic).where(Topic.slug == slug)).scalars().first()

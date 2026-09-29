@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import math
 import uuid
+from typing import Any
 from datetime import datetime, timezone
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.sap_curriculum_retrieval import SAPCurriculumKnowledgeEngine
@@ -19,6 +21,36 @@ from app.models.sap_models import (
     SAPSkillEvidence,
     SAPUserConceptMastery,
 )
+
+
+def get_or_create_concept(db: Session, concept_slug: str) -> SAPConcept | None:
+    """Return the catalog row for a knowledge-engine concept, creating it on first use.
+
+    Safe under concurrency: two first-time requests may both miss the row. The insert
+    runs in a SAVEPOINT, so the loser of the unique-slug race rolls back only that
+    savepoint and reads the winner's committed row; the caller's transaction survives.
+    Returns None when the slug is not a registered concept.
+    """
+    stmt = select(SAPConcept).where(SAPConcept.slug == concept_slug)
+    concept = db.execute(stmt).scalar_one_or_none()
+    if concept is not None:
+        return concept
+
+    c_meta = SAPCurriculumKnowledgeEngine.get_instance().get_concept(concept_slug)
+    if c_meta is None:
+        return None
+    try:
+        with db.begin_nested():
+            concept = SAPConcept(
+                slug=c_meta.slug,
+                name=c_meta.name,
+                category=c_meta.category,
+                difficulty=c_meta.difficulty,
+            )
+            db.add(concept)
+    except IntegrityError:
+        concept = db.execute(stmt).scalar_one()
+    return concept
 
 
 class SAPMasteryService:
@@ -44,23 +76,9 @@ class SAPMasteryService:
             raise ValueError("Concept mastery score must be between 0 and 100.")
         score = float(score)
         # Ensure concept exists in DB or create it from knowledge engine
-        concept = db.execute(
-            select(SAPConcept).where(SAPConcept.slug == concept_slug)
-        ).scalar_one_or_none()
-
+        concept = get_or_create_concept(db, concept_slug)
         if concept is None:
-            engine = SAPCurriculumKnowledgeEngine.get_instance()
-            c_meta = engine.get_concept(concept_slug)
-            if c_meta is None:
-                raise ValueError(f"Concept '{concept_slug}' is not registered in the SAP knowledge engine.")
-            concept = SAPConcept(
-                slug=c_meta.slug,
-                name=c_meta.name,
-                category=c_meta.category,
-                difficulty=c_meta.difficulty,
-            )
-            db.add(concept)
-            db.flush()
+            raise ValueError(f"Concept '{concept_slug}' is not registered in the SAP knowledge engine.")
 
         # Find or create user mastery record
         record = db.execute(
@@ -154,23 +172,10 @@ class SAPMasteryService:
         evidence: dict[str, Any],
     ) -> SAPSkillEvidence:
         """Records explicit skill evidence for a concept and updates concept mastery dynamically."""
-        concept = db.execute(
-            select(SAPConcept).where(SAPConcept.slug == concept_slug)
-        ).scalar_one_or_none()
-
+        # Ensure concept exists in DB or create it from knowledge engine
+        concept = get_or_create_concept(db, concept_slug)
         if concept is None:
-            engine = SAPCurriculumKnowledgeEngine.get_instance()
-            c_meta = engine.get_concept(concept_slug)
-            if c_meta is None:
-                raise ValueError(f"Concept '{concept_slug}' is not registered in the SAP knowledge engine.")
-            concept = SAPConcept(
-                slug=c_meta.slug,
-                name=c_meta.name,
-                category=c_meta.category,
-                difficulty=c_meta.difficulty,
-            )
-            db.add(concept)
-            db.flush()
+            raise ValueError(f"Concept '{concept_slug}' is not registered in the SAP knowledge engine.")
 
         if "score" not in evidence:
             raise ValueError("Skill evidence requires a server-computed score.")

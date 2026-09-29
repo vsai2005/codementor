@@ -3,7 +3,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("."))
-import dev_backend.server as s
+import legacy.dev_backend.server as s
 
 problems_by_slug = {p["slug"]: p for p in s.PROBLEMS.values()}
 with open("scratch/curriculum_160.json", "r", encoding="utf-8") as f:

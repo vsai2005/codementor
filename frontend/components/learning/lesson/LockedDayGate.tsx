@@ -41,7 +41,7 @@ export function LockedDayGate({ dayNumber }: LockedDayGateProps) {
             Go to Day {prerequisiteDay} →
           </Link>
           <Link
-            href="/learning"
+            href="/learning/python"
             className="btn font-semibold text-xs border-2 border-ink shadow-hard-sm hover:shadow-hard"
           >
             ← Back to Roadmap

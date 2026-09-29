@@ -7,6 +7,7 @@ and skill evidence generation.
 from __future__ import annotations
 
 import copy
+import logging
 import secrets
 import uuid
 from datetime import datetime, timezone
@@ -14,7 +15,6 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from app.core.sap_curriculum_retrieval import SAPCurriculumKnowledgeEngine
 from app.models.sap_models import (
     SAPAssistanceLevel,
     SAPConcept,
@@ -28,10 +28,12 @@ from app.models.sap_models import (
     SAPUserConceptMastery,
 )
 from app.sap.services.enterprise import SAPEnterpriseService
-from app.sap.services.mastery import SAPMasteryService
+from app.sap.services.mastery import SAPMasteryService, get_or_create_concept
 from app.sap.services.phase2_missions import PHASE_2_SEED_MISSIONS
 from app.sap.services.phase3_missions import PHASE_3_SEED_MISSIONS
 from app.sap.services.phase4_missions import PHASE_4_SEED_MISSIONS
+
+log = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -693,9 +695,21 @@ class SAPMissionService:
 
     @classmethod
     def seed_missions_if_needed(cls, db: Session) -> list[SAPMission]:
-        """Seeds default architecture missions and links them to concepts and enterprise."""
+        """Create missing seed missions and refresh every mission's definition from code.
+
+        This is the deploy-time step (``python -m app.sap.seed``, run before the server
+        starts). Request paths call ``ensure_missions_seeded`` instead, which only falls
+        back to this when the deploy step did not run.
+        """
         template = SAPEnterpriseService.get_or_create_template(db)
-        engine = SAPCurriculumKnowledgeEngine.get_instance()
+        # Concurrent first-time seeders (e.g. several instances starting on a fresh
+        # database) could both insert the same mission slug. Only then, serialize them: the
+        # lock is taken after the template step (which commits) and released by the commit
+        # at the end of this method. When every mission already exists, nothing waits.
+        if cls._missing_seed_slugs(db):
+            bind = db.get_bind()
+            if getattr(getattr(bind, "dialect", None), "name", None) == "postgresql":
+                db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended('sap-mission-seed', 0))"))
 
         seeded: list[SAPMission] = []
         for m_data in SEED_MISSIONS:
@@ -729,13 +743,7 @@ class SAPMissionService:
 
                 # Link concepts relationally
                 for c_slug in m_data.get("concept_slugs", []):
-                    c = db.execute(select(SAPConcept).where(SAPConcept.slug == c_slug)).scalar_one_or_none()
-                    if c is None:
-                        c_meta = engine.get_concept(c_slug)
-                        if c_meta:
-                            c = SAPConcept(slug=c_meta.slug, name=c_meta.name, category=c_meta.category, difficulty=c_meta.difficulty)
-                            db.add(c)
-                            db.flush()
+                    c = get_or_create_concept(db, c_slug)
                     if c:
                         link = SAPMissionConcept(mission_id=m.id, concept_id=c.id, relevance="PRIMARY")
                         db.add(link)
@@ -757,10 +765,32 @@ class SAPMissionService:
         db.commit()
         return seeded
 
+    @staticmethod
+    def _missing_seed_slugs(db: Session) -> list[str]:
+        existing = set(db.execute(select(SAPMission.slug)).scalars())
+        return [m_data["slug"] for m_data in SEED_MISSIONS if m_data["slug"] not in existing]
+
+    @classmethod
+    def ensure_missions_seeded(cls, db: Session) -> None:
+        """Request-path guard: one read when the deploy-time seed has run.
+
+        Seeds only as a fallback (e.g. a local database where ``python -m app.sap.seed``
+        was never run), and says so, because that request then pays the full seeding cost.
+        """
+        missing = cls._missing_seed_slugs(db)
+        if not missing:
+            return
+        log.warning(
+            "%d SAP seed missions missing; seeding on the request path. "
+            "Run `python -m app.sap.seed` at deploy time.",
+            len(missing),
+        )
+        cls.seed_missions_if_needed(db)
+
     @classmethod
     def list_missions_for_user(cls, db: Session, user_id: uuid.UUID) -> list[dict[str, Any]]:
         """Lists available missions for a learner, computing unlock status and attempt progress."""
-        cls.seed_missions_if_needed(db)
+        cls.ensure_missions_seeded(db)
 
         # Get learner mastered concepts
         mastery_rows = db.execute(
@@ -829,7 +859,7 @@ class SAPMissionService:
             select(SAPMission).where(SAPMission.slug == slug)
         ).scalar_one_or_none()
         if not mission:
-            cls.seed_missions_if_needed(db)
+            cls.ensure_missions_seeded(db)
             mission = db.execute(
                 select(SAPMission).where(SAPMission.slug == slug)
             ).scalar_one_or_none()
@@ -1063,7 +1093,7 @@ class SAPMissionService:
             select(SAPMission).where(SAPMission.slug == slug)
         ).scalar_one_or_none()
         if not mission:
-            cls.seed_missions_if_needed(db)
+            cls.ensure_missions_seeded(db)
             mission = db.execute(
                 select(SAPMission).where(SAPMission.slug == slug)
             ).scalar_one_or_none()
@@ -1285,7 +1315,7 @@ class SAPMissionService:
     @staticmethod
     def _completion_patch(slug: str) -> dict[str, Any]:
         """Deterministic enterprise state consequence applied when a mission completes."""
-        mutation_patch = {}
+        mutation_patch: dict[str, Any] = {}
         if slug == "nova-org-structure-design":
             mutation_patch = {
                 "org_structure_status": "VALIDATED_ENTERPRISE_STRUCTURE",

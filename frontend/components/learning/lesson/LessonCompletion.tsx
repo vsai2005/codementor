@@ -107,7 +107,7 @@ export function LessonCompletion({
             )}
 
             <Link
-              href="/learning"
+              href="/learning/python"
               className="btn font-semibold text-xs border-2 border-ink shadow-hard-sm hover:shadow-hard"
             >
               ← Return to Roadmap

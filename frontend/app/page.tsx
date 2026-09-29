@@ -54,7 +54,7 @@ export default function LandingPage() {
             <span>160-Day Python & DSA Roadmap • 14 Structured Modules</span>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/learning" className="btn btn-primary flex items-center gap-2">
+            <Link href="/learning/python" className="btn btn-primary flex items-center gap-2">
               <span>Start 160-Day Roadmap</span>
               <span>→</span>
             </Link>

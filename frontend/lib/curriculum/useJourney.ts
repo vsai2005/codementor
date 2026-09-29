@@ -56,6 +56,8 @@ export function useJourney() {
   const { user } = useAuth();
   const [progress, setProgress] = useState<LearningJourneyProgress>(DEFAULT_PROGRESS);
   const [isLoaded, setIsLoaded] = useState(false);
+  // True once the first server sync has settled (success, or guest/offline failure).
+  const [serverSynced, setServerSynced] = useState(false);
   const progressRef = useRef(progress);
   const inFlightPracticeSyncRef = useRef<Set<number>>(new Set());
 
@@ -112,6 +114,8 @@ export function useJourney() {
       }
     } catch {
       // Unauthenticated or offline: preserve sanitized local state
+    } finally {
+      setServerSynced(true);
     }
   }, [saveProgress]);
 
@@ -372,6 +376,7 @@ export function useJourney() {
     currentDay: progress.current_day,
     completedDays: progress.completed_days,
     isLoaded,
+    serverSynced,
     getDayStatus,
     markLessonComplete,
     recordPracticePassed,

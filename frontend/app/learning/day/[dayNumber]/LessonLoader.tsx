@@ -28,7 +28,7 @@ export function LessonLoader({ dayNumber }: LessonLoaderProps) {
             The Python &amp; DSA curriculum spans Days 1 through {STAGE_MAX_ACCESSIBLE_DAY}.
           </p>
           <div className="pt-2">
-            <Link href="/learning" className="btn btn-primary font-bold shadow-hard-sm hover:shadow-hard">
+            <Link href="/learning/python" className="btn btn-primary font-bold shadow-hard-sm hover:shadow-hard">
               ← Back to 160-Day Roadmap
             </Link>
           </div>

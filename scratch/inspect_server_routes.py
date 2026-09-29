@@ -1,4 +1,4 @@
-with open('dev_backend/server.py', encoding='utf-8') as f:
+with open('legacy/dev_backend/server.py', encoding='utf-8') as f:
     lines = f.readlines()
 
 for idx, line in enumerate(lines):

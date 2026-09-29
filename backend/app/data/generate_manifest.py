@@ -2,8 +2,9 @@
 
 import json
 import os
+from typing import Any
 
-manifest = {
+manifest: dict[str, Any] = {
     "course": {
         "slug": "sap-s4hana-mastery",
         "title": "SAP S/4HANA & ABAP Cloud Enterprise Engineering",
@@ -110,7 +111,7 @@ manifest = {
 }
 
 # Define all 100 days explicitly
-days_data = [
+days_data: list[tuple[Any, ...]] = [
     # Phase 1: Days 1–8
     (1, 1, "enterprise-systems-cross-functional", "Enterprise Systems & Cross-Functional Flows",
      "Introduction to enterprise computing, business process integration, and modular ERP workflows.",

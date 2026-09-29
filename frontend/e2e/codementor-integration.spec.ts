@@ -1,5 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 
+// Python + DSA journey progress in localStorage (STORAGE_KEY in lib/curriculum/useJourney.ts).
+const JOURNEY_STORAGE_KEY = 'codementor.learning.progress';
+
 async function registerUser(page: Page) {
   const testId = Date.now();
   const username = `u_${testId}_${Math.floor(Math.random() * 1000)}`;
@@ -60,12 +63,13 @@ test.describe('CodeMentor Full Integration E2E Suite', () => {
   test('3. stale localStorage cannot bypass progression', async ({ page }) => {
     await registerUser(page);
 
-    await page.goto('/learning');
+    await page.goto('/learning/python');
     await page.waitForLoadState('networkidle');
 
-    // Inject fake progress trying to claim days 1-5 are completed and day 6 is current
-    await page.evaluate(() => {
-      localStorage.setItem('codementor_journey_progress', JSON.stringify({
+    // Inject fake progress trying to claim days 1-5 are completed and day 6 is current.
+    // Must match STORAGE_KEY in lib/curriculum/useJourney.ts, or nothing is injected.
+    await page.evaluate((key) => {
+      localStorage.setItem(key, JSON.stringify({
         current_day: 6,
         completed_days: [1, 2, 3, 4, 5],
         day_records: {
@@ -77,11 +81,19 @@ test.describe('CodeMentor Full Integration E2E Suite', () => {
         },
         last_activity_timestamp: Date.now(),
       }));
-    });
+    }, JOURNEY_STORAGE_KEY);
 
     // Reload page — server progress must replace/sanitize stale local progression
     await page.reload();
     await page.waitForLoadState('networkidle');
+
+    // The app read the injected entry and overwrote it with the server's authoritative state.
+    const stored = await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key) ?? 'null'),
+      JOURNEY_STORAGE_KEY,
+    );
+    expect(stored?.current_day).toBe(1);
+    expect(stored?.completed_days).toEqual([]);
 
     // Navigate to Day 6 — server will deny lesson access and show locked gate
     await page.goto('/learning/day/6');
