@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import enum
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
@@ -30,7 +30,7 @@ class SAPExecutionRequest(BaseModel):
 
 
 class DiagnosticFinding(BaseModel):
-    severity: str = Field(..., description="error | warning | info")
+    severity: Literal["error", "warning", "info"] = Field(..., description="error | warning | info")
     line: int | None = None
     column: int | None = None
     rule_code: str

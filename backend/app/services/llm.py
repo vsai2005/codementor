@@ -67,9 +67,10 @@ def parse_llm_json(response_text: str, target_schema: type[T]) -> T:
     parsed_dict = extract_json(response_text)
 
     try:
-        if hasattr(target_schema, "model_validate"):
-            return target_schema.model_validate(parsed_dict)
-        return target_schema(**parsed_dict)  # type: ignore[call-arg]
+        model_validate = getattr(target_schema, "model_validate", None)
+        if model_validate is not None:
+            return model_validate(parsed_dict)
+        return target_schema(**parsed_dict)
     except Exception as exc:
         schema_name = getattr(target_schema, "__name__", str(target_schema))
         raise LLMJsonParseError(

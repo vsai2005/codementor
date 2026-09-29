@@ -128,7 +128,7 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: AuthMode }) 
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={mode === "login" ? "Password" : "Password (min 6 chars)"}
+              placeholder={mode === "login" ? "Password" : "Password (min 8 chars)"}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               className="w-full border-2 border-ink bg-surface p-2 pr-16 font-body text-sm outline-none focus:shadow-hard-sm"
             />

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
@@ -200,7 +201,7 @@ def misconceptions_summary(
         .limit(50)
     ).all()
 
-    patterns_map = {
+    patterns_map: dict[str, dict[str, Any]] = {
         "edge-cases": {
             "label": "Edge cases (empty / boundary inputs)",
             "tip": "Before submitting, dry-run code on empty input and single elements.",

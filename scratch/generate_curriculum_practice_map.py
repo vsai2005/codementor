@@ -12,7 +12,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("."))
-import dev_backend.server as s
+import legacy.dev_backend.server as s
 
 problems_by_slug = {p["slug"]: p for p in s.PROBLEMS.values()}
 print(f"Loaded {len(problems_by_slug)} problems from seed.")

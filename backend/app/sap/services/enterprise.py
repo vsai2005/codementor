@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.sap_models import SAPEnterprise, SAPEnterpriseInstance
@@ -185,19 +186,27 @@ class SAPEnterpriseService:
 
         if enterprise is None:
             data = NOVA_MANUFACTURING_TEMPLATE
-            enterprise = SAPEnterprise(
-                slug=data["slug"],
-                name=data["name"],
-                code=data["code"],
-                industry=data["industry"],
-                description_md=data["description_md"],
-                template_state=copy.deepcopy(data["template_state"]),
-                landscape_metadata=copy.deepcopy(data["landscape_metadata"]),
-                is_active=True,
-            )
-            db.add(enterprise)
-            db.commit()
-            db.refresh(enterprise)
+            try:
+                # SAVEPOINT: a concurrent first request may insert the template first.
+                with db.begin_nested():
+                    enterprise = SAPEnterprise(
+                        slug=data["slug"],
+                        name=data["name"],
+                        code=data["code"],
+                        industry=data["industry"],
+                        description_md=data["description_md"],
+                        template_state=copy.deepcopy(data["template_state"]),
+                        landscape_metadata=copy.deepcopy(data["landscape_metadata"]),
+                        is_active=True,
+                    )
+                    db.add(enterprise)
+            except IntegrityError:
+                enterprise = db.execute(
+                    select(SAPEnterprise).where(SAPEnterprise.slug == data["slug"])
+                ).scalar_one()
+            else:
+                db.commit()
+                db.refresh(enterprise)
 
         return enterprise
 

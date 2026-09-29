@@ -19,6 +19,12 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from tests._env_isolation import isolate
+
+# Must run before any test module imports the app: the suite must not depend on the
+# developer's .env file or exported environment variables.
+isolate()
+
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
 
 requires_db = pytest.mark.skipif(
@@ -35,6 +41,39 @@ def _isolated_auth_rate_limits():
     reset_policy_rate_limiters()
     yield
     reset_policy_rate_limiters()
+
+
+@pytest.fixture
+def capture_logs():
+    """Collect records from a named logger regardless of global logging state.
+
+    Alembic's fileConfig (run by the DB fixtures) disables already-created loggers,
+    which makes ``caplog`` order-dependent. Usage: ``records = capture_logs("app.x")``.
+    """
+    import logging
+
+    undo = []
+
+    def _capture(name: str) -> list[logging.LogRecord]:
+        logger = logging.getLogger(name)
+        records: list[logging.LogRecord] = []
+
+        class _Collect(logging.Handler):
+            def emit(self, record):
+                records.append(record)
+
+        handler = _Collect(level=logging.DEBUG)
+        undo.append((logger, handler, logger.level, logger.disabled))
+        logger.disabled = False
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+        return records
+
+    yield _capture
+    for logger, handler, level, disabled in undo:
+        logger.removeHandler(handler)
+        logger.setLevel(level)
+        logger.disabled = disabled
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -63,6 +102,38 @@ def migrated(engine):
     cfg.set_main_option("sqlalchemy.url", TEST_DATABASE_URL or "")
     command.upgrade(cfg, "head")
     yield
+
+
+@pytest.fixture
+def fresh_engine():
+    """A throwaway, fully migrated database for tests that need a truly empty schema
+    (first-use races, deploy seeding) while the shared test database already has data."""
+    from alembic import command
+    from alembic.config import Config
+    from sqlalchemy.engine import make_url
+
+    if not TEST_DATABASE_URL:
+        pytest.skip("TEST_DATABASE_URL not set")
+    base = make_url(TEST_DATABASE_URL)
+    name = f"cm_fresh_{uuid.uuid4().hex[:12]}"
+    admin = create_engine(base.set(database="postgres"), isolation_level="AUTOCOMMIT")
+    with admin.connect() as conn:
+        conn.execute(text(f'CREATE DATABASE "{name}"'))
+    url = base.set(database=name)
+    eng = create_engine(url, pool_pre_ping=True)
+    try:
+        with eng.connect() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            conn.commit()
+        cfg = Config("alembic.ini")
+        cfg.set_main_option("sqlalchemy.url", url.render_as_string(hide_password=False))
+        command.upgrade(cfg, "head")
+        yield eng
+    finally:
+        eng.dispose()
+        with admin.connect() as conn:
+            conn.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
+        admin.dispose()
 
 
 @pytest.fixture

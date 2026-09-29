@@ -19,7 +19,7 @@ from app.schemas.api import (
     TutorResponse,
 )
 from app.services.embeddings import get_embedder
-from app.services.llm import get_llm_client
+from app.services.llm import LLMError, get_llm_client
 from app.services.memory import MemoryService
 from app.services.ratelimit import get_coach_rate_limiter, get_tutor_rate_limiter
 from app.services.repositories import PgMemoryRepository
@@ -137,8 +137,13 @@ def coach_debrief(
                 timeout=5.0,
             )
             return CoachResponse(message=msg.strip())
+        except LLMError as exc:
+            # Provider unavailable or unconfigured: expected, fall back to the static debrief.
+            log.warning("coach debrief LLM unavailable (%s): %s", type(exc).__name__, exc)
         except Exception:
-            pass
+            # Not an LLM failure, so likely a bug. The learner still gets the static
+            # debrief, but the traceback is logged instead of masked.
+            log.exception("coach debrief hit an unexpected error; using static debrief")
 
     if passed == total and total > 0:
         msg = "Great execution! All test cases passed. Review your time and space complexity to ensure your solution scales optimally."

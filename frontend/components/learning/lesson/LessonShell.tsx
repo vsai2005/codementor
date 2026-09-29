@@ -61,7 +61,7 @@ export function LessonShell({
 
   const handleCompleteLesson = useCallback(() => {
     completeLesson();
-    router.push("/learning");
+    router.push("/learning/python");
   }, [completeLesson, router]);
 
   const handleStepChange = useCallback(
@@ -116,7 +116,7 @@ export function LessonShell({
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-3">
               <Link
-                href="/learning"
+                href="/learning/python"
                 className="font-mono text-xs font-bold px-2 py-1 border border-ink/30 bg-bg hover:border-ink hover:bg-ink hover:text-bg transition-colors"
               >
                 ← Roadmap

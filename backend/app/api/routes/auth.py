@@ -33,6 +33,9 @@ from app.schemas.api import (
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9._-]{3,30}$")
+# Applies to new registrations only. Login never checks length, so accounts created
+# under the earlier 6-character rule can still sign in.
+MIN_PASSWORD_LENGTH = 8
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
@@ -95,10 +98,10 @@ def register(
             status.HTTP_400_BAD_REQUEST,
             "Username must be 3-30 alphanumeric characters or . _ -",
         )
-    if len(payload.password) < 6:
+    if len(payload.password) < MIN_PASSWORD_LENGTH:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            "Password must be at least 6 characters.",
+            f"Password must be at least {MIN_PASSWORD_LENGTH} characters.",
         )
 
     email = payload.email.strip().lower() if payload.email else None

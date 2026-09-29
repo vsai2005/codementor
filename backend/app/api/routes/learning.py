@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import logging
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -169,7 +170,7 @@ def dev_set_progress(
     payload: DevSetProgressRequest,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> LearningProgressResponse:
+) -> dict[str, Any]:
     """Developer helper: fast-forward user progress up to day N."""
     settings = get_settings()
     if settings.is_production:
@@ -204,6 +205,7 @@ def dev_set_progress(
             st.completed = True
             st.completed_at = now
     db.commit()
+    # Returned as a dict, like get_progress; response_model validates and serializes it.
     return learning_svc.compute_user_progress(db, user.id)
 
 

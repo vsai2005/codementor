@@ -16,7 +16,7 @@ import time
 import uuid
 
 sys.path.insert(0, os.path.abspath("."))
-import dev_backend.server as s
+import legacy.dev_backend.server as s
 SEED_TOPICS, SEED_PROBLEMS = s.TOPICS_RAW, s.PROBLEMS_RAW
 
 NS = uuid.UUID("00000000-0000-0000-0000-0000000c0de0")

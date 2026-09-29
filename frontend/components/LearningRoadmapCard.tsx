@@ -33,7 +33,7 @@ export function LearningRoadmapCard() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href="/learning"
+            href="/learning/python"
             className="btn btn-primary flex items-center gap-1.5 text-xs"
           >
             <span>Continue Learning</span>

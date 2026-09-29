@@ -11,8 +11,8 @@ __pycache__/
 !.env.local.example
 
 # Development database and state files
-dev_backend/accounts.json
-dev_backend/userdata/
+legacy/dev_backend/accounts.json
+legacy/dev_backend/userdata/
 
 # Frontend builds and dependencies
 node_modules/
@@ -20,3 +20,6 @@ node_modules/
 dist/
 build/
 scratch/
+
+# Generated logs (uvicorn, next dev, ...)
+*.log

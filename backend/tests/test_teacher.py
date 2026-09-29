@@ -1,7 +1,10 @@
 """Unit and integration tests for Stage 6 AI Learning Teacher service & retrieval."""
 
+import logging
+
 import pytest
 from app.core.curriculum_retrieval import CurriculumKnowledgeEngine, get_curriculum_knowledge_engine
+from app.services.llm import LLMTimeout
 from app.services.teacher import AITeacherService
 from app.services.tutor_security import sanitize_user_input, sanitize_tutor_input
 from app.services.ratelimit import InMemoryRateLimiter
@@ -76,3 +79,69 @@ def test_tutor_rate_limiter():
     verdict = limiter.check(user_id)
     assert verdict.allowed is False
     assert verdict.retry_after_s > 0
+
+
+@pytest.fixture
+def teacher_logs():
+    """Capture app.services.teacher records regardless of global logging state.
+
+    Alembic's fileConfig (run by the DB fixtures) disables existing loggers, which would
+    make caplog see nothing depending on test order.
+    """
+    logger = logging.getLogger("app.services.teacher")
+    records: list[logging.LogRecord] = []
+
+    class _Collect(logging.Handler):
+        def emit(self, record):
+            records.append(record)
+
+    handler = _Collect(level=logging.DEBUG)
+    prev_disabled, prev_level = logger.disabled, logger.level
+    logger.disabled = False
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    try:
+        yield records
+    finally:
+        logger.removeHandler(handler)
+        logger.setLevel(prev_level)
+        logger.disabled = prev_disabled
+
+
+class _StubClient:
+    def __init__(self, result=None, exc=None):
+        self._result, self._exc = result, exc
+
+    def complete(self, *args, **kwargs):
+        if self._exc is not None:
+            raise self._exc
+        return self._result
+
+
+def test_teacher_returns_llm_reply_when_client_succeeds():
+    svc = AITeacherService(client=_StubClient(result="  Try tracing the loop.  "))
+    res = svc.generate_response(day_number=1, query="What is a variable?")
+    assert res["reply"] == "Try tracing the loop."
+    assert res["is_fallback"] is False
+
+
+def test_teacher_falls_back_and_warns_on_llm_error(teacher_logs):
+    svc = AITeacherService(client=_StubClient(exc=LLMTimeout("slow")))
+    res = svc.generate_response(day_number=1, query="What is a variable?")
+    assert res["is_fallback"] is True
+    assert res["reply"]
+    records = teacher_logs
+    assert [r.levelno for r in records] == [logging.WARNING]
+    assert records[0].exc_info is None
+    assert "LLMTimeout" in records[0].getMessage()
+
+
+def test_teacher_logs_unexpected_errors_distinctly_but_still_falls_back(teacher_logs):
+    svc = AITeacherService(client=_StubClient(exc=KeyError("bug")))
+    res = svc.generate_response(day_number=1, query="What is a variable?")
+    assert res["is_fallback"] is True
+    assert res["reply"]
+    records = teacher_logs
+    assert [r.levelno for r in records] == [logging.ERROR]
+    assert records[0].exc_info is not None  # traceback is preserved, not masked
+    assert records[0].exc_info[0] is KeyError

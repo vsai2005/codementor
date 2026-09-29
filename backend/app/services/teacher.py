@@ -14,7 +14,6 @@ from app.services.llm import LLMClient, LLMError, get_llm_client
 from app.services.tutor_security import (
     AI_TEACHER_SYSTEM_PROMPT,
     build_safe_tutor_prompt,
-    sanitize_user_input,
 )
 
 log = logging.getLogger(__name__)
@@ -79,6 +78,7 @@ class AITeacherService:
         )
 
         # 4. LLM Completion with Resilient Fallback
+        reply: str | None = None
         try:
             raw_reply = self.client.complete(
                 prompt=prompt,
@@ -88,9 +88,20 @@ class AITeacherService:
                 timeout=8.0,
             )
             reply = raw_reply.strip()
-            is_fallback = False
-        except (LLMError, Exception) as exc:
-            log.warning("AI Teacher LLM invocation failed: %s. Using pedagogical fallback.", exc)
+        except LLMError as exc:
+            # Expected provider failure: timeout, quota, HTTP error, missing key.
+            log.warning(
+                "AI Teacher LLM unavailable (%s): %s. Using pedagogical fallback.",
+                type(exc).__name__,
+                exc,
+            )
+        except Exception:
+            # Not an LLM failure, so it is likely a bug. The student still gets the
+            # fallback, but the traceback is logged at ERROR rather than masked.
+            log.exception("AI Teacher hit an unexpected error; using pedagogical fallback")
+
+        is_fallback = reply is None
+        if reply is None:
             reply = self._generate_fallback(
                 day_number=day_number,
                 message=message,
@@ -98,7 +109,6 @@ class AITeacherService:
                 user_code=user_code,
                 hint_level=hint_level,
             )
-            is_fallback = True
 
         day_meta = self.engine.days.get(day_number)
         related = day_meta.concepts[:3] if day_meta else ["Python Basics"]
@@ -137,7 +147,6 @@ class AITeacherService:
         hint_level: int = 1,
     ) -> str:
         day_meta = self.engine.days.get(day_number)
-        topic = day_meta.title if day_meta else f"Day {day_number}"
         topic = day_meta.title if day_meta else f"Day {day_number}"
         msg = (message or "").lower().strip()
 

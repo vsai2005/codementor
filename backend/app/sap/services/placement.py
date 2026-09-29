@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -272,9 +273,8 @@ class SAPPlacementService:
         ).scalar_one_or_none()
 
         previous_results = dict(profile.diagnostic_results or {}) if profile else {}
-        already_awarded = set(
-            previous_results.get("awarded_concepts", previous_results.get("demonstrated_concepts", []))
-        )
+        awarded_raw = previous_results.get("awarded_concepts", previous_results.get("demonstrated_concepts", []))
+        already_awarded: set[Any] = set(awarded_raw or [])
         new_awards = [c for c in demonstrated_concepts if c not in already_awarded]
 
         diagnostic_results = {
@@ -533,9 +533,9 @@ class SAPPlacementService:
 
             # Restore waived days in database
             for day_num in original_waived_days:
-                ds = day_state_map.get(day_num)
-                if ds is None:
-                    ds = SAPUserDayState(
+                waived_ds = day_state_map.get(day_num)
+                if waived_ds is None:
+                    waived_ds = SAPUserDayState(
                         user_id=user_id,
                         day_number=day_num,
                         status=SAPDayStatus.WAIVED_BY_PLACEMENT.value,
@@ -545,10 +545,10 @@ class SAPPlacementService:
                         assessment_passed=False,
                         completed=False,
                     )
-                    db.add(ds)
-                elif not cls._has_progress(ds):
-                    ds.waived = True
-                    ds.status = SAPDayStatus.WAIVED_BY_PLACEMENT.value
+                    db.add(waived_ds)
+                elif not cls._has_progress(waived_ds):
+                    waived_ds.waived = True
+                    waived_ds.status = SAPDayStatus.WAIVED_BY_PLACEMENT.value
 
             # Ensure starting day is accessible
             start_ds = day_state_map.get(original_recommended_day)

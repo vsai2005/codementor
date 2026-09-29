@@ -7,10 +7,11 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { ThemeToggle } from "./ThemeToggle";
 
-const NAV = [
+// One "Learning" entry: the hub at /learning lists both courses. The SAP course keeps its
+// own routes, so /sap/* still highlights Learning.
+const NAV: { href: string; label: string; matches?: string[] }[] = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/learning", label: "Learning" },
-  { href: "/sap", label: "SAP" },
+  { href: "/learning", label: "Learning", matches: ["/learning", "/sap"] },
   { href: "/practice", label: "Practice" },
   { href: "/tutor", label: "Tutor" },
   { href: "/profile", label: "Profile" },
@@ -50,11 +51,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <nav className="flex flex-wrap gap-1" aria-label="Main">
             {NAV.map((item) => {
-              const active = pathname.startsWith(item.href);
+              const active = (item.matches ?? [item.href]).some((prefix) => pathname.startsWith(prefix));
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={`border-2 px-2 py-1 font-body text-xs font-semibold ${
                     active ? "border-ink bg-ink text-bg" : "border-transparent text-muted"
                   }`}

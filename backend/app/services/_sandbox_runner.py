@@ -90,6 +90,33 @@ def _apply_rlimits(cpu_seconds: int = 3, memory_bytes: int = 256 * 1024 * 1024) 
             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     except (ImportError, OSError, ValueError):
         pass
+    _apply_memory_rlimit(memory_bytes)
+
+
+def _apply_memory_rlimit(memory_bytes: int) -> None:
+    """Kernel backstop for the memory limit, independent of the parent's RSS watchdog.
+
+    The watchdog polls every 15 ms, so under load a program that allocates fast and
+    returns can finish before a poll sees it. RLIMIT_DATA makes the kernel refuse the
+    allocation instead (MemoryError -> status "memory"), deterministically.
+
+    Linux only: since 4.7 it counts private writable mappings, not address-space
+    reservations or shared libraries (unlike RLIMIT_AS, which caused false kills). For
+    plain data it runs slightly below RSS, so it never rejects what the watchdog would
+    accept. Each thread's stack reservation does count against it. The limit is per
+    process; the watchdog still enforces the total across the process tree.
+    """
+    if not sys.platform.startswith("linux"):
+        return
+    try:
+        import resource
+
+        _soft, hard = resource.getrlimit(resource.RLIMIT_DATA)
+        limit = memory_bytes if hard == resource.RLIM_INFINITY else min(memory_bytes, hard)
+        # soft == hard: sandboxed code cannot raise it back.
+        resource.setrlimit(resource.RLIMIT_DATA, (limit, limit))
+    except (ImportError, OSError, ValueError):
+        pass
 
 
 _BLOCKED_EXACT = frozenset(
@@ -175,8 +202,17 @@ def _block_network_and_env() -> None:
 
 
 def _emit(payload: dict) -> None:
-    sys.__stdout__.write(json.dumps(payload))
-    sys.__stdout__.flush()
+    data = json.dumps(payload)
+    stream = sys.__stdout__
+    if stream is not None:
+        stream.write(data)
+        stream.flush()
+        return
+    # No interpreter-level stdout (e.g. a pythonw-style host). Write the envelope to fd 1
+    # directly; sys.stdout is not an option because it holds the student's captured output.
+    raw = data.encode("utf-8")
+    while raw:
+        raw = raw[os.write(1, raw):]
 
 
 def main() -> None:

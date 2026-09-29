@@ -47,7 +47,10 @@ cp .env.example .env
 
 # Run database migrations and seed data
 python -m alembic upgrade head
-python -m app.seed                        # Seeds 16 topics, 178 practice problems
+python -m app.seed                        # Seeds/refreshes 16 topics, 178 practice problems
+python -m app.sap.seed                    # Seeds/refreshes SAP Enterprise Missions
+# Both run automatically at every deploy (render.yaml, backend/Dockerfile) after migrations.
+# Locally, re-run them after changing problem or mission definitions.
 uvicorn app.main:app --reload             # http://localhost:8000/docs
 ```
 
@@ -94,6 +97,8 @@ cd backend
 # Run full unit and integration test suite
 $env:TEST_DATABASE_URL="postgresql+psycopg://codementor:codementor@localhost:5433/codementor"
 python -m pytest tests -q                 # 368 tests passing (0 failed, 0 skipped)
+pip install -r requirements-test.txt      # pytest extras (psutil) + mypy
+python -m mypy                            # type check app/ using backend/mypy.ini (0 errors)
 ```
 
 Key test modules:

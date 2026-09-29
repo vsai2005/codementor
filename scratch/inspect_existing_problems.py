@@ -11,11 +11,11 @@ seed_slugs = re.findall(r'P\("([^"]+)"', seed_text)
 print(f"backend/app/seed.py has {len(seed_slugs)} problems:")
 print(seed_slugs)
 
-# Check dev_backend/server.py
-with open('dev_backend/server.py', encoding='utf-8') as f:
+# Check legacy/dev_backend/server.py
+with open('legacy/dev_backend/server.py', encoding='utf-8') as f:
     dev_text = f.read()
 dev_slugs = re.findall(r'P\("([^"]+)"', dev_text)
-print(f"dev_backend/server.py has {len(dev_slugs)} problem definitions directly.")
+print(f"legacy/dev_backend/server.py has {len(dev_slugs)} problem definitions directly.")
 
 # Search all files for any problem lists or JSON files
 for root, dirs, files in os.walk('.'):

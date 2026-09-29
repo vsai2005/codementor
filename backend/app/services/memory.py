@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Protocol, Sequence
+from typing import Mapping, Protocol, Sequence
 
 log = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ def truncate_note(content: str, limit: int = MAX_NOTE_CHARS) -> str:
 
 
 def deduplicate(notes: Sequence[MemoryNote],
-                embeddings: dict[str, Sequence[float]],
+                embeddings: Mapping[str, Sequence[float]],
                 threshold: float = DEDUPE_THRESHOLD) -> list[MemoryNote]:
     """Drop notes that are near-identical to one already kept (PRD 3.3).
 
@@ -111,8 +111,8 @@ class MemoryService:
             candidates = [n for n in candidates if n.user_id == user_id]
 
         candidates.sort(key=lambda n: n.similarity, reverse=True)
-        embeddings = {n.id: self._safe_embed(n.content) for n in candidates}
-        embeddings = {i: v for i, v in embeddings.items() if v}
+        raw_embeddings = {n.id: self._safe_embed(n.content) for n in candidates}
+        embeddings = {i: v for i, v in raw_embeddings.items() if v}
         return deduplicate(candidates, embeddings)[:k]
 
     def store_note(self, *, user_id: str, content: str, topic_id: str | None = None,

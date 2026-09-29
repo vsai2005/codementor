@@ -218,7 +218,7 @@ export function PracticeScreen({
           </div>
 
           <Link
-            href="/learning"
+            href="/learning/python"
             className="font-mono text-xs font-bold text-ink underline underline-offset-2 ml-auto hover:text-accent"
           >
             Learning Roadmap
@@ -370,7 +370,7 @@ export function PracticeScreen({
                   </Link>
                 ) : (
                   <Link
-                    href="/learning"
+                    href="/learning/python"
                     className="btn btn-primary w-full py-3 text-sm font-bold shadow-hard flex items-center justify-center gap-2"
                   >
                     <span>🏆 View 160-Day Completed Roadmap</span>
@@ -396,7 +396,7 @@ export function PracticeScreen({
                   Review Solution & Debrief
                 </button>
                 <Link
-                  href="/learning"
+                  href="/learning/python"
                   className="btn flex-1 py-2 text-xs font-semibold hover:border-ink flex items-center justify-center"
                 >
                   Roadmap

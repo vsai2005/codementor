@@ -142,7 +142,7 @@ def main() -> int:
         return 5
     except BaseException:
         exc_type, exc_value, tb = sys.exc_info()
-        frames = traceback.format_exception(exc_type, exc_value, tb.tb_next)
+        frames = traceback.format_exception(exc_type, exc_value, tb.tb_next if tb is not None else None)
         sys.stderr.write("".join(frames)[:MAX_IO_BYTES])
         return 1
 
